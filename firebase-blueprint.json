@@ -1,0 +1,194 @@
+{
+  "entities": {
+    "users": {
+      "title": "User Profile",
+      "description": "Athlete profiles, sports stats, contact details, registration steps data, and user roles",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "fullName": { "type": "string" },
+        "username": { "type": "string" },
+        "nickname": { "type": "string" },
+        "email": { "type": "string" },
+        "phoneNumber": { "type": "string" },
+        "dateOfBirth": { "type": "string" },
+        "bio": { "type": "string" },
+        "primarySport": { "type": "string" },
+        "sports": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "region": { "type": "string" },
+        "role": { "type": "string", "enum": ["user", "influencer", "admin"] },
+        "totalKm": { "type": "number" },
+        "activeDays": { "type": "number" },
+        "points": { "type": "number" },
+        "avatarUrl": { "type": "string" },
+        "isPro": { "type": "boolean" },
+        "clubs": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "fullName", "email"]
+    },
+    "activities": {
+      "title": "Activity Post",
+      "description": "Fitness workout activities published by athletes with location names and metrics",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userAvatar": { "type": "string" },
+        "timeAgo": { "type": "string" },
+        "sport": { "type": "string" },
+        "title": { "type": "string" },
+        "distanceKm": { "type": "number" },
+        "timeMinutes": { "type": "number" },
+        "pace": { "type": "string" },
+        "calories": { "type": "number" },
+        "imageUrl": { "type": "string" },
+        "hasMap": { "type": "boolean" },
+        "mapRouteSvg": { "type": "string" },
+        "likesCount": { "type": "number" },
+        "commentsCount": { "type": "number" },
+        "caption": { "type": "string" },
+        "locationName": { "type": "string" },
+        "lat": { "type": "number" },
+        "lng": { "type": "number" },
+        "calculatedDistanceKm": { "type": "number" },
+        "challengeId": { "type": "string" },
+        "avgHeartRate": { "type": "number" },
+        "elevationGain": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "sport"]
+    },
+    "challenges": {
+      "title": "Sports Challenge",
+      "description": "Global and regional athlete challenges and quests",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "type": { "type": "string", "enum": ["distance", "calories", "sprint"] },
+        "scope": { "type": "string", "enum": ["global", "local"] },
+        "targetValue": { "type": "number" },
+        "currentValue": { "type": "number" },
+        "unit": { "type": "string" },
+        "endsIn": { "type": "string" },
+        "joinedUsersCount": { "type": "number" },
+        "bannerUrl": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "pending_approval", "completed"] },
+        "locationName": { "type": "string" },
+        "lat": { "type": "number" },
+        "lng": { "type": "number" },
+        "calculatedDistanceKm": { "type": "number" }
+      },
+      "required": ["title", "scope", "targetValue"]
+    },
+    "communities": {
+      "title": "Sports Community",
+      "description": "Clubs and teams created by athletes",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "location": { "type": "string" },
+        "sportCategory": { "type": "string" },
+        "privacy": { "type": "string", "enum": ["public", "private"] },
+        "membersCount": { "type": "number" },
+        "coverUrl": { "type": "string" },
+        "createdBy": { "type": "string" },
+        "lat": { "type": "number" },
+        "lng": { "type": "number" },
+        "calculatedDistanceKm": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "sportCategory"]
+    },
+    "community_messages": {
+      "title": "Community Chat Message",
+      "description": "Interactive messages sent inside community group chats",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "communityId": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userAvatar": { "type": "string" },
+        "text": { "type": "string" },
+        "mediaUrl": { "type": "string" },
+        "isVideo": { "type": "boolean" },
+        "repliesCount": { "type": "number" },
+        "flameCount": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["communityId", "userId", "text"]
+    },
+    "notifications": {
+      "title": "Notification",
+      "description": "Alerts and engagement push notifications",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "type": { "type": "string" },
+        "read": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "title", "message"]
+    },
+    "audit_logs": {
+      "title": "Audit Log",
+      "description": "System security and admin audit records",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "action": { "type": "string" },
+        "resource": { "type": "string" },
+        "ipAddress": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["action", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "users",
+      "description": "User profiles and athlete statistics"
+    },
+    "/activities/{activityId}": {
+      "schema": "activities",
+      "description": "Feed of activities published by athletes"
+    },
+    "/challenges/{challengeId}": {
+      "schema": "challenges",
+      "description": "Sports challenges and regional quests"
+    },
+    "/communities/{communityId}": {
+      "schema": "communities",
+      "description": "Clubs and group communities"
+    },
+    "/communities/{communityId}/messages/{messageId}": {
+      "schema": "community_messages",
+      "description": "Chat messages within a community"
+    },
+    "/notifications/{notificationId}": {
+      "schema": "notifications",
+      "description": "User notifications"
+    },
+    "/audit_logs/{logId}": {
+      "schema": "audit_logs",
+      "description": "Admin security and action audit logs"
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "ClubSport",
+  "description": "Plataforma fitness social para atletas com desafios em tempo real, feeds, analytics, ranking regional e gestão de comunidades.",
+  "requestFramePermissions": ["camera", "microphone", "geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
