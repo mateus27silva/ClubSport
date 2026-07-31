@@ -48,90 +48,14 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const [selectedHighlight, setSelectedHighlight] = useState<HighlightItem | null>(null);
   const [newCommentText, setNewCommentText] = useState('');
 
-  // Initial Activity Highlights
-  const [localHighlights, setLocalHighlights] = useState<HighlightItem[]>([
-    {
-      id: 'hl_1',
-      title: 'RUN • 10.5 KM • 4:30/KM',
-      sport: 'Corrida',
-      distance: '10.5 KM',
-      pace: '4:30/KM',
-      duration: '47:15 MIN',
-      calories: '850 KCAL',
-      imageUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=800&q=80',
-      likes: 1200,
-      isLiked: false,
-      commentsCount: 45,
-      caption: 'Corrida matinal com ritmo forte e constante no Parque do Ibirapuera! Foco total na preparação para as próximas provas do circuito ClubSport. Sensação incrível de superação a cada quilômetro.',
-      commentsList: [
-        { id: 'c1', author: 'Ana Costa', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80', text: 'Monstro demais! Que pace sensacional 🔥', timeAgo: '2h atrás' },
-        { id: 'c2', author: 'João Pedro', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80', text: 'Bora treinar juntos no final de semana! Vamo pra cima!', timeAgo: '1h atrás' }
-      ]
-    },
-    {
-      id: 'hl_2',
-      title: 'BIKE • 50 KM • 28 KM/H',
-      sport: 'Ciclismo',
-      distance: '50.0 KM',
-      pace: '28 KM/H',
-      duration: '1H 47MIN',
-      calories: '1.420 KCAL',
-      imageUrl: 'https://images.unsplash.com/photo-1541625602330-2277a4c46182?auto=format&fit=crop&w=800&q=80',
-      likes: 45,
-      isLiked: false,
-      commentsCount: 45,
-      caption: 'Pedal longo de 50km com a galera do ClubSport Cycling! Ritmo forte de 28km/h de média. Vento de frente na volta testou a resistência de todo mundo.',
-      commentsList: [
-        { id: 'c3', author: 'Marcos Viana', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80', text: 'O vento tava de lascar na Marginal, valeu pelo puxão no pelotão!', timeAgo: '3h atrás' }
-      ]
-    },
-    {
-      id: 'hl_3',
-      title: 'SWIM • 2.0 KM • 1:45/100M',
-      sport: 'Natação',
-      distance: '2.0 KM',
-      pace: '1:45/100M',
-      duration: '35:00 MIN',
-      calories: '520 KCAL',
-      imageUrl: 'https://images.unsplash.com/photo-1530549387789-4c1017266635?auto=format&fit=crop&w=800&q=80',
-      likes: 45,
-      isLiked: false,
-      commentsCount: 45,
-      caption: 'Treino aquático focado em técnica de braçada e respiração bilateral na piscina olímpica. 2km de puro foco e ritmo fluído.',
-      commentsList: [
-        { id: 'c4', author: 'Camila Silva', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80', text: 'Técnica impecável! Parabéns pelo treino!', timeAgo: '4h atrás' }
-      ]
-    },
-    {
-      id: 'hl_4',
-      title: 'MARATHON • 42.2 KM',
-      sport: 'Maratona',
-      distance: '42.2 KM',
-      pace: '4:15/KM',
-      duration: '2H 58MIN',
-      calories: '3.100 KCAL',
-      imageUrl: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=800&q=80',
-      likes: 3100,
-      isLiked: false,
-      commentsCount: 180,
-      caption: 'Dia inesquecível! Sub-3h na maratona oficial. Meses de dedicação, abdicação e treinos madrugada afora pagos com essa medalha incrível. Obrigado a todos que apoiaram nessa jornada! 🏅🔥',
-      commentsList: [
-        { id: 'c5', author: 'Lucas Andrade', avatar: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=100&q=80', text: 'Sub 3 horas é marca de elite total! Inspiração pura!', timeAgo: '5h atrás' },
-        { id: 'c6', author: 'Fernanda Lima', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=100&q=80', text: 'Você voou baixo hoje!! Orgulho do time!', timeAgo: '2h atrás' }
-      ]
-    }
-  ]);
-
   // Convert ActivityPost items from logged-in user into HighlightItem format
   const userActivities = activities.filter(
     (act) =>
-      act.userId === user?.id ||
-      act.userId === 'user_mateus_001' ||
-      act.userName === user?.fullName ||
-      act.userName === 'Mateus Silva'
+      (user?.uid && act.userId === user.uid) ||
+      (user?.fullName && act.userName.toLowerCase() === user.fullName.toLowerCase())
   );
 
-  const convertedUserActivities: HighlightItem[] = userActivities.map((act) => ({
+  const displayHighlights: HighlightItem[] = userActivities.map((act) => ({
     id: act.id,
     title: act.title || `${act.sport.toUpperCase()} • ${act.distanceKm} KM`,
     sport: act.sport,
@@ -152,12 +76,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       timeAgo: c.createdAt
     }))
   }));
-
-  // Combine user activities with local static highlights, prioritizing user activities first
-  const displayHighlights = [
-    ...convertedUserActivities,
-    ...localHighlights.filter((lh) => !convertedUserActivities.some((cua) => cua.id === lh.id))
-  ];
 
   if (!user) return null;
 
@@ -188,21 +106,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
   // Toggle Like on selected highlight
   const handleToggleLikeHighlight = (hlId: string) => {
-    setLocalHighlights((prev) =>
-      prev.map((hl) => {
-        if (hl.id === hlId) {
-          const nextIsLiked = !hl.isLiked;
-          const nextLikes = nextIsLiked ? hl.likes + 1 : hl.likes - 1;
-          const updated = { ...hl, isLiked: nextIsLiked, likes: nextLikes };
-          if (selectedHighlight?.id === hlId) {
-            setSelectedHighlight(updated);
-          }
-          return updated;
-        }
-        return hl;
-      })
-    );
-    if (selectedHighlight?.id === hlId) {
+    if (selectedHighlight && selectedHighlight.id === hlId) {
       const nextIsLiked = !selectedHighlight.isLiked;
       const nextLikes = nextIsLiked ? selectedHighlight.likes + 1 : selectedHighlight.likes - 1;
       setSelectedHighlight({ ...selectedHighlight, isLiked: nextIsLiked, likes: nextLikes });
@@ -221,21 +125,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       text: newCommentText.trim(),
       timeAgo: 'Agora'
     };
-
-    setLocalHighlights((prev) =>
-      prev.map((hl) => {
-        if (hl.id === selectedHighlight.id) {
-          const updatedList = [...hl.commentsList, newComment];
-          const updated = {
-            ...hl,
-            commentsCount: updatedList.length,
-            commentsList: updatedList
-          };
-          return updated;
-        }
-        return hl;
-      })
-    );
 
     const updatedList = [...selectedHighlight.commentsList, newComment];
     setSelectedHighlight({
@@ -284,7 +173,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
         <div>
           <h2 className="text-2xl font-black text-white">{user.fullName}</h2>
-          <p className="text-xs text-zinc-400 font-medium">Pro Athlete • ClubSport Elite</p>
+          <p className="text-xs text-zinc-400 font-medium">
+            {user.primarySport || 'Corrida'} • {user.region || 'Brasil'}
+          </p>
 
           <p className="text-xs text-zinc-300 mt-2 max-w-xs">{user.bio}</p>
         </div>
@@ -391,48 +282,58 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           </h3>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          {displayHighlights.map((item) => (
-            <div
-              key={item.id}
-              onClick={() => setSelectedHighlight(item)}
-              className="bg-zinc-900 border border-zinc-800 hover:border-orange-500/50 rounded-xl overflow-hidden relative group cursor-pointer transition-all hover:scale-[1.02] shadow-md hover:shadow-orange-500/10"
-            >
-              <div className="relative h-32 overflow-hidden bg-zinc-950">
-                <img
-                  src={item.imageUrl}
-                  alt={item.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent opacity-80" />
-                <span className="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-zinc-950/80 backdrop-blur-md text-[9px] font-bold text-orange-400 border border-zinc-800 uppercase">
-                  {item.sport}
-                </span>
-              </div>
-
-              <div className="p-2.5 bg-zinc-950/90 text-[10px] space-y-1 border-t border-zinc-800/60">
-                <span className="font-bold text-orange-400 block uppercase truncate">
-                  {item.title}
-                </span>
-                <div className="flex items-center justify-between text-zinc-400 pt-0.5">
-                  <div className="flex items-center space-x-3">
-                    <span className="flex items-center gap-1 font-mono font-bold text-zinc-300">
-                      <Flame className="w-3 h-3 text-orange-500" />
-                      {item.likes >= 1000 ? `${(item.likes / 1000).toFixed(1)}k` : item.likes}
-                    </span>
-                    <span className="flex items-center gap-1 font-mono text-zinc-400">
-                      <MessageCircle className="w-3 h-3 text-zinc-400" />
-                      {item.commentsCount}
-                    </span>
-                  </div>
-                  <span className="text-[9px] text-orange-400/90 font-bold group-hover:underline">
-                    Ver →
+        {displayHighlights.length === 0 ? (
+          <div className="p-6 bg-zinc-900/60 border border-zinc-800 rounded-2xl text-center space-y-2">
+            <Activity className="w-8 h-8 text-zinc-600 mx-auto" />
+            <p className="text-xs font-bold text-zinc-300">Nenhuma publicação ainda</p>
+            <p className="text-[11px] text-zinc-500 max-w-xs mx-auto">
+              Realize e salve um treino no Rastreamento GPS para ver suas publicações e conquistas registradas aqui.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            {displayHighlights.map((item) => (
+              <div
+                key={item.id}
+                onClick={() => setSelectedHighlight(item)}
+                className="bg-zinc-900 border border-zinc-800 hover:border-orange-500/50 rounded-xl overflow-hidden relative group cursor-pointer transition-all hover:scale-[1.02] shadow-md hover:shadow-orange-500/10"
+              >
+                <div className="relative h-32 overflow-hidden bg-zinc-950">
+                  <img
+                    src={item.imageUrl}
+                    alt={item.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent opacity-80" />
+                  <span className="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-zinc-950/80 backdrop-blur-md text-[9px] font-bold text-orange-400 border border-zinc-800 uppercase">
+                    {item.sport}
                   </span>
                 </div>
+
+                <div className="p-2.5 bg-zinc-950/90 text-[10px] space-y-1 border-t border-zinc-800/60">
+                  <span className="font-bold text-orange-400 block uppercase truncate">
+                    {item.title}
+                  </span>
+                  <div className="flex items-center justify-between text-zinc-400 pt-0.5">
+                    <div className="flex items-center space-x-3">
+                      <span className="flex items-center gap-1 font-mono font-bold text-zinc-300">
+                        <Flame className="w-3 h-3 text-orange-500" />
+                        {item.likes >= 1000 ? `${(item.likes / 1000).toFixed(1)}k` : item.likes}
+                      </span>
+                      <span className="flex items-center gap-1 font-mono text-zinc-400">
+                        <MessageCircle className="w-3 h-3 text-zinc-400" />
+                        {item.commentsCount}
+                      </span>
+                    </div>
+                    <span className="text-[9px] text-orange-400/90 font-bold group-hover:underline">
+                      Ver →
+                    </span>
+                  </div>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Modal: Detalhes da Publicação & Comentários do Activity Highlight */}
@@ -452,7 +353,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                     <span>{user.fullName}</span>
                     <span className="text-[9px] px-1.5 py-0.5 rounded bg-orange-500/20 text-orange-400 border border-orange-500/30">PRO</span>
                   </h3>
-                  <p className="text-[10px] text-zinc-400">{selectedHighlight.sport} • ClubSport Elite</p>
+                  <p className="text-[10px] text-zinc-400">{selectedHighlight.sport} • {user.fullName}</p>
                 </div>
               </div>
 
@@ -634,20 +535,12 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             </p>
 
             <div className="space-y-2.5 max-h-72 overflow-y-auto no-scrollbar">
-              {user.clubs.map((clubName, idx) => {
-                const mockCommunityDetails: Record<string, { members: string; category: string; avatar: string }> = {
-                  'Running Club': { members: '2.4K Membros', category: 'Running', avatar: '🏃' },
-                  'Triathlon Team': { members: '1.2K Membros', category: 'Triathlon', avatar: '🏊' },
-                  'Cycling Group': { members: '1.8K Membros', category: 'Cycling', avatar: '🚴' },
-                  'Weekend Warriors FC': { members: '2.4K Membros', category: 'Soccer & Fitness', avatar: '⚽' },
-                };
-                const info = mockCommunityDetails[clubName] || {
-                  members: '1.5K Membros',
-                  category: 'Esporte Geral',
-                  avatar: '🏆'
-                };
-
-                return (
+              {user.clubs.length === 0 ? (
+                <div className="p-6 text-center text-xs text-zinc-500 italic border border-zinc-800/80 rounded-2xl bg-zinc-950">
+                  Você ainda não participa de nenhuma comunidade. Entre na aba Desafios & Comunidades para participar!
+                </div>
+              ) : (
+                user.clubs.map((clubName, idx) => (
                   <div
                     key={idx}
                     onClick={() => {
@@ -660,16 +553,14 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                   >
                     <div className="flex items-center space-x-3">
                       <div className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-lg group-hover:scale-105 transition-transform">
-                        {info.avatar}
+                        🏆
                       </div>
                       <div>
                         <h4 className="text-xs font-bold text-white group-hover:text-orange-400 transition-colors">
                           {clubName}
                         </h4>
                         <div className="flex items-center space-x-2 text-[10px] text-zinc-400 mt-0.5">
-                          <span>{info.members}</span>
-                          <span>•</span>
-                          <span className="text-orange-400/90 font-semibold">{info.category}</span>
+                          <span className="text-orange-400/90 font-semibold">Comunidade Ativa</span>
                         </div>
                       </div>
                     </div>
@@ -678,8 +569,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                       Abrir
                     </button>
                   </div>
-                );
-              })}
+                ))
+              )}
             </div>
           </div>
         </div>

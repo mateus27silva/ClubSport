@@ -5,8 +5,10 @@ import {
   GithubAuthProvider, 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
+  signInWithPopup,
   signOut,
   onAuthStateChanged,
+  updateProfile as fbUpdateProfile,
   User
 } from 'firebase/auth';
 import { 
@@ -18,11 +20,13 @@ import {
   setDoc, 
   addDoc, 
   updateDoc, 
+  deleteDoc,
   onSnapshot, 
   query, 
   orderBy, 
   limit,
   getDoc,
+  getDocFromServer,
   increment
 } from 'firebase/firestore';
 
@@ -65,22 +69,86 @@ try {
 export const googleProvider = new GoogleAuthProvider();
 export const githubProvider = new GithubAuthProvider();
 
+export enum OperationType {
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+  LIST = 'list',
+  GET = 'get',
+  WRITE = 'write',
+}
+
+export interface FirestoreErrorInfo {
+  error: string;
+  operationType: OperationType;
+  path: string | null;
+  authInfo: {
+    userId?: string | null;
+    email?: string | null;
+    emailVerified?: boolean | null;
+    isAnonymous?: boolean | null;
+    tenantId?: string | null;
+    providerInfo?: {
+      providerId?: string | null;
+      email?: string | null;
+    }[];
+  };
+}
+
+export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+  const errInfo: FirestoreErrorInfo = {
+    error: error instanceof Error ? error.message : String(error),
+    authInfo: {
+      userId: auth.currentUser?.uid,
+      email: auth.currentUser?.email,
+      emailVerified: auth.currentUser?.emailVerified,
+      isAnonymous: auth.currentUser?.isAnonymous,
+      tenantId: auth.currentUser?.tenantId,
+      providerInfo: auth.currentUser?.providerData?.map(provider => ({
+        providerId: provider.providerId,
+        email: provider.email,
+      })) || []
+    },
+    operationType,
+    path
+  };
+  console.error('Firestore Error: ', JSON.stringify(errInfo));
+}
+
+// Optional connection helper
+export async function testFirestoreConnection() {
+  try {
+    const testRef = doc(db, 'test', 'connection');
+    await getDoc(testRef);
+    console.log("Firestore connection initialized.");
+    return true;
+  } catch (error) {
+    console.warn("Firestore running in offline/cached mode.");
+    return false;
+  }
+}
+
 export {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  signInWithPopup,
   signOut,
   onAuthStateChanged,
+  fbUpdateProfile,
   collection,
   doc,
   getDocs,
   setDoc,
   addDoc,
   updateDoc,
+  deleteDoc,
   onSnapshot,
   query,
   orderBy,
   limit,
   getDoc,
+  getDocFromServer,
   increment
 };
 export type { User };
+

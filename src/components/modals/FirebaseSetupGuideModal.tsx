@@ -86,7 +86,7 @@ export const FirebaseSetupGuideModal: React.FC<FirebaseSetupGuideModalProps> = (
               Passo 4: Autenticação por Redes Sociais, Tokens e Biometria
             </h3>
             <p className="text-zinc-300">
-              Integrado com OAuth (Google, GitHub) e simulação de Passkeys biométricas (Fingerprint/FaceID) com geração de token seguro bearer.
+              Integrado com OAuth (Google, GitHub) e suporte a Passkeys biométricas (Fingerprint/FaceID) com geração de token seguro bearer.
             </p>
           </section>
 

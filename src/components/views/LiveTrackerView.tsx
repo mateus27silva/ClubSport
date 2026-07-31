@@ -22,6 +22,7 @@ import {
   ShieldCheck
 } from 'lucide-react';
 import { GpsPoint, LiveRunMetrics, ActivityPost, Challenge } from '../../types';
+import { useAuth } from '../../context/AuthContext';
 import { 
   calculateHaversineDistance, 
   formatPace, 
@@ -30,6 +31,7 @@ import {
   downloadGpxFile 
 } from '../../lib/runUtils';
 import { db, collection, addDoc, doc, updateDoc, increment, getDoc, setDoc } from '../../lib/firebase';
+import { GoogleRouteMap } from '../GoogleRouteMap';
 
 interface LiveTrackerViewProps {
   challenges: Challenge[];
@@ -63,8 +65,9 @@ export const LiveTrackerView: React.FC<LiveTrackerViewProps> = ({
   onClose,
   onOpenConnectWatch
 }) => {
+  const { user } = useAuth();
   const [status, setStatus] = useState<'idle' | 'running' | 'paused' | 'finished'>('idle');
-  const [trackingMode, setTrackingMode] = useState<'gps' | 'simulation'>('simulation');
+  const [trackingMode, setTrackingMode] = useState<'gps' | 'simulation'>('gps');
   const [points, setPoints] = useState<GpsPoint[]>([]);
   const [durationSeconds, setDurationSeconds] = useState<number>(0);
   const [distanceKm, setDistanceKm] = useState<number>(0);
@@ -88,6 +91,18 @@ export const LiveTrackerView: React.FC<LiveTrackerViewProps> = ({
 
   // Selected challenge object
   const selectedChallenge = challenges.find((c) => c.id === selectedChallengeId);
+  const currentLocationName = selectedChallenge?.locationName || 'Parque do Ibirapuera, SP';
+
+  // Automatically sync title and location with selected challenge
+  useEffect(() => {
+    if (selectedChallenge) {
+      if (status === 'idle') {
+        setTitle(`Corrida: ${selectedChallenge.title}`);
+      }
+    } else if (status === 'idle') {
+      setTitle('Corrida em Treino Livre');
+    }
+  }, [selectedChallengeId, selectedChallenge, status]);
 
   // Duration Timer
   useEffect(() => {
@@ -229,9 +244,9 @@ export const LiveTrackerView: React.FC<LiveTrackerViewProps> = ({
 
     const newActivity: ActivityPost = {
       id: 'run_' + Date.now(),
-      userId: 'user_mateus_001',
-      userName: 'Mateus Silva',
-      userAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+      userId: user?.uid || 'guest_' + Date.now(),
+      userName: user?.fullName || 'Atleta ClubSport',
+      userAvatar: user?.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
       timeAgo: 'Agora',
       sport: 'Running',
       title: title || 'Corrida no Parque do Ibirapuera',
@@ -250,9 +265,9 @@ export const LiveTrackerView: React.FC<LiveTrackerViewProps> = ({
       commentsCount: 0,
       comments: [],
       caption: caption || 'Treino rastreado via GPS e sincronizado com smartwatch!',
-      locationName: 'Parque do Ibirapuera, SP',
-      lat: -23.5874,
-      lng: -46.6576,
+      locationName: currentLocationName,
+      lat: selectedChallenge?.lat || -23.5874,
+      lng: selectedChallenge?.lng || -46.6576,
       calculatedDistanceKm: 0.1,
       challengeId: selectedChallengeId || undefined,
       createdAt: new Date().toISOString()
@@ -343,7 +358,7 @@ export const LiveTrackerView: React.FC<LiveTrackerViewProps> = ({
               </span>
             </h1>
             <span className="text-[10px] text-zinc-400 block">
-              Parque do Ibirapuera, São Paulo - SP
+              📍 {currentLocationName}
             </span>
           </div>
         </div>
@@ -374,35 +389,18 @@ export const LiveTrackerView: React.FC<LiveTrackerViewProps> = ({
 
       {/* Main Tracker Container */}
       <div className="p-4 space-y-4 max-w-lg mx-auto w-full">
-        {/* Tracking Mode Switcher */}
-        <div className="bg-zinc-900 border border-zinc-800/80 p-1.5 rounded-2xl flex items-center justify-between text-xs font-bold">
-          <button
-            onClick={() => setTrackingMode('simulation')}
-            className={`flex-1 py-2 rounded-xl flex items-center justify-center gap-1.5 transition-all ${
-              trackingMode === 'simulation'
-                ? 'bg-orange-500 text-zinc-950 shadow-md font-extrabold'
-                : 'text-zinc-400 hover:text-white'
-            }`}
-          >
-            <Compass className="w-3.5 h-3.5" />
-            <span>Simulação (Ibirapuera)</span>
-          </button>
-          <button
-            onClick={() => setTrackingMode('gps')}
-            className={`flex-1 py-2 rounded-xl flex items-center justify-center gap-1.5 transition-all ${
-              trackingMode === 'gps'
-                ? 'bg-orange-500 text-zinc-950 shadow-md font-extrabold'
-                : 'text-zinc-400 hover:text-white'
-            }`}
-          >
-            <MapPin className="w-3.5 h-3.5" />
-            <span>GPS Dispositivo</span>
-          </button>
+        {/* Active GPS Status Badge */}
+        <div className="bg-zinc-900 border border-emerald-500/30 p-2.5 rounded-2xl flex items-center justify-between text-xs font-bold shadow-md">
+          <div className="flex items-center gap-2 text-emerald-400">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span>Sinal GPS do Dispositivo Ativo</span>
+          </div>
+          <span className="text-[10px] text-zinc-400 font-mono">Alta Precisão</span>
         </div>
 
         {/* Live Challenge Selector */}
         {challenges.length > 0 && status !== 'finished' && (
-          <div className="bg-zinc-900/90 border border-zinc-800/80 p-3.5 rounded-2xl space-y-2">
+          <div className="bg-zinc-900/90 border border-zinc-800/80 p-3.5 rounded-2xl space-y-2.5">
             <div className="flex items-center justify-between text-xs">
               <span className="font-bold text-zinc-300 flex items-center gap-1.5">
                 <Trophy className="w-3.5 h-3.5 text-orange-500" />
@@ -414,93 +412,82 @@ export const LiveTrackerView: React.FC<LiveTrackerViewProps> = ({
                 </span>
               )}
             </div>
-            <select
-              value={selectedChallengeId}
-              onChange={(e) => setSelectedChallengeId(e.target.value)}
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-orange-500"
-            >
-              <option value="">Nenhum Desafio (Treino Livre)</option>
-              {challenges.map((c) => (
-                <option key={c.id} value={c.id}>
-                  🏆 {c.title} ({c.targetValue} {c.unit})
-                </option>
-              ))}
-            </select>
+
+            {/* Locked Active Challenge Display (Read-Only) */}
+            {selectedChallenge ? (
+              <div className="w-full bg-zinc-950 border border-orange-500/30 rounded-xl px-3 py-2.5 text-xs text-orange-400 font-bold flex items-center justify-between shadow-inner">
+                <div className="flex items-center gap-2 truncate">
+                  <Trophy className="w-4 h-4 text-orange-400 shrink-0" />
+                  <span className="truncate uppercase font-black tracking-wide">{selectedChallenge.title}</span>
+                </div>
+                <span className="text-[10px] text-zinc-400 font-mono shrink-0 ml-2 bg-zinc-900 px-2 py-0.5 rounded border border-zinc-800">
+                  {selectedChallenge.targetValue} {selectedChallenge.unit}
+                </span>
+              </div>
+            ) : (
+              <div className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2.5 text-xs text-zinc-400 font-bold flex items-center justify-between">
+                <div className="flex items-center gap-2 truncate">
+                  <Trophy className="w-4 h-4 text-zinc-500 shrink-0" />
+                  <span>TREINO LIVRE</span>
+                </div>
+                <span className="text-[10px] text-zinc-500 font-mono">Sem desafio</span>
+              </div>
+            )}
+
+            {/* Auto-Linked Location Indicator */}
+            <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-2.5 text-xs space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-zinc-300 flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-orange-400 shrink-0 animate-pulse" />
+                  Localização Vinculada Ao Desafio:
+                </span>
+                <span className="text-[10px] font-bold text-orange-400 bg-orange-500/20 px-2 py-0.5 rounded-md truncate max-w-[180px]">
+                  {currentLocationName}
+                </span>
+              </div>
+              <p className="text-[10px] text-zinc-400 leading-tight">
+                O aplicativo vincula automaticamente o rastreamento GPS e a rota às coordenadas da localização deste desafio.
+              </p>
+            </div>
           </div>
         )}
 
-        {/* Interactive Live Route Map Canvas */}
-        <div className="relative bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden shadow-2xl h-52 sm:h-60 flex flex-col justify-between p-4">
-          {/* Subtle Grid Map Texture */}
-          <div className="absolute inset-0 bg-[radial-gradient(#334155_1px,transparent_1px)] [background-size:16px_16px] opacity-25 pointer-events-none" />
+        {/* Interactive Google Maps Route Percurso */}
+        <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-zinc-800/80">
+          <GoogleRouteMap
+            points={points.length > 0 ? points : undefined}
+            center={{
+              lat: selectedChallenge?.lat || -23.5874,
+              lng: selectedChallenge?.lng || -46.6576,
+            }}
+            title={`Percurso Google Maps: ${currentLocationName}`}
+            height="240px"
+            zoom={14}
+            routeColor="#f97316"
+          />
 
-          {/* Top Canvas Badges */}
-          <div className="relative z-10 flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-zinc-950/80 backdrop-blur-md border border-zinc-800 text-[11px] font-bold text-orange-400">
-                <MapPin className="w-3 h-3 text-orange-500" />
-                Parque do Ibirapuera
-              </span>
-              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-xl bg-zinc-950/80 backdrop-blur-md border border-zinc-800 text-[10px] font-mono text-zinc-400">
-                {points.length} pontos GPS
-              </span>
-            </div>
+          {/* Floating Live Overlays */}
+          <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none z-10">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-zinc-950/85 backdrop-blur-md border border-zinc-800 text-[11px] font-bold text-orange-400 max-w-[200px] truncate shadow-lg">
+              <MapPin className="w-3.5 h-3.5 text-orange-500 shrink-0" />
+              <span className="truncate">{currentLocationName}</span>
+            </span>
 
             {/* Smartwatch Live HR Indicator */}
-            <div className="flex items-center gap-1.5 px-3 py-1 bg-zinc-950/90 backdrop-blur-md border border-zinc-800 rounded-xl">
+            <div className="flex items-center gap-1.5 px-3 py-1 bg-zinc-950/85 backdrop-blur-md border border-zinc-800 rounded-xl shadow-lg">
               <Heart className="w-3.5 h-3.5 text-rose-500 animate-bounce" />
               <span className="text-xs font-mono font-bold text-white">{heartRate}</span>
               <span className="text-[9px] text-zinc-400 font-bold uppercase">BPM</span>
             </div>
           </div>
 
-          {/* SVG Polyline Map Route */}
-          <div className="absolute inset-x-0 top-10 bottom-6 flex items-center justify-center p-2">
-            <svg
-              viewBox="0 0 340 160"
-              className="w-full h-full drop-shadow-[0_0_12px_rgba(249,115,22,0.4)]"
-            >
-              {/* Glow Polyline Background */}
-              <path
-                d={svgPath}
-                fill="none"
-                stroke="#f97316"
-                strokeWidth="6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                opacity="0.3"
-              />
-              {/* Sharp Front Polyline */}
-              <path
-                d={svgPath}
-                fill="none"
-                stroke="#f97316"
-                strokeWidth="3.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              {/* Start Point Marker */}
-              {points.length > 0 && (
-                <circle cx="30" cy="110" r="5" fill="#10b981" stroke="#ffffff" strokeWidth="2" />
-              )}
-              {/* Current Position Pulsing Dot */}
-              {status === 'running' && (
-                <g>
-                  <circle cx="280" cy="90" r="8" fill="#f97316" opacity="0.4" className="animate-ping" />
-                  <circle cx="280" cy="90" r="6" fill="#f97316" stroke="#ffffff" strokeWidth="2" />
-                </g>
-              )}
-            </svg>
-          </div>
-
-          {/* Map Footer Info */}
-          <div className="relative z-10 flex items-center justify-between text-[11px] text-zinc-400">
+          <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-[10px] text-zinc-300 pointer-events-none z-10 bg-zinc-950/80 backdrop-blur-md px-3 py-1.5 rounded-xl border border-zinc-800">
             <span className="flex items-center gap-1 font-mono">
-              <Compass className="w-3 h-3 text-zinc-500" />
-              Sinal GPS: Excelente (3m)
+              <Compass className="w-3 h-3 text-emerald-400" />
+              Sinal GPS: Excelente ({points.length} pontos)
             </span>
             <span className="font-mono text-orange-400 font-bold">
-              {trackingMode === 'simulation' ? 'Simulação Ibirapuera' : 'GPS do Celular'}
+              Rastreamento GPS Ativo
             </span>
           </div>
         </div>
@@ -732,7 +719,7 @@ export const LiveTrackerView: React.FC<LiveTrackerViewProps> = ({
               onClick={() => setIsWatchModalVisible(false)}
               className="w-full py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs rounded-xl"
             >
-              Fechar Simulador
+              Fechar Painel Smartwatch
             </button>
           </div>
         </div>

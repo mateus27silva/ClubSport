@@ -39,29 +39,7 @@ export const CaptureView: React.FC<CaptureViewProps> = ({ onNextToUpload, onClos
     'IA Coach Ativo: Excelente postura de corrida! Cadência perfeita em 174 SPM.'
   );
 
-  const [comments, setComments] = useState<LiveComment[]>([
-    {
-      id: 'c1',
-      userName: 'Ana Costa',
-      avatarUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=150&q=80',
-      text: 'Força Mateus! Bora pro treino 🔥',
-      time: 'agora'
-    },
-    {
-      id: 'c2',
-      userName: 'Lucas Mendes',
-      avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
-      text: 'Qual o ritmo da corrida de hoje? 🏃‍♂️',
-      time: 'agora'
-    },
-    {
-      id: 'c3',
-      userName: 'Juliana Paes',
-      avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80',
-      text: 'Top demais! ClubSport ao vivo! 👏',
-      time: 'agora'
-    }
-  ]);
+  const [comments, setComments] = useState<LiveComment[]>([]);
 
   const [showEndSummary, setShowEndSummary] = useState<boolean>(false);
 

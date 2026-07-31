@@ -51,76 +51,45 @@ export const FeedView: React.FC<FeedViewProps> = ({
   const [editingPost, setEditingPost] = useState<{ id: string; caption: string } | null>(null);
   const [activeStoryIndex, setActiveStoryIndex] = useState<number | null>(null);
 
-  // Active Stories & Live Streams List (User profile first)
-  const stories: StoryItem[] = [
-    {
-      id: 'story_user',
-      userName: user?.fullName ? user.fullName.split(' ')[0] : 'Seu Story',
-      userAvatar: user?.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
-      storyImage: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=800&q=80',
-      isLive: false,
-      isCurrentUser: true,
-      caption: 'Treino de hoje finalizado com sucesso! Ritmo constante. 🏃‍♂️🔥 #ClubSport',
-      sport: 'Running',
-      timeAgo: 'há 15 min',
-      likesCount: 342
-    },
-    {
-      id: 'story_ana',
-      userName: 'Ana Costa',
-      userAvatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80',
-      storyImage: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=800&q=80',
-      isLive: true,
-      caption: 'Treino de HIIT & Musculação Ao Vivo na Vila Madalena! 🏋️‍♀️',
-      sport: 'HIIT Burn',
-      timeAgo: 'AO VIVO',
-      likesCount: 890
-    },
-    {
-      id: 'story_liam',
-      userName: 'Liam J.',
-      userAvatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80',
-      storyImage: 'https://images.unsplash.com/photo-1541625602330-2277a4c46182?auto=format&fit=crop&w=800&q=80',
-      isLive: true,
-      caption: 'Pedal ao vivo na orla! Ritmo de 28.5 km/h. 🚴‍♂️',
-      sport: 'City Run / Cycle',
-      timeAgo: 'AO VIVO',
-      likesCount: 1420
-    },
-    {
-      id: 'story_sarah',
-      userName: 'Sarah P.',
-      userAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80',
-      storyImage: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80',
-      isLive: false,
-      caption: 'Trilha incrível no topo da montanha! ⛰️✨',
-      sport: 'Daily Hike',
-      timeAgo: 'há 45 min',
-      likesCount: 520
-    },
-    {
-      id: 'story_carlos',
-      userName: 'Carlos R.',
-      userAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80',
-      storyImage: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=800&q=80',
-      isLive: true,
-      caption: 'Spin class de alta intensidade ao vivo! 🚴',
-      sport: 'Spin Class',
-      timeAgo: 'AO VIVO',
-      likesCount: 780
-    },
-    {
-      id: 'story_jessica',
-      userName: 'Jessica T.',
-      userAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=400&q=80',
-      storyImage: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=800&q=80',
-      isLive: false,
-      caption: 'Sessão de Yoga Flow para recuperação muscular 🧘‍♀️',
-      sport: 'Yoga Flow',
-      timeAgo: 'há 2h',
-      likesCount: 610
+  // Build Stories & Live Streams dynamically from real users / activities
+  const userStory: StoryItem = {
+    id: 'story_user',
+    userName: user?.fullName ? user.fullName.split(' ')[0] : 'Seu Story',
+    userAvatar: user?.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+    storyImage: user?.avatarUrl || 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=800&q=80',
+    isLive: false,
+    isCurrentUser: true,
+    caption: 'Compartilhe sua corrida ou inicie uma live com a comunidade!',
+    sport: user?.primarySport || 'Corrida',
+    timeAgo: 'Agora',
+    likesCount: 0
+  };
+
+  // Build stories from real activities posted by other users
+  const realOtherStories: StoryItem[] = [];
+  const seenUsers = new Set<string>();
+  if (user?.uid) seenUsers.add(user.uid);
+  if (user?.fullName) seenUsers.add(user.fullName.toLowerCase());
+
+  activities.forEach((act) => {
+    const key = act.userId || act.userName.toLowerCase();
+    if (!seenUsers.has(key)) {
+      seenUsers.add(key);
+      realOtherStories.push({
+        id: `story_act_${act.id}`,
+        userName: act.userName.split(' ')[0] || act.userName,
+        userAvatar: act.userAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+        storyImage: act.imageUrl || act.userAvatar,
+        isLive: false,
+        caption: act.caption || `${act.sport} - ${act.distanceKm} KM`,
+        sport: act.sport,
+        timeAgo: act.createdAt || 'recente',
+        likesCount: act.likesCount || 0
+      });
     }
-  ];
+  });
+
+  const stories: StoryItem[] = [userStory, ...realOtherStories];
 
   // Resolve user coords based on their region preset
   const userCoords = resolveLocationCoords(user?.region);

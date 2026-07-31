@@ -1,6 +1,7 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Camera, Search, UserPlus, Check, MapPin, Upload } from 'lucide-react';
 import { SportType } from '../../types';
+import { db, collection, getDocs } from '../../lib/firebase';
 
 interface CreateCommunityProps {
   onCancel: () => void;
@@ -18,19 +19,36 @@ export const CreateCommunityView: React.FC<CreateCommunityProps> = ({ onCancel, 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [location, setLocation] = useState('');
+  const [location, setLocation] = useState('São Paulo, SP, Brasil');
   const [sportCategory, setSportCategory] = useState<SportType>('Running');
   const [privacy, setPrivacy] = useState<'public' | 'private'>('public');
   const [coverUrl, setCoverUrl] = useState(
     'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=800&q=80'
   );
   const [invitedUsers, setInvitedUsers] = useState<string[]>([]);
+  const [availableUsers, setAvailableUsers] = useState<{ id: string; name: string; avatar: string }[]>([]);
 
-  const mockInviteList = [
-    { id: 'u_s1', name: 'Sarah J.', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80' },
-    { id: 'u_m1', name: 'Mike T.', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80' },
-    { id: 'u_e1', name: 'Emily R.', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80' },
-  ];
+  useEffect(() => {
+    async function loadRegisteredUsers() {
+      try {
+        const snap = await getDocs(collection(db, 'users'));
+        if (!snap.empty) {
+          const list = snap.docs.map((docSnap) => {
+            const data = docSnap.data();
+            return {
+              id: docSnap.id,
+              name: data.fullName || data.displayName || 'Atleta ClubSport',
+              avatar: data.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80'
+            };
+          });
+          setAvailableUsers(list);
+        }
+      } catch (err) {
+        console.warn('Could not load registered users for invite:', err);
+      }
+    }
+    loadRegisteredUsers();
+  }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -192,7 +210,7 @@ export const CreateCommunityView: React.FC<CreateCommunityProps> = ({ onCancel, 
           </div>
 
           <div className="space-y-2">
-            {mockInviteList.map((userItem) => {
+            {availableUsers.map((userItem) => {
               const isInvited = invitedUsers.includes(userItem.id);
 
               return (
@@ -217,11 +235,17 @@ export const CreateCommunityView: React.FC<CreateCommunityProps> = ({ onCancel, 
                         : 'bg-orange-500 hover:bg-orange-600 text-zinc-950 shadow-md shadow-orange-500/20'
                     }`}
                   >
-                    {isInvited ? 'Invited' : 'Invite'}
+                    {isInvited ? 'Convidado' : 'Convidar'}
                   </button>
                 </div>
               );
             })}
+
+            {availableUsers.length === 0 && (
+              <p className="text-xs text-zinc-500 italic p-2 text-center">
+                Nenhum outro atleta cadastrado no momento para convidar.
+              </p>
+            )}
           </div>
         </div>
       </div>

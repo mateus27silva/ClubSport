@@ -172,4 +172,33 @@ export interface AuditLog {
   timestamp: string;
 }
 
+export type DealStage = 'lead' | 'contact' | 'proposal' | 'negotiation' | 'won' | 'lost';
+
+export interface CrmDeal {
+  id: string;
+  companyName: string;
+  contactName: string;
+  email: string;
+  phone: string;
+  category: 'Patrocínio' | 'Clube de Corrida' | 'Parceria Corporativa' | 'Evento Esportivo';
+  value: number; // Em R$
+  stage: DealStage;
+  expectedCloseDate: string;
+  notes?: string;
+  createdAt: string;
+}
+
+export interface CrmUser {
+  id: string;
+  fullName: string;
+  email: string;
+  role: 'Atleta' | 'Admin' | 'Coach' | 'Parceiro';
+  status: 'Ativo' | 'Suspenso' | 'VIP / Pro';
+  totalKm: number;
+  points: number;
+  avatarUrl: string;
+  joinedDate: string;
+  region: string;
+}
+
 export type ThemeMode = 'dark' | 'light' | 'system';

@@ -1,4 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { 
+  db, 
+  collection, 
+  onSnapshot, 
+  addDoc, 
+  setDoc, 
+  doc, 
+  updateDoc, 
+  deleteDoc, 
+  query, 
+  orderBy,
+  getDocFromServer,
+  handleFirestoreError,
+  OperationType 
+} from './lib/firebase';
 import { ThemeProvider } from './context/ThemeContext';
 import { OfflineProvider } from './context/OfflineContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -29,10 +44,11 @@ import { UserProfileModal, TargetUserProfileInfo } from './components/modals/Use
 import {
   initialActivities,
   initialChallenges,
+  initialCommunities,
   initialLeaderboard,
   initialNotifications
 } from './data/mockData';
-import { ActivityPost, Challenge, NotificationItem } from './types';
+import { ActivityPost, Challenge, Community, NotificationItem } from './types';
 
 function MainAppContent() {
   const { user, updateProfile } = useAuth();
@@ -42,9 +58,91 @@ function MainAppContent() {
   // Data State
   const [activities, setActivities] = useState<ActivityPost[]>(initialActivities);
   const [challenges, setChallenges] = useState<Challenge[]>(initialChallenges);
+  const [communities, setCommunities] = useState<Community[]>(initialCommunities);
   const [notifications, setNotifications] = useState<NotificationItem[]>(initialNotifications);
   const [capturedPhotoUrl, setCapturedPhotoUrl] = useState<string>('');
   const [selectedTrackerChallengeId, setSelectedTrackerChallengeId] = useState<string | undefined>();
+
+  // Validate connection to Firestore on initial boot
+  useEffect(() => {
+    async function testConnection() {
+      try {
+        await getDocFromServer(doc(db, 'test', 'connection'));
+        console.log('Firestore server connection verified.');
+      } catch (error) {
+        if (error instanceof Error && error.message.includes('the client is offline')) {
+          console.error('Please check your Firebase configuration.');
+        }
+      }
+    }
+    testConnection();
+  }, []);
+
+  // Real-time Firestore sync for activities, challenges, communities, and notifications
+  useEffect(() => {
+    const unsubActivities = onSnapshot(
+      collection(db, 'activities'),
+      (snapshot) => {
+        if (!snapshot.empty) {
+          const fetched = snapshot.docs.map((d) => ({
+            id: d.id,
+            ...(d.data() as Omit<ActivityPost, 'id'>)
+          }));
+          setActivities(fetched);
+        }
+      },
+      (error) => handleFirestoreError(error, OperationType.GET, 'activities')
+    );
+
+    const unsubChallenges = onSnapshot(
+      collection(db, 'challenges'),
+      (snapshot) => {
+        if (!snapshot.empty) {
+          const fetched = snapshot.docs.map((d) => ({
+            id: d.id,
+            ...(d.data() as Omit<Challenge, 'id'>)
+          }));
+          setChallenges(fetched);
+        }
+      },
+      (error) => handleFirestoreError(error, OperationType.GET, 'challenges')
+    );
+
+    const unsubCommunities = onSnapshot(
+      collection(db, 'communities'),
+      (snapshot) => {
+        if (!snapshot.empty) {
+          const fetched = snapshot.docs.map((d) => ({
+            id: d.id,
+            ...(d.data() as Omit<Community, 'id'>)
+          }));
+          setCommunities(fetched);
+        }
+      },
+      (error) => handleFirestoreError(error, OperationType.GET, 'communities')
+    );
+
+    const unsubNotifs = onSnapshot(
+      collection(db, 'notifications'),
+      (snapshot) => {
+        if (!snapshot.empty) {
+          const fetched = snapshot.docs.map((d) => ({
+            id: d.id,
+            ...(d.data() as Omit<NotificationItem, 'id'>)
+          }));
+          setNotifications(fetched);
+        }
+      },
+      (error) => handleFirestoreError(error, OperationType.GET, 'notifications')
+    );
+
+    return () => {
+      unsubActivities();
+      unsubChallenges();
+      unsubCommunities();
+      unsubNotifs();
+    };
+  }, []);
 
   // Modals
   const [isFirebasePlanOpen, setIsFirebasePlanOpen] = useState<boolean>(false);
@@ -84,6 +182,10 @@ function MainAppContent() {
 
   // Comment Add
   const handleAddComment = (activityId: string, text: string) => {
+    if (!user) {
+      setIsAuthModalOpen(true);
+      return;
+    }
     setActivities((prev) =>
       prev.map((act) =>
         act.id === activityId
@@ -94,9 +196,9 @@ function MainAppContent() {
                 ...act.comments,
                 {
                   id: 'cm_' + Date.now(),
-                  userId: 'user_mateus_001',
-                  userName: 'Mateus Silva',
-                  userAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+                  userId: user.uid,
+                  userName: user.fullName || 'Atleta ClubSport',
+                  userAvatar: user.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
                   text,
                   createdAt: 'Agora'
                 }
@@ -134,9 +236,9 @@ function MainAppContent() {
   const handleSendSimulatedPush = () => {
     const newNotif: NotificationItem = {
       id: 'n_' + Date.now(),
-      userId: 'user_mateus_001',
+      userId: user?.uid || 'guest',
       title: '🚨 Alerta de Desafio em Tempo Real',
-      message: 'Mateus Silva acabou de concluir a prova City Run com ritmo de 5:08 /km!',
+      message: `${user?.fullName || 'Atleta'} acabou de registrar uma nova atividade no aplicativo!`,
       type: 'challenge',
       read: false,
       createdAt: 'Agora'
@@ -145,18 +247,24 @@ function MainAppContent() {
   };
 
   // Quick Action Publish
-  const handlePublishPost = (postData: {
+  const handlePublishPost = async (postData: {
     photoUrl: string;
     caption: string;
     locationName?: string;
     lat?: number;
     lng?: number;
   }) => {
+    const activeUser = user || {
+      uid: 'guest_' + Date.now(),
+      fullName: 'Atleta ClubSport',
+      avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'
+    };
+
     const newAct: ActivityPost = {
       id: 'act_' + Date.now(),
-      userId: 'user_mateus_001',
-      userName: 'Mateus Silva',
-      userAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+      userId: activeUser.uid,
+      userName: activeUser.fullName || 'Atleta ClubSport',
+      userAvatar: activeUser.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
       timeAgo: 'Agora',
       sport: 'Running',
       title: 'Nova Atividade Publicada',
@@ -177,6 +285,13 @@ function MainAppContent() {
       createdAt: new Date().toISOString()
     };
     setActivities((prev) => [newAct, ...prev]);
+
+    try {
+      await addDoc(collection(db, 'activities'), newAct);
+    } catch (err) {
+      console.warn('Could not persist activity to Firestore:', err);
+    }
+
     setCurrentView('home');
     setActiveTab('home');
   };
@@ -212,6 +327,7 @@ function MainAppContent() {
         {currentView === 'search' && (
           <LeaderboardView
             athletes={initialLeaderboard}
+            communities={communities}
             onOpenCommunityChat={() => setCurrentView('community_chat')}
             onOpenUserProfile={handleOpenUserProfile}
           />
@@ -220,9 +336,12 @@ function MainAppContent() {
         {currentView === 'challenges' && (
           <ChallengesView
             challenges={challenges}
+            communities={communities}
             onToggleJoinChallenge={handleToggleJoinChallenge}
             onOpenAnalytics={() => setCurrentView('analytics')}
             onOpenCommunityChat={() => setCurrentView('community_chat')}
+            onOpenCreateCommunity={() => setCurrentView('create_community')}
+            onOpenCreateChallenge={() => setCurrentView('create_challenge')}
             onStartRunForChallenge={(challengeId) => {
               setSelectedTrackerChallengeId(challengeId);
               handleToggleJoinChallenge(challengeId);
@@ -245,7 +364,11 @@ function MainAppContent() {
         )}
 
         {currentView === 'analytics' && (
-          <AnalyticsView onBack={() => setCurrentView('challenges')} />
+          <AnalyticsView
+            activities={activities}
+            challenges={challenges}
+            onBack={() => setCurrentView('challenges')}
+          />
         )}
 
         {currentView === 'admin' && (
@@ -276,10 +399,28 @@ function MainAppContent() {
 
         {currentView === 'create_community' && (
           <CreateCommunityView
-            onCancel={() => setCurrentView('home')}
-            onCreate={() => {
-              alert('Comunidade criada no Firestore com sucesso!');
-              setCurrentView('community_chat');
+            onCancel={() => setCurrentView('challenges')}
+            onCreate={async (newComm) => {
+              const fullCommunity: Community = {
+                id: 'comm_' + Date.now(),
+                name: newComm.name,
+                description: newComm.description,
+                location: newComm.location || 'Brasil',
+                sportCategory: newComm.sportCategory,
+                privacy: newComm.privacy,
+                membersCount: 1,
+                coverUrl: newComm.coverUrl,
+                createdBy: user?.fullName || 'Atleta ClubSport',
+                createdAt: new Date().toISOString()
+              };
+              setCommunities((prev) => [fullCommunity, ...prev]);
+              try {
+                await addDoc(collection(db, 'communities'), fullCommunity);
+              } catch (err) {
+                console.warn('Could not persist community to Firestore:', err);
+              }
+              setCurrentView('challenges');
+              setActiveTab('challenges');
             }}
           />
         )}
@@ -294,8 +435,13 @@ function MainAppContent() {
         {currentView === 'create_challenge' && (
           <CreateChallengeView
             onCancel={() => setCurrentView('challenges')}
-            onCreate={(newChallenge) => {
+            onCreate={async (newChallenge) => {
               setChallenges((prev) => [newChallenge, ...prev]);
+              try {
+                await addDoc(collection(db, 'challenges'), newChallenge);
+              } catch (err) {
+                console.warn('Could not persist challenge to Firestore:', err);
+              }
               setCurrentView('challenges');
               setActiveTab('challenges');
             }}
@@ -306,8 +452,14 @@ function MainAppContent() {
           <LiveTrackerView
             challenges={challenges}
             initialChallengeId={selectedTrackerChallengeId}
-            onFinishRun={(newActivity) => {
+            onFinishRun={async (newActivity) => {
               setActivities((prev) => [newActivity, ...prev]);
+
+              try {
+                await addDoc(collection(db, 'activities'), newActivity);
+              } catch (err) {
+                console.warn('Could not save activity to Firestore:', err);
+              }
 
               // Update challenge state if run was linked to a challenge
               if (newActivity.challengeId) {
@@ -340,7 +492,7 @@ function MainAppContent() {
               // Trigger notification
               const newNotif: NotificationItem = {
                 id: 'n_' + Date.now(),
-                userId: 'user_mateus_001',
+                userId: user?.uid || 'guest',
                 title: '🏆 Desafio & Estatísticas Atualizadas!',
                 message: `Corrida de ${newActivity.distanceKm} km registrada! Os dados foram vinculados ${newActivity.challengeId ? 'ao Desafio' : 'ao seu histórico'} e sincronizados com o Firestore.`,
                 type: 'challenge',

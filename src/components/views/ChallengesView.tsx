@@ -5,6 +5,7 @@ import { initialCommunities } from '../../data/mockData';
 import { useOffline } from '../../context/OfflineContext';
 import { useAuth } from '../../context/AuthContext';
 import { REGION_PRESETS, resolveLocationCoords, calculateDistanceKm, formatDistanceString } from '../../lib/location';
+import { GoogleRouteMap } from '../GoogleRouteMap';
 
 interface ChallengesViewProps {
   challenges: Challenge[];
@@ -13,6 +14,8 @@ interface ChallengesViewProps {
   onOpenAnalytics: () => void;
   onOpenCommunityChat?: (communityId: string) => void;
   onStartRunForChallenge?: (challengeId: string) => void;
+  onOpenCreateCommunity?: () => void;
+  onOpenCreateChallenge?: () => void;
 }
 
 // Haversine formula to calculate distance in KM between two coordinates
@@ -32,11 +35,13 @@ function calculateDistanceInKm(lat1: number, lon1: number, lat2: number, lon2: n
 
 export const ChallengesView: React.FC<ChallengesViewProps> = ({
   challenges,
-  communities = initialCommunities,
+  communities = [],
   onToggleJoinChallenge,
   onOpenAnalytics,
   onOpenCommunityChat,
-  onStartRunForChallenge
+  onStartRunForChallenge,
+  onOpenCreateCommunity,
+  onOpenCreateChallenge
 }) => {
   const { user } = useAuth();
   const { isOnline, queueAction } = useOffline();
@@ -48,7 +53,7 @@ export const ChallengesView: React.FC<ChallengesViewProps> = ({
   const [userCoords, setUserCoords] = useState<{ lat: number; lng: number }>(() => {
     return resolveLocationCoords(user?.region);
   });
-  const [geoStatus, setGeoStatus] = useState<'idle' | 'loading' | 'active' | 'simulated' | 'error'>('idle');
+  const [geoStatus, setGeoStatus] = useState<'idle' | 'loading' | 'active' | 'error'>('idle');
   const [geoErrorMsg, setGeoErrorMsg] = useState<string | null>(null);
 
   // Sync coords if user's profile region changes
@@ -82,7 +87,7 @@ export const ChallengesView: React.FC<ChallengesViewProps> = ({
         // In iframe preview or if permission denied, fallback gracefully to a realistic default location (e.g. SP / Ibirapuera region)
         console.warn('GPS browser block/fallback active:', err.message);
         setUserCoords({ lat: -23.5700, lng: -46.6500 });
-        setGeoStatus('simulated');
+        setGeoStatus('active');
       },
       {
         enableHighAccuracy: true,
@@ -265,7 +270,7 @@ export const ChallengesView: React.FC<ChallengesViewProps> = ({
         <div className="bg-zinc-900/90 border border-orange-500/30 p-4 rounded-2xl space-y-3 relative overflow-hidden shadow-xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <Navigation className={`w-4 h-4 ${geoStatus === 'active' || geoStatus === 'simulated' ? 'text-emerald-400 animate-pulse' : 'text-orange-400'}`} />
+              <Navigation className={`w-4 h-4 ${geoStatus === 'active' ? 'text-emerald-400 animate-pulse' : 'text-orange-400'}`} />
               <h3 className="text-xs font-bold text-white uppercase tracking-wider">
                 Geolocalização Celular / Smartwatch
               </h3>
@@ -288,13 +293,13 @@ export const ChallengesView: React.FC<ChallengesViewProps> = ({
             </p>
           )}
 
-          {(geoStatus === 'active' || geoStatus === 'simulated') && userCoords && (
+          {geoStatus === 'active' && userCoords && (
             <div className="bg-zinc-950/80 border border-emerald-500/30 rounded-xl p-3 flex items-center justify-between">
               <div className="space-y-0.5">
                 <div className="flex items-center space-x-1.5 text-xs font-bold text-emerald-400">
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                   <span>
-                    {geoStatus === 'active' ? 'GPS Smartwatch / Celular Conectado' : 'Sinal GPS Detectado'}
+                    GPS Smartwatch / Celular Conectado
                   </span>
                 </div>
                 <p className="text-[10px] text-zinc-400 font-mono">
@@ -321,9 +326,16 @@ export const ChallengesView: React.FC<ChallengesViewProps> = ({
         <div className="flex items-center justify-between">
           <h2 className="text-xs font-black uppercase text-orange-400 tracking-wider flex items-center gap-2">
             <Users className="w-4 h-4" />
-            <span>Comunidades do App ({filteredCommunities.length})</span>
+            <span>Comunidades ({filteredCommunities.length})</span>
           </h2>
-          <span className="text-[10px] text-zinc-400 font-medium">Todas as modalidades</span>
+          {onOpenCreateCommunity && (
+            <button
+              onClick={onOpenCreateCommunity}
+              className="text-[10px] font-bold text-orange-400 hover:text-orange-300 bg-orange-500/10 border border-orange-500/20 px-2.5 py-1 rounded-lg transition-all"
+            >
+              + Criar Comunidade
+            </button>
+          )}
         </div>
 
         <div className="space-y-3">
@@ -412,8 +424,20 @@ export const ChallengesView: React.FC<ChallengesViewProps> = ({
           ))}
 
           {filteredCommunities.length === 0 && (
-            <div className="p-6 bg-zinc-900/50 border border-zinc-800 rounded-2xl text-center text-zinc-400 text-xs">
-              Nenhuma comunidade encontrada para esse filtro.
+            <div className="p-6 bg-zinc-900/60 border border-zinc-800 rounded-2xl text-center space-y-3">
+              <Users className="w-8 h-8 text-zinc-600 mx-auto" />
+              <p className="text-xs font-bold text-zinc-300">Nenhuma comunidade criada ainda</p>
+              <p className="text-[11px] text-zinc-500 max-w-xs mx-auto">
+                Crie a primeira comunidade do ClubSport e convide atletas para treinar juntos!
+              </p>
+              {onOpenCreateCommunity && (
+                <button
+                  onClick={onOpenCreateCommunity}
+                  className="px-4 py-2 bg-orange-500 text-zinc-950 font-bold text-xs rounded-xl hover:bg-orange-600 transition-all shadow-md shadow-orange-500/20"
+                >
+                  + Criar Comunidade
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -421,6 +445,21 @@ export const ChallengesView: React.FC<ChallengesViewProps> = ({
 
       {/* Challenge Quests Cards List */}
       <div className="space-y-4">
+        <div className="flex items-center justify-between pt-2">
+          <h2 className="text-xs font-black uppercase text-orange-400 tracking-wider flex items-center gap-2">
+            <Trophy className="w-4 h-4" />
+            <span>Desafios Ativos ({filteredChallenges.length})</span>
+          </h2>
+          {onOpenCreateChallenge && (
+            <button
+              onClick={onOpenCreateChallenge}
+              className="text-[10px] font-bold text-orange-400 hover:text-orange-300 bg-orange-500/10 border border-orange-500/20 px-2.5 py-1 rounded-lg transition-all"
+            >
+              + Publicar Desafio
+            </button>
+          )}
+        </div>
+
         {filteredChallenges.map((item) => {
           const percent = Math.min(100, Math.round((item.currentValue / item.targetValue) * 100));
 
@@ -481,6 +520,16 @@ export const ChallengesView: React.FC<ChallengesViewProps> = ({
                 </div>
               </div>
 
+              {/* Google Maps Route Percurso */}
+              <div className="relative z-10 rounded-xl overflow-hidden shadow-md border border-zinc-800/80">
+                <GoogleRouteMap
+                  center={{ lat: item.lat || -23.5874, lng: item.lng || -46.6576 }}
+                  title={`Percurso Desafio: ${item.title}`}
+                  height="160px"
+                  zoom={14}
+                />
+              </div>
+
               {/* Ends In countdown & Iniciar Corrida action */}
               <div className="relative z-10 flex items-center justify-between text-xs pt-1">
                 <div className="flex items-center space-x-1 text-zinc-400 font-mono">
@@ -505,6 +554,24 @@ export const ChallengesView: React.FC<ChallengesViewProps> = ({
             </div>
           );
         })}
+
+        {filteredChallenges.length === 0 && (
+          <div className="p-6 bg-zinc-900/60 border border-zinc-800 rounded-2xl text-center space-y-3">
+            <Trophy className="w-8 h-8 text-zinc-600 mx-auto" />
+            <p className="text-xs font-bold text-zinc-300">Nenhum desafio ativo no momento</p>
+            <p className="text-[11px] text-zinc-500 max-w-xs mx-auto">
+              Publique um novo desafio para motivar atletas da comunidade a superarem suas marcas.
+            </p>
+            {onOpenCreateChallenge && (
+              <button
+                onClick={onOpenCreateChallenge}
+                className="px-4 py-2 bg-orange-500 text-zinc-950 font-bold text-xs rounded-xl hover:bg-orange-600 transition-all shadow-md shadow-orange-500/20"
+              >
+                + Publicar Desafio
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronLeft, MoreHorizontal, MessageSquare, Flame, Send, Mic, Plus, Play } from 'lucide-react';
 import { CommunityMessage } from '../../types';
 import { initialCommunityMessages } from '../../data/mockData';
 import { useAuth } from '../../context/AuthContext';
 import { useOffline } from '../../context/OfflineContext';
+import { db, collection, onSnapshot, addDoc, handleFirestoreError, OperationType } from '../../lib/firebase';
 
 interface CommunityChatProps {
   communityId?: string;
@@ -11,12 +12,32 @@ interface CommunityChatProps {
   onOpenUserProfile?: (userObj: { userId: string; userName: string; userAvatar?: string }) => void;
 }
 
-export const CommunityChatView: React.FC<CommunityChatProps> = ({ onBack, onOpenUserProfile }) => {
+export const CommunityChatView: React.FC<CommunityChatProps> = ({ communityId = 'comm_1', onBack, onOpenUserProfile }) => {
   const { user } = useAuth();
   const { isOnline, queueAction } = useOffline();
 
   const [messages, setMessages] = useState<CommunityMessage[]>(initialCommunityMessages);
   const [inputText, setInputText] = useState<string>('');
+
+  useEffect(() => {
+    const messagesRef = collection(db, 'communities', communityId, 'messages');
+    const unsubscribe = onSnapshot(
+      messagesRef,
+      (snapshot) => {
+        if (!snapshot.empty) {
+          const fetchedMsgs: CommunityMessage[] = snapshot.docs.map((d) => ({
+            id: d.id,
+            ...(d.data() as Omit<CommunityMessage, 'id'>)
+          }));
+          setMessages(fetchedMsgs);
+        }
+      },
+      (error) => {
+        handleFirestoreError(error, OperationType.GET, `communities/${communityId}/messages`);
+      }
+    );
+    return () => unsubscribe();
+  }, [communityId]);
 
   const handleReactFlame = (msgId: string) => {
     setMessages((prev) =>
@@ -32,27 +53,34 @@ export const CommunityChatView: React.FC<CommunityChatProps> = ({ onBack, onOpen
     );
   };
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!inputText.trim()) return;
 
     const newMsg: CommunityMessage = {
       id: 'msg_' + Date.now(),
-      communityId: 'comm_1',
-      userId: user?.uid || 'user_mateus_001',
-      userName: user?.fullName || 'Mateus Silva',
+      communityId,
+      userId: user?.uid || 'guest_' + Date.now(),
+      userName: user?.fullName || 'Atleta ClubSport',
       userAvatar: user?.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
       text: inputText,
       repliesCount: 0,
       flameCount: 1,
       hasReacted: true,
-      createdAt: 'Just now'
+      createdAt: 'Agora'
     };
 
     setMessages((prev) => [...prev, newMsg]);
-    if (!isOnline) {
+    setInputText('');
+
+    if (isOnline) {
+      try {
+        await addDoc(collection(db, 'communities', communityId, 'messages'), newMsg);
+      } catch (err) {
+        handleFirestoreError(err, OperationType.CREATE, `communities/${communityId}/messages`);
+      }
+    } else {
       queueAction('ADD_COMMUNITY_MESSAGE', newMsg);
     }
-    setInputText('');
   };
 
   return (
@@ -64,8 +92,8 @@ export const CommunityChatView: React.FC<CommunityChatProps> = ({ onBack, onOpen
             <ChevronLeft className="w-6 h-6 text-zinc-300" />
           </button>
           <div>
-            <h1 className="text-base font-black text-white leading-tight">Weekend Warriors FC</h1>
-            <span className="text-xs text-zinc-400 font-medium">2.4K Members</span>
+            <h1 className="text-base font-black text-white leading-tight">Chat da Comunidade</h1>
+            <span className="text-xs text-zinc-400 font-medium">Comunidade ClubSport</span>
           </div>
         </div>
 

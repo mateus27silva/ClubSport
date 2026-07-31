@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Crown, Search, Filter, MapPin, Flame, Info, Users, MessageSquare, ChevronRight, Lock, Globe } from 'lucide-react';
 import { LeaderboardAthlete, Community } from '../../types';
 import { initialCommunities } from '../../data/mockData';
+import { db, collection, onSnapshot } from '../../lib/firebase';
 
 interface LeaderboardViewProps {
   athletes: LeaderboardAthlete[];
@@ -11,14 +12,51 @@ interface LeaderboardViewProps {
 }
 
 export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
-  athletes,
-  communities = initialCommunities,
+  athletes: initialPropAthletes,
+  communities = [],
   onOpenCommunityChat,
   onOpenUserProfile
 }) => {
   const [sportFilter, setSportFilter] = useState<string>('All');
   const [regionFilter, setRegionFilter] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [liveAthletes, setLiveAthletes] = useState<LeaderboardAthlete[]>(initialPropAthletes);
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(
+      collection(db, 'users'),
+      (snapshot) => {
+        if (!snapshot.empty) {
+          const userDocs = snapshot.docs.map((docSnap) => ({
+            uid: docSnap.id,
+            ...docSnap.data()
+          }));
+
+          // Sort by points or totalKm descending
+          userDocs.sort((a: any, b: any) => (b.points || 0) - (a.points || 0));
+
+          const rankedAthletes: LeaderboardAthlete[] = userDocs.map((u: any, idx) => ({
+            rank: idx + 1,
+            uid: u.uid,
+            name: u.fullName || u.displayName || 'Atleta Anônimo',
+            avatarUrl: u.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
+            points: u.points || 0,
+            distanceKm: u.totalKm || 0,
+            fireBadges: Math.max(1, Math.floor((u.points || 0) / 100)),
+            isCurrentUser: false
+          }));
+
+          setLiveAthletes(rankedAthletes);
+        }
+      },
+      (err) => {
+        console.warn('Could not fetch leaderboard users:', err);
+      }
+    );
+    return () => unsubscribe();
+  }, []);
+
+  const athletes = liveAthletes.length > 0 ? liveAthletes : initialPropAthletes;
 
   const filteredAthletes = athletes.filter((a) => {
     const matchesSearch = a.name.toLowerCase().includes(searchQuery.toLowerCase());

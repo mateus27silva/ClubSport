@@ -18,7 +18,7 @@ export const EditProfileView: React.FC<EditProfileViewProps> = ({ onBack }) => {
     user?.bio || 'Passionate long-distance runner and community builder. Sharing my journey and connecting with athletes. #RunLife'
   );
   const [primarySport, setPrimarySport] = useState<SportType>(user?.primarySport || 'Running');
-  const [region, setRegion] = useState(user?.region || 'San Francisco, CA, USA');
+  const [region, setRegion] = useState(user?.region || 'São Paulo, SP, Brasil');
   const [avatarUrl, setAvatarUrl] = useState(user?.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80');
 
   const handleSave = () => {
