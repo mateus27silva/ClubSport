@@ -223,6 +223,47 @@ export async function createActivity(activity: ActivityPost): Promise<boolean> {
   }
 }
 
+export async function updateActivityCaption(activityId: string, newCaption: string): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from('activities')
+      .update({ caption: newCaption })
+      .eq('id', activityId);
+
+    if (error) {
+      handleSupabaseError(error, 'updateActivityCaption');
+      return false;
+    }
+    return true;
+  } catch (err) {
+    handleSupabaseError(err, 'updateActivityCaption catch');
+    return false;
+  }
+}
+
+export async function deleteActivity(activityId: string): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from('activities')
+      .delete()
+      .eq('id', activityId);
+
+    if (error) {
+      handleSupabaseError(error, 'deleteActivity');
+      return false;
+    }
+
+    // Clean up related likes and comments if tables exist
+    await supabase.from('activity_likes').delete().eq('activity_id', activityId);
+    await supabase.from('activity_comments').delete().eq('activity_id', activityId);
+
+    return true;
+  } catch (err) {
+    handleSupabaseError(err, 'deleteActivity catch');
+    return false;
+  }
+}
+
 /* ============================================================================
    CHALLENGES API & REAL-TIME
    ============================================================================ */

@@ -21,6 +21,8 @@ import {
   fetchUserLikedActivities,
   fetchUserJoinedChallenges,
   fetchUserJoinedCommunities,
+  updateActivityCaption,
+  deleteActivity,
 } from './lib/supabase';
 
 import { Header } from './components/Header';
@@ -301,18 +303,20 @@ function MainAppContent() {
     }
   };
 
-  // Delete Activity
-  const handleDeleteActivity = (activityId: string) => {
+  // Delete Activity (Optimistic + Supabase Sync)
+  const handleDeleteActivity = async (activityId: string) => {
     setActivities((prev) => prev.filter((act) => act.id !== activityId));
+    await deleteActivity(activityId);
   };
 
-  // Edit Activity Caption
-  const handleEditActivity = (activityId: string, newCaption: string) => {
+  // Edit Activity Caption (Optimistic + Supabase Sync)
+  const handleEditActivity = async (activityId: string, newCaption: string) => {
     setActivities((prev) =>
       prev.map((act) =>
         act.id === activityId ? { ...act, caption: newCaption } : act
       )
     );
+    await updateActivityCaption(activityId, newCaption);
   };
 
   // Challenge Join (Optimistic + Supabase Sync)
