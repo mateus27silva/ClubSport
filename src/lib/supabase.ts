@@ -86,13 +86,110 @@ export function subscribeActivities(onUpdate: (activities: ActivityPost[]) => vo
   };
 }
 
+/* ============================================================================
+   SUPABASE STORAGE FOR IMAGES
+   ============================================================================ */
+
+const STORAGE_BUCKET = 'clubsport-images';
+
+let isBucketChecked = false;
+async function ensureBucketExists() {
+  if (isBucketChecked) return;
+  try {
+    const { data: buckets } = await supabase.storage.listBuckets();
+    const exists = buckets?.some((b) => b.name === STORAGE_BUCKET);
+    if (!exists) {
+      await supabase.storage.createBucket(STORAGE_BUCKET, { public: true });
+    }
+    isBucketChecked = true;
+  } catch (err) {
+    console.warn('Bucket check warning:', err);
+  }
+}
+
+/**
+ * Uploads a file, Blob, or base64 Data URL to Supabase Storage.
+ * Returns the permanent public Supabase Storage CDN URL.
+ */
+export async function uploadImageToSupabase(
+  fileOrDataUrl: string | File | Blob,
+  folder: 'activities' | 'avatars' | 'banners' = 'activities'
+): Promise<string> {
+  if (!fileOrDataUrl) return '';
+
+  // If it's already an external HTTP URL, return as is
+  if (typeof fileOrDataUrl === 'string' && fileOrDataUrl.startsWith('http')) {
+    return fileOrDataUrl;
+  }
+
+  await ensureBucketExists();
+
+  try {
+    let fileToUpload: Blob;
+    let fileExt = 'jpg';
+
+    if (typeof fileOrDataUrl === 'string' && fileOrDataUrl.startsWith('data:')) {
+      const arr = fileOrDataUrl.split(',');
+      const mimeMatch = arr[0].match(/:(.*?);/);
+      const mime = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+      fileExt = mime.split('/')[1] || 'jpg';
+      const bstr = atob(arr[1]);
+      let n = bstr.length;
+      const u8arr = new Uint8Array(n);
+      while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+      }
+      fileToUpload = new Blob([u8arr], { type: mime });
+    } else if (fileOrDataUrl instanceof File || fileOrDataUrl instanceof Blob) {
+      fileToUpload = fileOrDataUrl;
+      if (fileOrDataUrl instanceof File && fileOrDataUrl.name) {
+        fileExt = fileOrDataUrl.name.split('.').pop() || 'jpg';
+      }
+    } else {
+      return typeof fileOrDataUrl === 'string' ? fileOrDataUrl : '';
+    }
+
+    const fileName = `${folder}/${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
+
+    const { data, error } = await supabase.storage
+      .from(STORAGE_BUCKET)
+      .upload(fileName, fileToUpload, {
+        cacheControl: '3600',
+        upsert: true,
+        contentType: fileToUpload.type || 'image/jpeg',
+      });
+
+    if (error) {
+      console.warn('[Supabase Storage] Upload error:', error.message || error);
+      return typeof fileOrDataUrl === 'string' ? fileOrDataUrl : '';
+    }
+
+    const { data: publicData } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(data.path);
+    return publicData.publicUrl || '';
+  } catch (err) {
+    console.warn('[Supabase Storage] Catch error during upload:', err);
+    return typeof fileOrDataUrl === 'string' ? fileOrDataUrl : '';
+  }
+}
+
 export async function createActivity(activity: ActivityPost): Promise<boolean> {
   try {
+    // Process image uploads to Supabase Storage
+    let uploadedImageUrl = activity.imageUrl || null;
+    if (uploadedImageUrl && uploadedImageUrl.startsWith('data:')) {
+      uploadedImageUrl = await uploadImageToSupabase(uploadedImageUrl, 'activities');
+    }
+
+    let uploadedAvatarUrl = activity.userAvatar || null;
+    if (uploadedAvatarUrl && uploadedAvatarUrl.startsWith('data:')) {
+      uploadedAvatarUrl = await uploadImageToSupabase(uploadedAvatarUrl, 'avatars');
+    }
+
     const payload = {
       id: activity.id,
       user_id: activity.userId,
       user_name: activity.userName,
-      user_avatar: activity.userAvatar,
+      user_avatar: uploadedAvatarUrl,
       time_ago: activity.timeAgo || 'Agora',
       sport: activity.sport,
       title: activity.title,
@@ -100,7 +197,7 @@ export async function createActivity(activity: ActivityPost): Promise<boolean> {
       time_minutes: activity.timeMinutes,
       pace: activity.pace,
       calories: activity.calories,
-      image_url: activity.imageUrl || null,
+      image_url: uploadedImageUrl,
       has_map: activity.hasMap,
       map_route_svg: activity.mapRouteSvg || null,
       route_points: activity.routePoints || [],

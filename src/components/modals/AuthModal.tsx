@@ -82,18 +82,37 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, initialStep = 'we
     );
   };
 
+  const [authError, setAuthError] = useState<string | null>(null);
+
   const handleSignInSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.email) return;
-    await loginWithEmail(formData.email, formData.password);
-    if (onClose) onClose();
+    setAuthError(null);
+    if (!formData.email || !formData.password) {
+      setAuthError('Por favor, preencha o e-mail e a senha para entrar.');
+      return;
+    }
+    try {
+      await loginWithEmail(formData.email, formData.password);
+      if (onClose) onClose();
+    } catch (err: any) {
+      setAuthError(err?.message || 'E-mail ou senha incorretos. Verifique os dados ou crie uma conta.');
+    }
   };
 
   const handleFinishRegistration = async () => {
+    setAuthError(null);
     const finalName = formData.fullName || formData.nickname || 'Novo Atleta';
-    const finalEmail = formData.email || `atleta_${Date.now()}@clubsport.com`;
-    await signupWithEmail(finalEmail, formData.password || '123456', finalName);
-    if (onClose) onClose();
+    if (!formData.email) {
+      setAuthError('Por favor, informe seu e-mail no Passo 1 para concluir o cadastro.');
+      setCurrentStep('step1');
+      return;
+    }
+    try {
+      await signupWithEmail(formData.email, formData.password || '123456', finalName);
+      if (onClose) onClose();
+    } catch (err: any) {
+      setAuthError(err?.message || 'Erro ao criar conta. Tente outro e-mail ou dados válidos.');
+    }
   };
 
   // Render Sports Icon helper
@@ -242,6 +261,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, initialStep = 'we
               <h2 className="text-3xl font-black text-white text-center tracking-tight mb-6">
                 Sign In
               </h2>
+
+              {authError && (
+                <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-xs text-center font-medium">
+                  {authError}
+                </div>
+              )}
 
               <form onSubmit={handleSignInSubmit} className="space-y-4 max-w-sm mx-auto">
                 <div className="space-y-1">

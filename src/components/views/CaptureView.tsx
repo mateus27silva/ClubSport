@@ -214,12 +214,14 @@ export const CaptureView: React.FC<CaptureViewProps> = ({ onNextToUpload, onClos
     if (isCameraActive && videoRef.current && canvasRef.current) {
       const video = videoRef.current;
       const canvas = canvasRef.current;
-      canvas.width = video.videoWidth || 640;
-      canvas.height = video.videoHeight || 480;
+      const maxDim = 800;
+      const scale = Math.min(1, maxDim / Math.max(video.videoWidth || 640, video.videoHeight || 480));
+      canvas.width = (video.videoWidth || 640) * scale;
+      canvas.height = (video.videoHeight || 480) * scale;
       const ctx = canvas.getContext('2d');
       if (ctx) {
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const dataUrl = canvas.toDataURL('image/jpeg');
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.75);
         setCapturedImage(dataUrl);
         setIsCameraActive(false);
         return;
@@ -237,15 +239,30 @@ export const CaptureView: React.FC<CaptureViewProps> = ({ onNextToUpload, onClos
     fileInputRef.current?.click();
   };
 
-  // Native Mobile File Input
+  // Native Mobile File Input with image compression
   const handleFileSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = (event) => {
         if (event.target?.result) {
-          setCapturedImage(event.target.result as string);
-          setIsCameraActive(false);
+          const img = new Image();
+          img.onload = () => {
+            const cvs = document.createElement('canvas');
+            const maxDim = 800;
+            const sc = Math.min(1, maxDim / Math.max(img.width, img.height));
+            cvs.width = img.width * sc;
+            cvs.height = img.height * sc;
+            const ctx = cvs.getContext('2d');
+            if (ctx) {
+              ctx.drawImage(img, 0, 0, cvs.width, cvs.height);
+              setCapturedImage(cvs.toDataURL('image/jpeg', 0.75));
+            } else {
+              setCapturedImage(event.target.result as string);
+            }
+            setIsCameraActive(false);
+          };
+          img.src = event.target.result as string;
         }
       };
       reader.readAsDataURL(file);

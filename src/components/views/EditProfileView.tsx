@@ -40,7 +40,22 @@ export const EditProfileView: React.FC<EditProfileViewProps> = ({ onBack }) => {
       const reader = new FileReader();
       reader.onload = (event) => {
         if (event.target?.result) {
-          setAvatarUrl(event.target.result as string);
+          const img = new Image();
+          img.onload = () => {
+            const cvs = document.createElement('canvas');
+            const maxDim = 400;
+            const sc = Math.min(1, maxDim / Math.max(img.width, img.height));
+            cvs.width = img.width * sc;
+            cvs.height = img.height * sc;
+            const ctx = cvs.getContext('2d');
+            if (ctx) {
+              ctx.drawImage(img, 0, 0, cvs.width, cvs.height);
+              setAvatarUrl(cvs.toDataURL('image/jpeg', 0.8));
+            } else {
+              setAvatarUrl(event.target.result as string);
+            }
+          };
+          img.src = event.target.result as string;
         }
       };
       reader.readAsDataURL(file);

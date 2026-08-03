@@ -13,6 +13,7 @@ import {
   fetchCommunities,
   subscribeCommunities,
   createCommunity,
+  uploadImageToSupabase,
 } from './lib/supabase';
 
 import { Header } from './components/Header';
@@ -48,17 +49,40 @@ import {
 import { ActivityPost, Challenge, Community, NotificationItem } from './types';
 
 function MainAppContent() {
-  const { user, updateProfile } = useAuth();
+  const { user, isAuthenticated, isLoading, updateProfile } = useAuth();
   const [activeTab, setActiveTab] = useState<ActiveTab>('home');
   const [currentView, setCurrentView] = useState<string>('home');
 
-  // Data State
-  const [activities, setActivities] = useState<ActivityPost[]>(initialActivities);
+  // Data State with localStorage persistence
+  const [activities, setActivities] = useState<ActivityPost[]>(() => {
+    try {
+      const saved = localStorage.getItem('clubsport_activities');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.warn('Error reading stored activities from localStorage', e);
+    }
+    return initialActivities;
+  });
+
   const [challenges, setChallenges] = useState<Challenge[]>(initialChallenges);
   const [communities, setCommunities] = useState<Community[]>(initialCommunities);
   const [notifications, setNotifications] = useState<NotificationItem[]>(initialNotifications);
   const [capturedPhotoUrl, setCapturedPhotoUrl] = useState<string>('');
   const [selectedTrackerChallengeId, setSelectedTrackerChallengeId] = useState<string | undefined>();
+
+  // Persist activities to localStorage on change
+  useEffect(() => {
+    try {
+      localStorage.setItem('clubsport_activities', JSON.stringify(activities.slice(0, 50)));
+    } catch (e) {
+      console.warn('Could not persist activities to localStorage:', e);
+    }
+  }, [activities]);
 
   // Validate connection to Supabase on initial boot
   useEffect(() => {
@@ -67,9 +91,22 @@ function MainAppContent() {
 
   // Real-time Supabase sync for activities, challenges, communities
   useEffect(() => {
-    // Initial fetches
+    // Initial fetches with merge to preserve local posts with images
     fetchActivities().then((fetched) => {
-      if (fetched.length > 0) setActivities(fetched);
+      if (fetched.length > 0) {
+        setActivities((prev) => {
+          const map = new Map();
+          fetched.forEach((item) => map.set(item.id, item));
+          prev.forEach((item) => {
+            if (!map.has(item.id)) {
+              map.set(item.id, item);
+            }
+          });
+          return Array.from(map.values()).sort(
+            (a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+          );
+        });
+      }
     });
     fetchChallenges().then((fetched) => {
       if (fetched.length > 0) setChallenges(fetched);
@@ -80,7 +117,16 @@ function MainAppContent() {
 
     // Real-time subscribers
     const unsubActivities = subscribeActivities((updated) => {
-      if (updated.length > 0) setActivities(updated);
+      if (updated.length > 0) {
+        setActivities((prev) => {
+          const map = new Map();
+          updated.forEach((item) => map.set(item.id, item));
+          prev.forEach((item) => {
+            if (!map.has(item.id)) map.set(item.id, item);
+          });
+          return Array.from(map.values());
+        });
+      }
     });
     const unsubChallenges = subscribeChallenges((updated) => {
       if (updated.length > 0) setChallenges(updated);
@@ -102,6 +148,27 @@ function MainAppContent() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [isConnectWatchOpen, setIsConnectWatchOpen] = useState<boolean>(false);
   const [selectedUserProfile, setSelectedUserProfile] = useState<TargetUserProfileInfo | null>(null);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center p-4">
+        <div className="flex flex-col items-center space-y-3 text-center">
+          <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
+          <p className="text-xs font-black text-orange-500 uppercase tracking-wider">ClubSport</p>
+          <p className="text-[11px] font-medium text-zinc-400">Verificando credenciais do atleta...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Strict Authentication Gate: Require user registration / login before accessing app
+  if (!isAuthenticated) {
+    return (
+      <div id="app-wrapper" className="min-h-screen bg-zinc-950 text-white font-sans flex items-center justify-center">
+        <AuthModal onClose={undefined} />
+      </div>
+    );
+  }
 
   const handleOpenUserProfile = (userObj: { userId: string; userName: string; userAvatar?: string }) => {
     setSelectedUserProfile(userObj);
@@ -211,6 +278,11 @@ function MainAppContent() {
       avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'
     };
 
+    let cdnPhotoUrl = postData.photoUrl;
+    if (cdnPhotoUrl && cdnPhotoUrl.startsWith('data:')) {
+      cdnPhotoUrl = await uploadImageToSupabase(cdnPhotoUrl, 'activities');
+    }
+
     const newAct: ActivityPost = {
       id: 'act_' + Date.now(),
       userId: activeUser.uid,
@@ -223,7 +295,7 @@ function MainAppContent() {
       timeMinutes: 42,
       pace: '4:56 /km',
       calories: 520,
-      imageUrl: postData.photoUrl,
+      imageUrl: cdnPhotoUrl,
       hasMap: false,
       likesCount: 1,
       isLiked: true,

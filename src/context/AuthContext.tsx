@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { UserProfile } from '../types';
-import { supabase, handleSupabaseError } from '../lib/supabase';
+import { supabase, handleSupabaseError, uploadImageToSupabase } from '../lib/supabase';
 
 interface AuthContextType {
   user: UserProfile | null;
@@ -25,7 +25,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [securityToken, setSecurityToken] = useState<string | null>(null);
 
-  // Sync profile with Supabase 'profiles' table
+  // Sync profile with Supabase 'profiles' table and localStorage
   const syncUserProfile = async (sbUser: any, nameHint?: string): Promise<UserProfile> => {
     try {
       const { data, error } = await supabase
@@ -37,7 +37,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (data && !error) {
         const prof: UserProfile = {
           uid: data.id,
-          fullName: data.full_name || 'Atleta ClubSport',
+          fullName: data.full_name || nameHint || 'Atleta ClubSport',
           username: data.username || `@${(data.full_name || 'atleta').toLowerCase().replace(/\s+/g, '_')}`,
           email: data.email || sbUser.email || '',
           bio: data.bio || 'Atleta do ClubSport.',
@@ -53,6 +53,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           createdAt: data.created_at || new Date().toISOString()
         };
         setUser(prof);
+        try {
+          localStorage.setItem('clubsport_user', JSON.stringify(prof));
+        } catch (e) {
+          console.warn('Could not cache user to localStorage', e);
+        }
         return prof;
       } else {
         const fullName = nameHint || sbUser.user_metadata?.full_name || sbUser.email?.split('@')[0] || 'Atleta ClubSport';
@@ -93,12 +98,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           createdAt: newProfPayload.created_at
         };
         setUser(prof);
+        try {
+          localStorage.setItem('clubsport_user', JSON.stringify(prof));
+        } catch (e) {
+          console.warn('Could not cache user to localStorage', e);
+        }
         return prof;
       }
     } catch (err) {
       console.warn('Error syncing profile with Supabase:', err);
       const fallbackProf: UserProfile = {
-        uid: sbUser.id || 'user_demo',
+        uid: sbUser.id || 'user_' + Date.now(),
         fullName: nameHint || sbUser.email?.split('@')[0] || 'Atleta ClubSport',
         username: `@${(sbUser.email?.split('@')[0] || 'atleta').toLowerCase()}`,
         email: sbUser.email || '',
@@ -115,11 +125,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         createdAt: new Date().toISOString()
       };
       setUser(fallbackProf);
+      try {
+        localStorage.setItem('clubsport_user', JSON.stringify(fallbackProf));
+      } catch (e) {}
       return fallbackProf;
     }
   };
 
   useEffect(() => {
+    // Initial restoration from localStorage for instant offline/re-open session
+    try {
+      const stored = localStorage.getItem('clubsport_user');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed && parsed.uid) {
+          setUser(parsed);
+          setSecurityToken(`bearer_local_${parsed.uid.slice(0, 8)}`);
+        }
+      }
+    } catch (e) {
+      console.warn('Error reading stored user from localStorage:', e);
+    }
+
     // Listen for Supabase Auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       const sbUser = session?.user || null;
@@ -128,8 +155,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSecurityToken(`bearer_supabase_${sbUser.id.slice(0, 8)}`);
         await syncUserProfile(sbUser);
       } else {
-        setUser(null);
-        setSecurityToken(null);
+        if (event === 'SIGNED_OUT') {
+          setUser(null);
+          setSecurityToken(null);
+          try {
+            localStorage.removeItem('clubsport_user');
+          } catch (e) {}
+        }
       }
       setIsLoading(false);
     });
@@ -160,12 +192,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         await syncUserProfile(data.user);
       }
     } catch (e: any) {
-      console.warn('Supabase auth notice:', e?.message || e);
-      const fallbackUid = 'user_' + Math.abs(email.split('@')[0].split('').reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a; }, 0));
-      const name = email.split('@')[0] || 'Atleta ClubSport';
-      const fallbackUser = { id: fallbackUid, email };
-      await syncUserProfile(fallbackUser, name);
-      setSecurityToken(`bearer_local_${fallbackUid.slice(0, 8)}`);
+      console.warn('Supabase auth error:', e?.message || e);
+      throw e;
     } finally {
       setIsLoading(false);
     }
@@ -182,13 +210,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) throw error;
       if (data.user) {
         await syncUserProfile(data.user, name);
+      } else {
+        // Local user creation when email confirmation is required or offline
+        const localUid = 'user_' + Date.now();
+        const localUser = { id: localUid, email };
+        await syncUserProfile(localUser, name);
+        setSecurityToken(`bearer_local_${localUid.slice(0, 8)}`);
       }
     } catch (e: any) {
       console.warn('Supabase signup notice:', e?.message || e);
-      const fallbackUid = 'user_' + Date.now();
-      const fallbackUser = { id: fallbackUid, email };
-      await syncUserProfile(fallbackUser, name);
-      setSecurityToken(`bearer_local_${fallbackUid.slice(0, 8)}`);
+      // Create registered user profile locally
+      const localUid = 'user_' + Date.now();
+      const localUser = { id: localUid, email };
+      await syncUserProfile(localUser, name);
+      setSecurityToken(`bearer_local_${localUid.slice(0, 8)}`);
     } finally {
       setIsLoading(false);
     }
@@ -252,8 +287,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateProfile = async (updated: Partial<UserProfile>) => {
     if (!user) return;
-    const newProfile = { ...user, ...updated };
+
+    let finalAvatarUrl = updated.avatarUrl;
+    if (finalAvatarUrl && finalAvatarUrl.startsWith('data:')) {
+      finalAvatarUrl = await uploadImageToSupabase(finalAvatarUrl, 'avatars');
+    }
+
+    const newProfile = { ...user, ...updated, avatarUrl: finalAvatarUrl || user.avatarUrl };
     setUser(newProfile);
+    try {
+      localStorage.setItem('clubsport_user', JSON.stringify(newProfile));
+    } catch (e) {}
 
     try {
       const payload: any = {};
@@ -262,7 +306,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (updated.bio) payload.bio = updated.bio;
       if (updated.primarySport) payload.primary_sport = updated.primarySport;
       if (updated.region) payload.region = updated.region;
-      if (updated.avatarUrl) payload.avatar_url = updated.avatarUrl;
+      if (finalAvatarUrl) payload.avatar_url = finalAvatarUrl;
       if (updated.totalKm !== undefined) payload.total_km = updated.totalKm;
       if (updated.points !== undefined) payload.points = updated.points;
 
