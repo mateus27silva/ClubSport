@@ -58,6 +58,11 @@ export async function fetchActivities(): Promise<ActivityPost[]> {
       userId: item.user_id || item.userId,
       userName: item.user_name || item.userName,
       userAvatar: item.user_avatar || item.userAvatar,
+      imageUrl: item.image_url || item.imageUrl || '',
+      hasMap: item.has_map ?? item.hasMap ?? false,
+      mapRouteSvg: item.map_route_svg || item.mapRouteSvg || '',
+      routePoints: item.route_points || item.routePoints || [],
+      locationName: item.location_name || item.locationName || '',
       distanceKm: item.distance_km ?? item.distanceKm ?? 0,
       timeMinutes: item.time_minutes ?? item.timeMinutes ?? 0,
       timeAgo: item.time_ago || item.timeAgo || 'Recent',
@@ -65,6 +70,12 @@ export async function fetchActivities(): Promise<ActivityPost[]> {
       commentsCount: item.comments_count ?? item.commentsCount ?? 0,
       comments: item.comments || [],
       createdAt: item.created_at || item.createdAt || new Date().toISOString(),
+      lat: item.lat ?? null,
+      lng: item.lng ?? null,
+      challengeId: item.challenge_id || item.challengeId,
+      avgHeartRate: item.avg_heart_rate || item.avgHeartRate,
+      maxHeartRate: item.max_heart_rate || item.maxHeartRate,
+      elevationGain: item.elevation_gain || item.elevationGain,
     }));
   } catch (err) {
     handleSupabaseError(err, 'fetchActivities catch');
