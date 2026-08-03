@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ChevronLeft, Check, MapPin, Globe } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { ChevronLeft, Camera, Upload, MapPin, Globe } from 'lucide-react';
 import { REGION_PRESETS } from '../../lib/location';
 import { useAuth } from '../../context/AuthContext';
 
@@ -18,17 +18,7 @@ interface QuickUploadProps {
   onBack: () => void;
 }
 
-const galleryPhotos = [
-  'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=600&q=80',
-  'https://images.unsplash.com/photo-1541625602330-2277a4c46182?auto=format&fit=crop&w=600&q=80',
-  'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=600&q=80',
-  'https://images.unsplash.com/photo-1530549387789-4c1017266635?auto=format&fit=crop&w=600&q=80',
-  'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=600&q=80',
-  'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=600&q=80',
-  'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=600&q=80',
-  'https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=600&q=80',
-  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80',
-];
+const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=800&q=80';
 
 export const QuickUploadView: React.FC<QuickUploadProps> = ({
   initialPhotoUrl,
@@ -36,23 +26,36 @@ export const QuickUploadView: React.FC<QuickUploadProps> = ({
   onBack
 }) => {
   const { user } = useAuth();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [selectedPhoto, setSelectedPhoto] = useState<string>(
-    initialPhotoUrl || galleryPhotos[4]
+    initialPhotoUrl || DEFAULT_PHOTO
   );
-  const [postToFeed, setPostToFeed] = useState<boolean>(true);
-  const [postToStory, setPostToStory] = useState<boolean>(false);
   const [addStatsOverlay, setAddStatsOverlay] = useState<boolean>(true);
   const [caption, setCaption] = useState<string>('Treino concluído com foco e energia! 🔥 #ClubSport');
   const [selectedRegionPreset, setSelectedRegionPreset] = useState<string>(
     user?.region || REGION_PRESETS[0].name
   );
 
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setSelectedPhoto(event.target.result as string);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handlePublish = () => {
     const presetObj = REGION_PRESETS.find((p) => p.name === selectedRegionPreset) || REGION_PRESETS[0];
     onPublish({
       photoUrl: selectedPhoto,
-      postToFeed,
-      postToStory,
+      postToFeed: true,
+      postToStory: false,
       addStatsOverlay,
       caption,
       locationName: presetObj.name,
@@ -65,61 +68,51 @@ export const QuickUploadView: React.FC<QuickUploadProps> = ({
     <div className="space-y-6 pb-24 max-w-lg mx-auto px-4">
       {/* Top Header */}
       <div className="flex items-center space-x-3 pt-2">
-        <button onClick={onBack} className="p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300">
+        <button onClick={onBack} className="p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white transition-colors">
           <ChevronLeft className="w-5 h-5" />
         </button>
         <h1 className="text-xl font-black text-white tracking-tight">Quick Upload</h1>
       </div>
 
-      {/* Post to... Checkboxes (Image 8) */}
-      <div className="bg-zinc-900 border border-zinc-800 p-4 rounded-2xl space-y-3">
-        <span className="text-xs font-bold text-zinc-300 block">Post to...</span>
+      {/* Hidden File Input for uploading custom photo */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        accept="image/*"
+        onChange={handleFileUpload}
+        className="hidden"
+      />
 
-        <div className="flex space-x-6">
-          <label className="flex items-center space-x-2 text-xs text-white font-medium cursor-pointer">
-            <input
-              type="checkbox"
-              checked={postToFeed}
-              onChange={(e) => setPostToFeed(e.target.checked)}
-              className="w-4 h-4 accent-orange-500 rounded"
-            />
-            <span>Feed</span>
-          </label>
-
-          <label className="flex items-center space-x-2 text-xs text-white font-medium cursor-pointer">
-            <input
-              type="checkbox"
-              checked={postToStory}
-              onChange={(e) => setPostToStory(e.target.checked)}
-              className="w-4 h-4 accent-orange-500 rounded"
-            />
-            <span>Story</span>
-          </label>
+      {/* Primary Photo Preview - User Captured Photo */}
+      <div className="bg-zinc-900 border border-zinc-800 p-3.5 rounded-2xl space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-bold text-orange-400 font-mono uppercase tracking-wide flex items-center gap-1.5">
+            <Camera className="w-4 h-4 text-orange-500" />
+            <span>Fotografia Registrada</span>
+          </span>
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="flex items-center gap-1.5 px-3 py-1 bg-orange-500/15 hover:bg-orange-500/25 border border-orange-500/40 rounded-full text-xs font-bold text-orange-400 transition-colors"
+          >
+            <Upload className="w-3.5 h-3.5" />
+            <span>Trocar Foto</span>
+          </button>
         </div>
-      </div>
 
-      {/* Gallery Grid Selection (Image 8) */}
-      <div className="grid grid-cols-3 gap-2">
-        {galleryPhotos.map((photo, index) => {
-          const isSelected = selectedPhoto === photo;
+        {/* Big Preview of User's Photo */}
+        <div className="relative aspect-square rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-950 shadow-inner group">
+          <img
+            src={selectedPhoto}
+            alt="Foto do usuário"
+            className="w-full h-full object-cover"
+          />
 
-          return (
-            <div
-              key={index}
-              onClick={() => setSelectedPhoto(photo)}
-              className={`relative aspect-square rounded-2xl overflow-hidden cursor-pointer border-2 transition-all ${
-                isSelected ? 'border-orange-500 ring-2 ring-orange-500/50 scale-98' : 'border-transparent opacity-80 hover:opacity-100'
-              }`}
-            >
-              <img src={photo} alt={`Gallery ${index}`} className="w-full h-full object-cover" />
-              {isSelected && (
-                <div className="absolute top-1 right-1 bg-orange-500 text-zinc-950 p-1 rounded-full">
-                  <Check className="w-3 h-3 stroke-[3]" />
-                </div>
-              )}
+          {addStatsOverlay && (
+            <div className="absolute bottom-3 left-3 bg-black/70 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10 text-white text-[11px] font-mono shadow-lg">
+              ⚡ 182 bpm | 🏃 5.2 km
             </div>
-          );
-        })}
+          )}
+        </div>
       </div>
 
       {/* Caption Input */}
