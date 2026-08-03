@@ -4,7 +4,7 @@ import { CommunityMessage } from '../../types';
 import { initialCommunityMessages } from '../../data/mockData';
 import { useAuth } from '../../context/AuthContext';
 import { useOffline } from '../../context/OfflineContext';
-import { db, collection, onSnapshot, addDoc, handleFirestoreError, OperationType } from '../../lib/firebase';
+import { fetchCommunityMessages, subscribeCommunityMessages, createCommunityMessage } from '../../lib/supabase';
 
 interface CommunityChatProps {
   communityId?: string;
@@ -20,22 +20,20 @@ export const CommunityChatView: React.FC<CommunityChatProps> = ({ communityId = 
   const [inputText, setInputText] = useState<string>('');
 
   useEffect(() => {
-    const messagesRef = collection(db, 'communities', communityId, 'messages');
-    const unsubscribe = onSnapshot(
-      messagesRef,
-      (snapshot) => {
-        if (!snapshot.empty) {
-          const fetchedMsgs: CommunityMessage[] = snapshot.docs.map((d) => ({
-            id: d.id,
-            ...(d.data() as Omit<CommunityMessage, 'id'>)
-          }));
-          setMessages(fetchedMsgs);
-        }
-      },
-      (error) => {
-        handleFirestoreError(error, OperationType.GET, `communities/${communityId}/messages`);
+    // Initial fetch from Supabase
+    fetchCommunityMessages(communityId).then((fetched) => {
+      if (fetched.length > 0) {
+        setMessages(fetched);
       }
-    );
+    });
+
+    // Real-time Supabase subscription
+    const unsubscribe = subscribeCommunityMessages(communityId, (updated) => {
+      if (updated.length > 0) {
+        setMessages(updated);
+      }
+    });
+
     return () => unsubscribe();
   }, [communityId]);
 
@@ -73,11 +71,7 @@ export const CommunityChatView: React.FC<CommunityChatProps> = ({ communityId = 
     setInputText('');
 
     if (isOnline) {
-      try {
-        await addDoc(collection(db, 'communities', communityId, 'messages'), newMsg);
-      } catch (err) {
-        handleFirestoreError(err, OperationType.CREATE, `communities/${communityId}/messages`);
-      }
+      await createCommunityMessage(newMsg);
     } else {
       queueAction('ADD_COMMUNITY_MESSAGE', newMsg);
     }

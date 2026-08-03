@@ -196,14 +196,14 @@ export const ChallengesView: React.FC<ChallengesViewProps> = ({
       {/* Top Search & Filter Bar (Filter & Search inside Challenges) */}
       <div className="pt-2 space-y-3">
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-black text-white flex items-center gap-2">
+          <h1 className="text-xl font-black text-zinc-900 dark:text-white flex items-center gap-2">
             Filter & Search
           </h1>
           <div className="flex space-x-2 text-xs">
             <select
               value={sportFilter}
               onChange={(e) => setSportFilter(e.target.value)}
-              className="bg-zinc-900 border border-zinc-800 text-orange-400 font-bold rounded-lg px-2.5 py-1 focus:outline-none"
+              className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-orange-600 dark:text-orange-400 font-bold rounded-lg px-2.5 py-1 focus:outline-none"
             >
               <option value="All">Sport: All</option>
               <option value="Running">Running / Corrida</option>
@@ -215,7 +215,7 @@ export const ChallengesView: React.FC<ChallengesViewProps> = ({
             <select
               value={regionFilter}
               onChange={(e) => setRegionFilter(e.target.value)}
-              className="bg-zinc-900 border border-zinc-800 text-orange-400 font-bold rounded-lg px-2.5 py-1 focus:outline-none cursor-pointer max-w-[140px] truncate"
+              className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-orange-600 dark:text-orange-400 font-bold rounded-lg px-2.5 py-1 focus:outline-none cursor-pointer max-w-[140px] truncate"
             >
               <option value="All">Região: Todas</option>
               {REGION_PRESETS.map((p) => (
@@ -235,19 +235,19 @@ export const ChallengesView: React.FC<ChallengesViewProps> = ({
             placeholder="Search Challenge by title or location..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-9 pr-4 py-2.5 text-xs text-white focus:outline-none focus:border-orange-500"
+            className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl pl-9 pr-4 py-2.5 text-xs text-zinc-900 dark:text-white focus:outline-none focus:border-orange-500 placeholder:text-zinc-500"
           />
         </div>
       </div>
 
       {/* Scope Filter Buttons: Global | Local */}
-      <div className="grid grid-cols-2 gap-2 bg-zinc-900 p-1.5 rounded-2xl border border-zinc-800">
+      <div className="grid grid-cols-2 gap-2 bg-white dark:bg-zinc-900 p-1.5 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
         <button
           onClick={() => setScope('global')}
           className={`py-2.5 rounded-xl text-xs font-bold transition-all ${
             scope === 'global'
               ? 'bg-orange-500 text-zinc-950 shadow-md shadow-orange-500/20'
-              : 'text-zinc-400 hover:text-white'
+              : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
           }`}
         >
           Global
@@ -257,7 +257,7 @@ export const ChallengesView: React.FC<ChallengesViewProps> = ({
           className={`py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
             scope === 'local'
               ? 'bg-orange-500 text-zinc-950 shadow-md shadow-orange-500/20'
-              : 'text-zinc-400 hover:text-white'
+              : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
           }`}
         >
           <MapPin className="w-3.5 h-3.5" />
@@ -378,37 +378,37 @@ export const ChallengesView: React.FC<ChallengesViewProps> = ({
               <div className="p-3.5 space-y-2">
                 <div className="flex items-start justify-between">
                   <div>
-                    <h3 className="text-sm font-black text-white group-hover:text-orange-400 transition-colors">
+                    <h3 className="text-sm font-black text-zinc-900 dark:text-white group-hover:text-orange-500 dark:group-hover:text-orange-400 transition-colors">
                       {community.name}
                     </h3>
                     {(community.location || community.calculatedDistanceKm !== undefined) && (
                       <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                        <span className="text-[10px] font-bold text-orange-400 bg-orange-500/10 border border-orange-500/20 px-2 py-0.5 rounded-md flex items-center gap-1">
-                          <MapPin className="w-3 h-3 text-orange-400" />
+                        <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400 bg-orange-500/10 border border-orange-500/20 px-2 py-0.5 rounded-md flex items-center gap-1">
+                          <MapPin className="w-3 h-3 text-orange-500" />
                           {community.location || 'Local'}
                         </span>
                         {community.calculatedDistanceKm !== undefined && (
-                          <span className="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded-md flex items-center gap-1">
+                          <span className="text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded-md flex items-center gap-1">
                             <Navigation className="w-2.5 h-2.5" />
                             {formatDistanceString(community.calculatedDistanceKm)}
                           </span>
                         )}
                       </div>
                     )}
-                    <p className="text-xs text-zinc-400 line-clamp-2 mt-1">
+                    <p className="text-xs text-zinc-600 dark:text-zinc-400 line-clamp-2 mt-1">
                       {community.description}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between pt-2 border-t border-zinc-800/60 text-xs">
-                  <div className="flex items-center gap-3 text-zinc-400 text-[11px]">
-                    <span className="flex items-center gap-1 font-bold text-zinc-300">
-                      <Users className="w-3.5 h-3.5 text-orange-400" />
+                <div className="flex items-center justify-between pt-2 border-t border-zinc-200 dark:border-zinc-800/60 text-xs">
+                  <div className="flex items-center gap-3 text-zinc-500 dark:text-zinc-400 text-[11px]">
+                    <span className="flex items-center gap-1 font-bold text-zinc-700 dark:text-zinc-300">
+                      <Users className="w-3.5 h-3.5 text-orange-500 dark:text-orange-400" />
                       {community.membersCount.toLocaleString()} membros
                     </span>
-                    <span className="text-zinc-500">•</span>
-                    <span className="text-zinc-400">Por {community.createdBy}</span>
+                    <span className="text-zinc-400 dark:text-zinc-500">•</span>
+                    <span className="text-zinc-500 dark:text-zinc-400">Por {community.createdBy}</span>
                   </div>
 
                   <button
@@ -424,10 +424,10 @@ export const ChallengesView: React.FC<ChallengesViewProps> = ({
           ))}
 
           {filteredCommunities.length === 0 && (
-            <div className="p-6 bg-zinc-900/60 border border-zinc-800 rounded-2xl text-center space-y-3">
-              <Users className="w-8 h-8 text-zinc-600 mx-auto" />
-              <p className="text-xs font-bold text-zinc-300">Nenhuma comunidade criada ainda</p>
-              <p className="text-[11px] text-zinc-500 max-w-xs mx-auto">
+            <div className="p-6 bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 rounded-2xl text-center space-y-3 shadow-sm">
+              <Users className="w-8 h-8 text-zinc-400 dark:text-zinc-600 mx-auto" />
+              <p className="text-xs font-bold text-zinc-900 dark:text-zinc-300">Nenhuma comunidade criada ainda</p>
+              <p className="text-[11px] text-zinc-600 dark:text-zinc-500 max-w-xs mx-auto">
                 Crie a primeira comunidade do ClubSport e convide atletas para treinar juntos!
               </p>
               {onOpenCreateCommunity && (
@@ -446,14 +446,14 @@ export const ChallengesView: React.FC<ChallengesViewProps> = ({
       {/* Challenge Quests Cards List */}
       <div className="space-y-4">
         <div className="flex items-center justify-between pt-2">
-          <h2 className="text-xs font-black uppercase text-orange-400 tracking-wider flex items-center gap-2">
+          <h2 className="text-xs font-black uppercase text-orange-600 dark:text-orange-400 tracking-wider flex items-center gap-2">
             <Trophy className="w-4 h-4" />
             <span>Desafios Ativos ({filteredChallenges.length})</span>
           </h2>
           {onOpenCreateChallenge && (
             <button
               onClick={onOpenCreateChallenge}
-              className="text-[10px] font-bold text-orange-400 hover:text-orange-300 bg-orange-500/10 border border-orange-500/20 px-2.5 py-1 rounded-lg transition-all"
+              className="text-[10px] font-bold text-orange-600 dark:text-orange-400 hover:text-orange-500 bg-orange-500/10 border border-orange-500/20 px-2.5 py-1 rounded-lg transition-all"
             >
               + Publicar Desafio
             </button>
@@ -466,11 +466,11 @@ export const ChallengesView: React.FC<ChallengesViewProps> = ({
           return (
             <div
               key={item.id}
-              className="relative bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden p-4 shadow-xl space-y-4 group"
+              className="relative bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden p-4 shadow-sm dark:shadow-xl space-y-4 group"
             >
               {/* Background banner image blur effect */}
               <div
-                className="absolute inset-0 bg-cover bg-center opacity-15 transition-opacity group-hover:opacity-25"
+                className="absolute inset-0 bg-cover bg-center opacity-10 dark:opacity-15 transition-opacity group-hover:opacity-20 dark:group-hover:opacity-25"
                 style={{ backgroundImage: `url(${item.bannerUrl})` }}
               />
 
@@ -479,13 +479,13 @@ export const ChallengesView: React.FC<ChallengesViewProps> = ({
                   {/* Proximity / Location Badge */}
                   {item.scope === 'local' && (
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-orange-500/10 border border-orange-500/30 text-orange-400 text-[10px] font-bold">
-                        <MapPin className="w-3 h-3 text-orange-400" />
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-orange-500/10 border border-orange-500/30 text-orange-600 dark:text-orange-400 text-[10px] font-bold">
+                        <MapPin className="w-3 h-3 text-orange-500" />
                         {item.locationName || 'Desafio Local'}
                       </span>
 
                       {item.calculatedDistanceKm !== undefined && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-mono font-bold">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-mono font-bold">
                           <Navigation className="w-2.5 h-2.5" />
                           {item.calculatedDistanceKm} km de você
                         </span>
@@ -493,18 +493,18 @@ export const ChallengesView: React.FC<ChallengesViewProps> = ({
                     </div>
                   )}
 
-                  <h3 className="text-lg font-black text-white tracking-tight uppercase flex items-center gap-2 pt-0.5">
+                  <h3 className="text-lg font-black text-zinc-900 dark:text-white tracking-tight uppercase flex items-center gap-2 pt-0.5">
                     {item.title}
                   </h3>
-                  <p className="text-xs font-bold text-zinc-300">
+                  <p className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
                     {item.targetValue} {item.unit}
                   </p>
                 </div>
 
                 {/* Circular indicator or Badge */}
-                <div className="flex flex-col items-center justify-center w-14 h-14 rounded-full border-4 border-orange-500/30 bg-zinc-950/80 font-mono text-center flex-shrink-0">
-                  <span className="text-xs font-bold text-white">{percent}%</span>
-                  <span className="text-[8px] text-orange-400 uppercase font-bold">
+                <div className="flex flex-col items-center justify-center w-14 h-14 rounded-full border-4 border-orange-500/30 bg-white/90 dark:bg-zinc-950/80 font-mono text-center flex-shrink-0 shadow-sm">
+                  <span className="text-xs font-bold text-zinc-900 dark:text-white">{percent}%</span>
+                  <span className="text-[8px] text-orange-600 dark:text-orange-400 uppercase font-bold">
                     {item.currentValue}/{item.targetValue}
                   </span>
                 </div>

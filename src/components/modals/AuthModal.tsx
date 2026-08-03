@@ -192,17 +192,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, initialStep = 'we
               </h1>
             </div>
 
-            {/* Middle Badge Overlay */}
-            <div className="relative z-10 my-auto py-6">
-              <div className="inline-block bg-zinc-900/85 backdrop-blur-md border border-zinc-700/80 px-6 py-3 rounded-2xl shadow-2xl">
-                <h2 className="text-xl sm:text-2xl font-black text-white tracking-wide">
-                  A comunidade que
-                  <br />
-                  movimenta
-                </h2>
-              </div>
-            </div>
-
             {/* Bottom Actions */}
             <div className="relative z-10 space-y-3 pb-4">
               <button

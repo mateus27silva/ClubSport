@@ -140,12 +140,12 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     <div className="space-y-6 pb-24 max-w-lg mx-auto px-4">
       {/* Top action header: Settings / Admin */}
       <div className="flex items-center justify-between pt-2">
-        <h1 className="text-xl font-bold text-white tracking-tight">Profile</h1>
+        <h1 className="text-xl font-bold text-zinc-900 dark:text-white tracking-tight">Profile</h1>
         <div className="flex items-center space-x-2">
           {user.role === 'admin' && (
             <button
               onClick={onOpenAdminDashboard}
-              className="bg-orange-500/20 text-orange-400 border border-orange-500/40 text-xs px-3 py-1.5 rounded-xl font-bold flex items-center gap-1.5 hover:bg-orange-500/30"
+              className="bg-orange-500/20 text-orange-600 dark:text-orange-400 border border-orange-500/40 text-xs px-3 py-1.5 rounded-xl font-bold flex items-center gap-1.5 hover:bg-orange-500/30"
             >
               <Shield className="w-3.5 h-3.5" />
               <span>Admin Panel</span>
@@ -157,7 +157,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       {/* Profile Card Info */}
       <div className="flex flex-col items-center text-center space-y-3">
         <div className="relative">
-          <div className="w-28 h-28 rounded-full border-4 border-orange-500 p-1 bg-zinc-950 shadow-xl shadow-orange-500/10">
+          <div className="w-28 h-28 rounded-full border-4 border-orange-500 p-1 bg-white dark:bg-zinc-950 shadow-xl shadow-orange-500/10">
             <img
               src={user.avatarUrl}
               alt={user.fullName}
@@ -172,12 +172,12 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         </div>
 
         <div>
-          <h2 className="text-2xl font-black text-white">{user.fullName}</h2>
-          <p className="text-xs text-zinc-400 font-medium">
+          <h2 className="text-2xl font-black text-zinc-900 dark:text-white">{user.fullName}</h2>
+          <p className="text-xs text-zinc-600 dark:text-zinc-400 font-medium">
             {user.primarySport || 'Corrida'} • {user.region || 'Brasil'}
           </p>
 
-          <p className="text-xs text-zinc-300 mt-2 max-w-xs">{user.bio}</p>
+          <p className="text-xs text-zinc-700 dark:text-zinc-300 mt-2 max-w-xs">{user.bio}</p>
         </div>
 
         {/* Action buttons next to Editar Perfil */}
@@ -192,16 +192,16 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
           <button
             onClick={onOpenAnalytics}
-            className="py-2.5 px-3 bg-zinc-900 hover:bg-zinc-800 text-white border border-zinc-800 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-all"
+            className="py-2.5 px-3 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-900 dark:text-white border border-zinc-200 dark:border-zinc-800 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm"
             title="Estatísticas & Analytics"
           >
-            <Activity className="w-4 h-4 text-orange-400" />
+            <Activity className="w-4 h-4 text-orange-500 dark:text-orange-400" />
             <span>Analytics</span>
           </button>
 
           <button
             onClick={onOpenConnectWatch}
-            className="py-2.5 px-3 bg-zinc-900 hover:bg-zinc-800 text-white border border-zinc-800 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-all"
+            className="py-2.5 px-3 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-900 dark:text-white border border-zinc-200 dark:border-zinc-800 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm"
             title="Conectar Relógio"
           >
             <Watch className="w-4 h-4 text-orange-500" />
@@ -211,14 +211,14 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       </div>
 
       {/* Clubs & Stats Row (Image 3) */}
-      <div className="grid grid-cols-3 gap-3 bg-zinc-900 border border-zinc-800 p-4 rounded-2xl">
+      <div className="grid grid-cols-3 gap-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-4 rounded-2xl shadow-sm">
         {/* Clubs Column - Clickable with quantity badge */}
         <div
           onClick={() => setIsClubsModalOpen(true)}
-          className="cursor-pointer group/clubs p-1 -m-1 rounded-xl hover:bg-zinc-800/60 transition-all border border-transparent hover:border-orange-500/30"
+          className="cursor-pointer group/clubs p-1 -m-1 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-all border border-transparent hover:border-orange-500/30"
           title="Clique para ver os grupos que você participa"
         >
-          <span className="text-[10px] font-bold uppercase text-zinc-400 block mb-1 group-hover/clubs:text-orange-400 transition-colors">
+          <span className="text-[10px] font-bold uppercase text-zinc-600 dark:text-zinc-400 block mb-1 group-hover/clubs:text-orange-500 dark:group-hover/clubs:text-orange-400 transition-colors">
             CLUBS ({user.clubs.length})
           </span>
           <div className="flex items-center space-x-2">
@@ -230,21 +230,21 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 <div
                   key={idx}
                   title={club}
-                  className="w-6 h-6 rounded-full bg-zinc-800 border border-zinc-900 flex items-center justify-center text-orange-400 text-[9px] font-bold shadow"
+                  className="w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-900 flex items-center justify-center text-orange-600 dark:text-orange-400 text-[9px] font-bold shadow"
                 >
                   {club.charAt(0)}
                 </div>
               ))}
             </div>
           </div>
-          <span className="text-[9px] text-zinc-400 block mt-1 underline decoration-zinc-600 group-hover/clubs:text-orange-300">
+          <span className="text-[9px] text-zinc-500 dark:text-zinc-400 block mt-1 underline decoration-zinc-400 dark:decoration-zinc-600 group-hover/clubs:text-orange-500 dark:group-hover/clubs:text-orange-300">
             Ver grupos →
           </span>
         </div>
 
         {/* Total KM */}
-        <div className="border-l border-zinc-800 pl-3">
-          <span className="text-[10px] font-bold uppercase text-zinc-400 block">Total KM</span>
+        <div className="border-l border-zinc-200 dark:border-zinc-800 pl-3">
+          <span className="text-[10px] font-bold uppercase text-zinc-600 dark:text-zinc-400 block">Total KM</span>
           <div className="text-xl font-black text-orange-500 font-mono tracking-tight">
             {totalCalculatedKm >= 1000
               ? `${(totalCalculatedKm / 1000).toFixed(1)}k`

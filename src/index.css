@@ -1,5 +1,53 @@
 @import "tailwindcss";
 
+@variant dark (&:where(.dark, .dark *));
+
+:root {
+  color-scheme: light dark;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+html.light {
+  color-scheme: light;
+}
+
+html, body {
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+html.light body {
+  background-color: #f4f4f5;
+  color: #18181b;
+}
+
+html.light h1,
+html.light h2,
+html.light h3,
+html.light h4,
+html.light h5,
+html.light h6 {
+  color: #09090b;
+}
+
+html.light input,
+html.light textarea,
+html.light select {
+  color: #09090b;
+}
+
+html.light input::placeholder,
+html.light textarea::placeholder {
+  color: #71717a;
+}
+
+html.dark body {
+  background-color: #000000;
+  color: #f4f4f5;
+}
+
 @layer utilities {
   .font-sport {
     font-family: 'Barlow Condensed', 'Oswald', sans-serif;

@@ -1,22 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  db, 
-  collection, 
-  onSnapshot, 
-  addDoc, 
-  setDoc, 
-  doc, 
-  updateDoc, 
-  deleteDoc, 
-  query, 
-  orderBy,
-  getDocFromServer,
-  handleFirestoreError,
-  OperationType 
-} from './lib/firebase';
 import { ThemeProvider } from './context/ThemeContext';
 import { OfflineProvider } from './context/OfflineContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import {
+  testSupabaseConnection,
+  fetchActivities,
+  subscribeActivities,
+  createActivity,
+  fetchChallenges,
+  subscribeChallenges,
+  createChallenge,
+  fetchCommunities,
+  subscribeCommunities,
+  createCommunity,
+} from './lib/supabase';
 
 import { Header } from './components/Header';
 import { BottomNav, ActiveTab } from './components/BottomNav';
@@ -53,7 +50,7 @@ import { ActivityPost, Challenge, Community, NotificationItem } from './types';
 function MainAppContent() {
   const { user, updateProfile } = useAuth();
   const [activeTab, setActiveTab] = useState<ActiveTab>('home');
-  const [currentView, setCurrentView] = useState<string>('home'); // 'home', 'search', 'challenges', 'profile', 'analytics', 'admin', 'capture', 'upload', 'edit_profile', 'create_community', 'community_chat'
+  const [currentView, setCurrentView] = useState<string>('home');
 
   // Data State
   const [activities, setActivities] = useState<ActivityPost[]>(initialActivities);
@@ -63,84 +60,39 @@ function MainAppContent() {
   const [capturedPhotoUrl, setCapturedPhotoUrl] = useState<string>('');
   const [selectedTrackerChallengeId, setSelectedTrackerChallengeId] = useState<string | undefined>();
 
-  // Validate connection to Firestore on initial boot
+  // Validate connection to Supabase on initial boot
   useEffect(() => {
-    async function testConnection() {
-      try {
-        await getDocFromServer(doc(db, 'test', 'connection'));
-        console.log('Firestore server connection verified.');
-      } catch (error) {
-        if (error instanceof Error && error.message.includes('the client is offline')) {
-          console.error('Please check your Firebase configuration.');
-        }
-      }
-    }
-    testConnection();
+    testSupabaseConnection();
   }, []);
 
-  // Real-time Firestore sync for activities, challenges, communities, and notifications
+  // Real-time Supabase sync for activities, challenges, communities
   useEffect(() => {
-    const unsubActivities = onSnapshot(
-      collection(db, 'activities'),
-      (snapshot) => {
-        if (!snapshot.empty) {
-          const fetched = snapshot.docs.map((d) => ({
-            id: d.id,
-            ...(d.data() as Omit<ActivityPost, 'id'>)
-          }));
-          setActivities(fetched);
-        }
-      },
-      (error) => handleFirestoreError(error, OperationType.GET, 'activities')
-    );
+    // Initial fetches
+    fetchActivities().then((fetched) => {
+      if (fetched.length > 0) setActivities(fetched);
+    });
+    fetchChallenges().then((fetched) => {
+      if (fetched.length > 0) setChallenges(fetched);
+    });
+    fetchCommunities().then((fetched) => {
+      if (fetched.length > 0) setCommunities(fetched);
+    });
 
-    const unsubChallenges = onSnapshot(
-      collection(db, 'challenges'),
-      (snapshot) => {
-        if (!snapshot.empty) {
-          const fetched = snapshot.docs.map((d) => ({
-            id: d.id,
-            ...(d.data() as Omit<Challenge, 'id'>)
-          }));
-          setChallenges(fetched);
-        }
-      },
-      (error) => handleFirestoreError(error, OperationType.GET, 'challenges')
-    );
-
-    const unsubCommunities = onSnapshot(
-      collection(db, 'communities'),
-      (snapshot) => {
-        if (!snapshot.empty) {
-          const fetched = snapshot.docs.map((d) => ({
-            id: d.id,
-            ...(d.data() as Omit<Community, 'id'>)
-          }));
-          setCommunities(fetched);
-        }
-      },
-      (error) => handleFirestoreError(error, OperationType.GET, 'communities')
-    );
-
-    const unsubNotifs = onSnapshot(
-      collection(db, 'notifications'),
-      (snapshot) => {
-        if (!snapshot.empty) {
-          const fetched = snapshot.docs.map((d) => ({
-            id: d.id,
-            ...(d.data() as Omit<NotificationItem, 'id'>)
-          }));
-          setNotifications(fetched);
-        }
-      },
-      (error) => handleFirestoreError(error, OperationType.GET, 'notifications')
-    );
+    // Real-time subscribers
+    const unsubActivities = subscribeActivities((updated) => {
+      if (updated.length > 0) setActivities(updated);
+    });
+    const unsubChallenges = subscribeChallenges((updated) => {
+      if (updated.length > 0) setChallenges(updated);
+    });
+    const unsubCommunities = subscribeCommunities((updated) => {
+      if (updated.length > 0) setCommunities(updated);
+    });
 
     return () => {
       unsubActivities();
       unsubChallenges();
       unsubCommunities();
-      unsubNotifs();
     };
   }, []);
 
@@ -149,7 +101,6 @@ function MainAppContent() {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState<boolean>(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [isConnectWatchOpen, setIsConnectWatchOpen] = useState<boolean>(false);
-  const [isQuickMenuOpen, setIsQuickMenuOpen] = useState<boolean>(false);
   const [selectedUserProfile, setSelectedUserProfile] = useState<TargetUserProfileInfo | null>(null);
 
   const handleOpenUserProfile = (userObj: { userId: string; userName: string; userAvatar?: string }) => {
@@ -287,9 +238,9 @@ function MainAppContent() {
     setActivities((prev) => [newAct, ...prev]);
 
     try {
-      await addDoc(collection(db, 'activities'), newAct);
+      await createActivity(newAct);
     } catch (err) {
-      console.warn('Could not persist activity to Firestore:', err);
+      console.warn('Could not persist activity to Supabase:', err);
     }
 
     setCurrentView('home');
@@ -299,11 +250,10 @@ function MainAppContent() {
   const unreadNotifCount = notifications.filter((n) => !n.read).length;
 
   return (
-    <div id="app-wrapper" className="min-h-screen bg-black text-zinc-100 font-sans selection:bg-orange-500 selection:text-black">
+    <div id="app-wrapper" className="min-h-screen bg-zinc-50 dark:bg-black text-zinc-900 dark:text-zinc-100 font-sans selection:bg-orange-500 selection:text-black transition-colors duration-200">
       {/* Sticky Top Header */}
       <Header
         onOpenNotifications={() => setIsNotificationsOpen(true)}
-        onOpenFirebasePlan={() => setIsFirebasePlanOpen(true)}
         onOpenAuth={() => setIsAuthModalOpen(true)}
         unreadCount={unreadNotifCount}
       />
@@ -415,9 +365,9 @@ function MainAppContent() {
               };
               setCommunities((prev) => [fullCommunity, ...prev]);
               try {
-                await addDoc(collection(db, 'communities'), fullCommunity);
+                await createCommunity(fullCommunity);
               } catch (err) {
-                console.warn('Could not persist community to Firestore:', err);
+                console.warn('Could not persist community to Supabase:', err);
               }
               setCurrentView('challenges');
               setActiveTab('challenges');
@@ -438,9 +388,9 @@ function MainAppContent() {
             onCreate={async (newChallenge) => {
               setChallenges((prev) => [newChallenge, ...prev]);
               try {
-                await addDoc(collection(db, 'challenges'), newChallenge);
+                await createChallenge(newChallenge);
               } catch (err) {
-                console.warn('Could not persist challenge to Firestore:', err);
+                console.warn('Could not persist challenge to Supabase:', err);
               }
               setCurrentView('challenges');
               setActiveTab('challenges');
@@ -456,9 +406,9 @@ function MainAppContent() {
               setActivities((prev) => [newActivity, ...prev]);
 
               try {
-                await addDoc(collection(db, 'activities'), newActivity);
+                await createActivity(newActivity);
               } catch (err) {
-                console.warn('Could not save activity to Firestore:', err);
+                console.warn('Could not save activity to Supabase:', err);
               }
 
               // Update challenge state if run was linked to a challenge
@@ -514,71 +464,8 @@ function MainAppContent() {
       <BottomNav
         activeTab={activeTab}
         setActiveTab={handleTabChange}
-        onQuickPlusClick={() => setIsQuickMenuOpen(true)}
+        onQuickPlusClick={() => setCurrentView('capture')}
       />
-
-      {/* Quick Action Popup Menu */}
-      {isQuickMenuOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-end justify-center p-4">
-          <div className="bg-zinc-900 border border-zinc-800 w-full max-w-sm rounded-3xl p-5 text-white space-y-3 shadow-2xl">
-            <h3 className="text-sm font-bold text-center text-zinc-400">Menu Rápido</h3>
-            <div className="grid grid-cols-1 gap-2 text-xs font-bold">
-              <button
-                onClick={() => {
-                  setIsQuickMenuOpen(false);
-                  setCurrentView('challenges');
-                  setActiveTab('challenges');
-                }}
-                className="py-3.5 bg-orange-500 text-zinc-950 font-black rounded-2xl flex items-center justify-center gap-2 hover:bg-orange-600 shadow-lg text-sm"
-              >
-                🏆 Ir para Desafios (Iniciar Corrida)
-              </button>
-              <button
-                onClick={() => {
-                  setIsQuickMenuOpen(false);
-                  setCurrentView('capture');
-                }}
-                className="py-3 bg-zinc-800 text-white rounded-2xl flex items-center justify-center gap-2 hover:bg-zinc-700"
-              >
-                📸 Abrir Câmera & Foto (Capture)
-              </button>
-              <button
-                onClick={() => {
-                  setIsQuickMenuOpen(false);
-                  setCurrentView('upload');
-                }}
-                className="py-3 bg-zinc-800 text-white rounded-2xl flex items-center justify-center gap-2 hover:bg-zinc-700"
-              >
-                🖼️ Upload Rápido de Treino (Quick Upload)
-              </button>
-              <button
-                onClick={() => {
-                  setIsQuickMenuOpen(false);
-                  setCurrentView('create_challenge');
-                }}
-                className="py-3 bg-zinc-800 text-orange-400 border border-orange-500/30 rounded-2xl flex items-center justify-center gap-2 hover:bg-zinc-700"
-              >
-                🏆 Publicar Desafio
-              </button>
-              <button
-                onClick={() => {
-                  setIsQuickMenuOpen(false);
-                  setCurrentView('create_community');
-                }}
-                className="py-3 bg-zinc-800 text-zinc-300 border border-zinc-700 rounded-2xl flex items-center justify-center gap-2 hover:bg-zinc-700 hover:text-white"
-              >
-                👥 Criar Nova Comunidade
-              </button>
-            </div>
-            <button
-              onClick={() => setIsQuickMenuOpen(false)}
-              className="w-full py-2 text-xs text-zinc-400 font-bold hover:text-white"
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Modals & Drawers */}
       {isFirebasePlanOpen && (
