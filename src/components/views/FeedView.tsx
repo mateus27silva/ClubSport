@@ -347,13 +347,18 @@ export const FeedView: React.FC<FeedViewProps> = ({
                     className="w-10 h-10 rounded-full object-cover border border-orange-500/50 cursor-pointer hover:scale-105 transition-transform"
                   />
                   <div>
-                    <h3 className="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-1.5">
+                    <h3 className="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-1.5 flex-wrap">
                       <span
                         onClick={() => onOpenUserProfile?.({ userId: act.userId, userName: act.userName, userAvatar: act.userAvatar })}
                         className="cursor-pointer hover:text-orange-500 dark:hover:text-orange-400 hover:underline"
                       >
                         {act.userName}
                       </span>
+                      {Boolean(user && (act.userId === user.uid || act.userName === user.fullName)) && (
+                        <span className="text-[9px] bg-orange-500/15 text-orange-500 dark:text-orange-400 border border-orange-500/30 px-1.5 py-0.5 rounded-full font-bold">
+                          Você
+                        </span>
+                      )}
                       <span className="text-[10px] bg-zinc-100 dark:bg-zinc-800 text-orange-600 dark:text-orange-400 px-1.5 py-0.2 rounded font-mono font-bold">
                         {act.sport}
                       </span>
@@ -597,17 +602,23 @@ export const FeedView: React.FC<FeedViewProps> = ({
                 <div className="pt-2 border-t border-zinc-200 dark:border-zinc-800/80 space-y-2">
                   {/* Existing Comments */}
                   <div className="max-h-36 overflow-y-auto space-y-2 text-xs">
-                    {act.comments.map((cm) => (
-                      <div key={cm.id} className="bg-zinc-100 dark:bg-zinc-800/40 p-2 rounded-lg">
-                        <span
-                          onClick={() => onOpenUserProfile?.({ userId: cm.userId, userName: cm.userName, userAvatar: cm.userAvatar })}
-                          className="font-bold text-orange-600 dark:text-orange-400 cursor-pointer hover:underline"
-                        >
-                          {cm.userName}:{" "}
-                        </span>
-                        <span className="text-zinc-800 dark:text-zinc-300">{cm.text}</span>
-                      </div>
-                    ))}
+                    {act.comments.map((cm) => {
+                      const isOwnComment = Boolean(user && (cm.userId === user.uid || cm.userName === user.fullName));
+                      return (
+                        <div key={cm.id} className="bg-zinc-100 dark:bg-zinc-800/40 p-2 rounded-lg flex items-center justify-between">
+                          <div>
+                            <span
+                              onClick={() => onOpenUserProfile?.({ userId: cm.userId, userName: cm.userName, userAvatar: cm.userAvatar })}
+                              className="font-bold text-orange-600 dark:text-orange-400 cursor-pointer hover:underline"
+                            >
+                              {cm.userName}
+                              {isOwnComment && <span className="text-[10px] text-zinc-400 font-normal ml-1">(Você)</span>}:{" "}
+                            </span>
+                            <span className="text-zinc-800 dark:text-zinc-300">{cm.text}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
 
                   {/* Input form */}

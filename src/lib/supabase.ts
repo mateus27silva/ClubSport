@@ -265,6 +265,11 @@ export function subscribeChallenges(onUpdate: (challenges: Challenge[]) => void)
 
 export async function createChallenge(challenge: Challenge): Promise<boolean> {
   try {
+    let uploadedBannerUrl = challenge.bannerUrl || null;
+    if (uploadedBannerUrl && uploadedBannerUrl.startsWith('data:')) {
+      uploadedBannerUrl = await uploadImageToSupabase(uploadedBannerUrl, 'banners');
+    }
+
     const payload = {
       id: challenge.id,
       title: challenge.title,
@@ -276,7 +281,7 @@ export async function createChallenge(challenge: Challenge): Promise<boolean> {
       unit: challenge.unit,
       ends_in: challenge.endsIn,
       joined_users_count: challenge.joinedUsersCount || 1,
-      banner_url: challenge.bannerUrl,
+      banner_url: uploadedBannerUrl,
       status: challenge.status || 'active',
       lat: challenge.lat || null,
       lng: challenge.lng || null,
@@ -336,6 +341,11 @@ export function subscribeCommunities(onUpdate: (communities: Community[]) => voi
 
 export async function createCommunity(community: Community): Promise<boolean> {
   try {
+    let uploadedCoverUrl = community.coverUrl || null;
+    if (uploadedCoverUrl && uploadedCoverUrl.startsWith('data:')) {
+      uploadedCoverUrl = await uploadImageToSupabase(uploadedCoverUrl, 'banners');
+    }
+
     const payload = {
       id: community.id,
       name: community.name,
@@ -344,7 +354,7 @@ export async function createCommunity(community: Community): Promise<boolean> {
       sport_category: community.sportCategory,
       privacy: community.privacy,
       members_count: community.membersCount || 1,
-      cover_url: community.coverUrl,
+      cover_url: uploadedCoverUrl,
       created_by: community.createdBy,
       created_at: community.createdAt || new Date().toISOString(),
     };
@@ -425,14 +435,24 @@ export function subscribeCommunityMessages(
 
 export async function createCommunityMessage(message: CommunityMessage): Promise<boolean> {
   try {
+    let uploadedMediaUrl = message.mediaUrl || null;
+    if (uploadedMediaUrl && uploadedMediaUrl.startsWith('data:')) {
+      uploadedMediaUrl = await uploadImageToSupabase(uploadedMediaUrl, 'activities');
+    }
+
+    let uploadedAvatar = message.userAvatar || null;
+    if (uploadedAvatar && uploadedAvatar.startsWith('data:')) {
+      uploadedAvatar = await uploadImageToSupabase(uploadedAvatar, 'avatars');
+    }
+
     const payload = {
       id: message.id,
       community_id: message.communityId,
       user_id: message.userId,
       user_name: message.userName,
-      user_avatar: message.userAvatar,
+      user_avatar: uploadedAvatar,
       text: message.text,
-      media_url: message.mediaUrl || null,
+      media_url: uploadedMediaUrl,
       is_video: message.isVideo || false,
       replies_count: message.repliesCount || 0,
       flame_count: message.flameCount || 0,
@@ -449,6 +469,244 @@ export async function createCommunityMessage(message: CommunityMessage): Promise
   } catch (err) {
     handleSupabaseError(err, 'createCommunityMessage catch');
     return false;
+  }
+}
+
+/* ============================================================================
+   SOCIAL INTERACTIONS (LIKES, COMMENTS, CHALLENGES & COMMUNITY MEMBERSHIPS)
+   ============================================================================ */
+
+export async function fetchUserLikedActivities(userId: string): Promise<string[]> {
+  try {
+    const { data, error } = await supabase
+      .from('activity_likes')
+      .select('activity_id')
+      .eq('user_id', userId);
+    if (error) return [];
+    return (data || []).map((d) => d.activity_id);
+  } catch {
+    return [];
+  }
+}
+
+export async function toggleActivityLike(
+  activityId: string,
+  userId: string,
+  currentLikesCount: number
+): Promise<{ isLiked: boolean; likesCount: number }> {
+  try {
+    const { data: existing } = await supabase
+      .from('activity_likes')
+      .select('id')
+      .eq('activity_id', activityId)
+      .eq('user_id', userId)
+      .single();
+
+    let isLiked = false;
+    let newCount = currentLikesCount;
+
+    if (existing) {
+      await supabase
+        .from('activity_likes')
+        .delete()
+        .eq('activity_id', activityId)
+        .eq('user_id', userId);
+
+      isLiked = false;
+      newCount = Math.max(0, currentLikesCount - 1);
+    } else {
+      await supabase.from('activity_likes').insert([
+        { activity_id: activityId, user_id: userId }
+      ]);
+
+      isLiked = true;
+      newCount = currentLikesCount + 1;
+    }
+
+    await supabase
+      .from('activities')
+      .update({ likes_count: newCount })
+      .eq('id', activityId);
+
+    return { isLiked, likesCount: newCount };
+  } catch (err) {
+    handleSupabaseError(err, 'toggleActivityLike');
+    return { isLiked: false, likesCount: currentLikesCount };
+  }
+}
+
+export async function fetchActivityComments(activityId: string): Promise<any[]> {
+  try {
+    const { data, error } = await supabase
+      .from('activity_comments')
+      .select('*')
+      .eq('activity_id', activityId)
+      .order('created_at', { ascending: true });
+    if (error) return [];
+    return (data || []).map((c) => ({
+      id: c.id,
+      userName: c.user_name,
+      userAvatar: c.user_avatar,
+      text: c.text,
+      createdAt: c.created_at
+    }));
+  } catch {
+    return [];
+  }
+}
+
+export async function addActivityComment(
+  activityId: string,
+  userId: string,
+  userName: string,
+  userAvatar: string,
+  text: string,
+  currentCommentsCount: number
+): Promise<{ success: boolean; newCommentsCount: number }> {
+  try {
+    const { error } = await supabase.from('activity_comments').insert([
+      {
+        activity_id: activityId,
+        user_id: userId,
+        user_name: userName,
+        user_avatar: userAvatar,
+        text,
+      },
+    ]);
+
+    if (error) {
+      handleSupabaseError(error, 'addActivityComment');
+      return { success: false, newCommentsCount: currentCommentsCount };
+    }
+
+    const newCommentsCount = currentCommentsCount + 1;
+    await supabase
+      .from('activities')
+      .update({ comments_count: newCommentsCount })
+      .eq('id', activityId);
+
+    return { success: true, newCommentsCount };
+  } catch (err) {
+    handleSupabaseError(err, 'addActivityComment catch');
+    return { success: false, newCommentsCount: currentCommentsCount };
+  }
+}
+
+export async function fetchUserJoinedChallenges(userId: string): Promise<string[]> {
+  try {
+    const { data, error } = await supabase
+      .from('challenge_participants')
+      .select('challenge_id')
+      .eq('user_id', userId);
+    if (error) return [];
+    return (data || []).map((d) => d.challenge_id);
+  } catch {
+    return [];
+  }
+}
+
+export async function toggleChallengeParticipation(
+  challengeId: string,
+  userId: string,
+  currentJoinedCount: number
+): Promise<{ isJoined: boolean; newCount: number }> {
+  try {
+    const { data: existing } = await supabase
+      .from('challenge_participants')
+      .select('id')
+      .eq('challenge_id', challengeId)
+      .eq('user_id', userId)
+      .single();
+
+    let isJoined = false;
+    let newCount = currentJoinedCount;
+
+    if (existing) {
+      await supabase
+        .from('challenge_participants')
+        .delete()
+        .eq('challenge_id', challengeId)
+        .eq('user_id', userId);
+
+      isJoined = false;
+      newCount = Math.max(0, currentJoinedCount - 1);
+    } else {
+      await supabase
+        .from('challenge_participants')
+        .insert([{ challenge_id: challengeId, user_id: userId }]);
+
+      isJoined = true;
+      newCount = currentJoinedCount + 1;
+    }
+
+    await supabase
+      .from('challenges')
+      .update({ joined_users_count: newCount })
+      .eq('id', challengeId);
+
+    return { isJoined, newCount };
+  } catch (err) {
+    handleSupabaseError(err, 'toggleChallengeParticipation');
+    return { isJoined: false, newCount: currentJoinedCount };
+  }
+}
+
+export async function fetchUserJoinedCommunities(userId: string): Promise<string[]> {
+  try {
+    const { data, error } = await supabase
+      .from('community_members')
+      .select('community_id')
+      .eq('user_id', userId);
+    if (error) return [];
+    return (data || []).map((d) => d.community_id);
+  } catch {
+    return [];
+  }
+}
+
+export async function toggleCommunityMembership(
+  communityId: string,
+  userId: string,
+  currentMembersCount: number
+): Promise<{ isMember: boolean; newCount: number }> {
+  try {
+    const { data: existing } = await supabase
+      .from('community_members')
+      .select('id')
+      .eq('community_id', communityId)
+      .eq('user_id', userId)
+      .single();
+
+    let isMember = false;
+    let newCount = currentMembersCount;
+
+    if (existing) {
+      await supabase
+        .from('community_members')
+        .delete()
+        .eq('community_id', communityId)
+        .eq('user_id', userId);
+
+      isMember = false;
+      newCount = Math.max(1, currentMembersCount - 1);
+    } else {
+      await supabase
+        .from('community_members')
+        .insert([{ community_id: communityId, user_id: userId, role: 'member' }]);
+
+      isMember = true;
+      newCount = currentMembersCount + 1;
+    }
+
+    await supabase
+      .from('communities')
+      .update({ members_count: newCount })
+      .eq('id', communityId);
+
+    return { isMember, newCount };
+  } catch (err) {
+    handleSupabaseError(err, 'toggleCommunityMembership');
+    return { isMember: false, newCount: currentMembersCount };
   }
 }
 

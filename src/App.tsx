@@ -14,6 +14,13 @@ import {
   subscribeCommunities,
   createCommunity,
   uploadImageToSupabase,
+  toggleActivityLike,
+  addActivityComment,
+  toggleChallengeParticipation,
+  toggleCommunityMembership,
+  fetchUserLikedActivities,
+  fetchUserJoinedChallenges,
+  fetchUserJoinedCommunities,
 } from './lib/supabase';
 
 import { Header } from './components/Header';
@@ -142,6 +149,35 @@ function MainAppContent() {
     };
   }, []);
 
+  // Sync User Social Interactions when user changes
+  useEffect(() => {
+    if (user?.uid) {
+      fetchUserLikedActivities(user.uid).then((likedIds) => {
+        if (likedIds.length > 0) {
+          const likedSet = new Set(likedIds);
+          setActivities((prev) =>
+            prev.map((act) => ({
+              ...act,
+              isLiked: likedSet.has(act.id) || act.isLiked,
+            }))
+          );
+        }
+      });
+
+      fetchUserJoinedChallenges(user.uid).then((joinedIds) => {
+        if (joinedIds.length > 0) {
+          const joinedSet = new Set(joinedIds);
+          setChallenges((prev) =>
+            prev.map((ch) => ({
+              ...ch,
+              isJoined: joinedSet.has(ch.id) || ch.isJoined,
+            }))
+          );
+        }
+      });
+    }
+  }, [user?.uid]);
+
   // Modals
   const [isFirebasePlanOpen, setIsFirebasePlanOpen] = useState<boolean>(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState<boolean>(false);
@@ -183,48 +219,85 @@ function MainAppContent() {
     else if (tab === 'profile') setCurrentView('profile');
   };
 
-  // Like Toggle
-  const handleToggleLike = (activityId: string) => {
+  // Like Toggle (Optimistic + Supabase Sync)
+  const handleToggleLike = async (activityId: string) => {
+    const target = activities.find((a) => a.id === activityId);
+    if (!target) return;
+
+    const currentLikesCount = target.likesCount || 0;
+
     setActivities((prev) =>
       prev.map((act) =>
         act.id === activityId
           ? {
               ...act,
               isLiked: !act.isLiked,
-              likesCount: act.isLiked ? act.likesCount - 1 : act.likesCount + 1
+              likesCount: act.isLiked ? Math.max(0, act.likesCount - 1) : act.likesCount + 1
             }
           : act
       )
     );
+
+    if (user?.uid) {
+      const res = await toggleActivityLike(activityId, user.uid, currentLikesCount);
+      setActivities((prev) =>
+        prev.map((act) =>
+          act.id === activityId
+            ? { ...act, isLiked: res.isLiked, likesCount: res.likesCount }
+            : act
+        )
+      );
+    }
   };
 
-  // Comment Add
-  const handleAddComment = (activityId: string, text: string) => {
+  // Comment Add (Optimistic + Supabase Sync)
+  const handleAddComment = async (activityId: string, text: string) => {
     if (!user) {
       setIsAuthModalOpen(true);
       return;
     }
+    const target = activities.find((a) => a.id === activityId);
+    if (!target) return;
+
+    const newCommentObj = {
+      id: 'cm_' + Date.now(),
+      userId: user.uid,
+      userName: user.fullName || 'Atleta ClubSport',
+      userAvatar: user.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+      text,
+      createdAt: 'Agora'
+    };
+
     setActivities((prev) =>
       prev.map((act) =>
         act.id === activityId
           ? {
               ...act,
               commentsCount: act.commentsCount + 1,
-              comments: [
-                ...act.comments,
-                {
-                  id: 'cm_' + Date.now(),
-                  userId: user.uid,
-                  userName: user.fullName || 'Atleta ClubSport',
-                  userAvatar: user.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
-                  text,
-                  createdAt: 'Agora'
-                }
-              ]
+              comments: [...act.comments, newCommentObj]
             }
           : act
       )
     );
+
+    const res = await addActivityComment(
+      activityId,
+      user.uid,
+      user.fullName || 'Atleta ClubSport',
+      user.avatarUrl || '',
+      text,
+      target.commentsCount || 0
+    );
+
+    if (res.success) {
+      setActivities((prev) =>
+        prev.map((act) =>
+          act.id === activityId
+            ? { ...act, commentsCount: res.newCommentsCount }
+            : act
+        )
+      );
+    }
   };
 
   // Delete Activity
@@ -241,13 +314,33 @@ function MainAppContent() {
     );
   };
 
-  // Challenge Join (Once joined, user cannot leave)
-  const handleToggleJoinChallenge = (challengeId: string) => {
+  // Challenge Join (Optimistic + Supabase Sync)
+  const handleToggleJoinChallenge = async (challengeId: string) => {
+    const target = challenges.find((c) => c.id === challengeId);
+    if (!target) return;
+
+    const currentCount = target.joinedUsersCount || 0;
+
     setChallenges((prev) =>
       prev.map((c) =>
-        c.id === challengeId ? { ...c, isJoined: true } : c
+        c.id === challengeId
+          ? {
+              ...c,
+              isJoined: !c.isJoined,
+              joinedUsersCount: c.isJoined ? Math.max(0, c.joinedUsersCount - 1) : c.joinedUsersCount + 1
+            }
+          : c
       )
     );
+
+    if (user?.uid) {
+      const res = await toggleChallengeParticipation(challengeId, user.uid, currentCount);
+      setChallenges((prev) =>
+        prev.map((c) =>
+          c.id === challengeId ? { ...c, isJoined: res.isJoined, joinedUsersCount: res.newCount } : c
+        )
+      );
+    }
   };
 
   // Trigger Push Notification Simulation

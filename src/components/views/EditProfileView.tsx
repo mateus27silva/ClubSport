@@ -21,8 +21,8 @@ export const EditProfileView: React.FC<EditProfileViewProps> = ({ onBack }) => {
   const [region, setRegion] = useState(user?.region || 'São Paulo, SP, Brasil');
   const [avatarUrl, setAvatarUrl] = useState(user?.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80');
 
-  const handleSave = () => {
-    updateProfile({
+  const handleSave = async () => {
+    await updateProfile({
       fullName,
       username,
       bio,
@@ -30,7 +30,7 @@ export const EditProfileView: React.FC<EditProfileViewProps> = ({ onBack }) => {
       region,
       avatarUrl
     });
-    alert('Perfil atualizado com sucesso no Firebase Firestore!');
+    alert('Perfil atualizado com sucesso!');
     onBack();
   };
 

@@ -98,32 +98,49 @@ export const CommunityChatView: React.FC<CommunityChatProps> = ({ communityId = 
 
       {/* Messages Feed (Image 11) */}
       <div className="flex-1 overflow-y-auto no-scrollbar p-4 space-y-6">
-        {messages.map((msg) => (
-          <div key={msg.id} className="space-y-2">
-            {/* User Header */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2.5">
-                <img
-                  src={msg.userAvatar}
-                  alt={msg.userName}
-                  onClick={() => onOpenUserProfile?.({ userId: msg.userId, userName: msg.userName, userAvatar: msg.userAvatar })}
-                  className="w-9 h-9 rounded-full object-cover border border-zinc-800 cursor-pointer hover:scale-105 transition-transform"
-                />
-                <div>
-                  <h3
+        {messages.map((msg) => {
+          const isOwnMsg = Boolean(user && (msg.userId === user.uid || msg.userName === user.fullName));
+          return (
+            <div key={msg.id} className="space-y-2">
+              {/* User Header */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2.5">
+                  <img
+                    src={msg.userAvatar}
+                    alt={msg.userName}
                     onClick={() => onOpenUserProfile?.({ userId: msg.userId, userName: msg.userName, userAvatar: msg.userAvatar })}
-                    className="text-xs font-bold text-white cursor-pointer hover:text-orange-400 hover:underline"
-                  >
-                    {msg.userName}
-                  </h3>
-                  <span className="text-[10px] text-zinc-500">{msg.createdAt}</span>
+                    className="w-9 h-9 rounded-full object-cover border border-zinc-800 cursor-pointer hover:scale-105 transition-transform"
+                  />
+                  <div>
+                    <h3
+                      onClick={() => onOpenUserProfile?.({ userId: msg.userId, userName: msg.userName, userAvatar: msg.userAvatar })}
+                      className="text-xs font-bold text-white cursor-pointer hover:text-orange-400 hover:underline flex items-center gap-1.5"
+                    >
+                      <span>{msg.userName}</span>
+                      {isOwnMsg && (
+                        <span className="text-[9px] bg-orange-500/20 text-orange-400 border border-orange-500/30 px-1.5 py-0.2 rounded-full font-bold">
+                          Você
+                        </span>
+                      )}
+                    </h3>
+                    <span className="text-[10px] text-zinc-500">{msg.createdAt}</span>
+                  </div>
                 </div>
-              </div>
 
-              <button className="text-zinc-600 hover:text-zinc-400">
-                <MoreHorizontal className="w-4 h-4" />
-              </button>
-            </div>
+                {isOwnMsg && (
+                  <button
+                    onClick={() => {
+                      if (confirm('Deseja apagar esta mensagem?')) {
+                        setMessages((prev) => prev.filter((m) => m.id !== msg.id));
+                      }
+                    }}
+                    className="text-xs text-zinc-500 hover:text-red-400 p-1"
+                    title="Excluir mensagem"
+                  >
+                    Excluir
+                  </button>
+                )}
+              </div>
 
             {/* Message Body Text */}
             <p className="text-xs text-zinc-200 leading-relaxed pl-11">{msg.text}</p>
@@ -165,7 +182,8 @@ export const CommunityChatView: React.FC<CommunityChatProps> = ({ communityId = 
               </button>
             </div>
           </div>
-        ))}
+        );
+      })}
       </div>
 
       {/* Input Message Bar (Image 11 bottom) */}
