@@ -13,6 +13,8 @@ import {
   fetchCommunities,
   subscribeCommunities,
   createCommunity,
+  deleteCommunity,
+  updateCommunity,
   uploadImageToSupabase,
   toggleActivityLike,
   addActivityComment,
@@ -81,9 +83,47 @@ function MainAppContent() {
 
   const [challenges, setChallenges] = useState<Challenge[]>(initialChallenges);
   const [communities, setCommunities] = useState<Community[]>(initialCommunities);
+  const [selectedCommunityId, setSelectedCommunityId] = useState<string>('comm_1');
   const [notifications, setNotifications] = useState<NotificationItem[]>(initialNotifications);
   const [capturedPhotoUrl, setCapturedPhotoUrl] = useState<string>('');
   const [selectedTrackerChallengeId, setSelectedTrackerChallengeId] = useState<string | undefined>();
+
+  const handleOpenCommunityChat = (commId?: string) => {
+    if (commId) {
+      const found = communities.find((c) => c.id === commId || c.name === commId);
+      if (found) {
+        setSelectedCommunityId(found.id);
+      } else {
+        setSelectedCommunityId(commId);
+      }
+    }
+    setCurrentView('community_chat');
+  };
+
+  const handleDeleteCommunity = async (commId: string) => {
+    const target = communities.find((c) => c.id === commId);
+    setCommunities((prev) => prev.filter((c) => c.id !== commId));
+    if (user && target) {
+      const updatedClubs = user.clubs.filter((name) => name !== target.name && name !== target.id);
+      updateProfile({ clubs: updatedClubs });
+    }
+    try {
+      await deleteCommunity(commId);
+    } catch (err) {
+      console.warn('Could not delete community from Supabase:', err);
+    }
+    setCurrentView('challenges');
+    setActiveTab('challenges');
+  };
+
+  const handleUpdateCommunity = async (updatedComm: Community) => {
+    setCommunities((prev) => prev.map((c) => (c.id === updatedComm.id ? updatedComm : c)));
+    try {
+      await updateCommunity(updatedComm.id, updatedComm);
+    } catch (err) {
+      console.warn('Could not update community in Supabase:', err);
+    }
+  };
 
   // Persist activities to localStorage on change
   useEffect(() => {
@@ -437,7 +477,7 @@ function MainAppContent() {
             activities={activities}
             onToggleLike={handleToggleLike}
             onAddComment={handleAddComment}
-            onOpenCommunityChat={() => setCurrentView('community_chat')}
+            onOpenCommunityChat={handleOpenCommunityChat}
             onOpenCapture={() => setCurrentView('capture')}
             onOpenTracker={() => setCurrentView('tracker')}
             onDeleteActivity={handleDeleteActivity}
@@ -450,7 +490,7 @@ function MainAppContent() {
           <LeaderboardView
             athletes={initialLeaderboard}
             communities={communities}
-            onOpenCommunityChat={() => setCurrentView('community_chat')}
+            onOpenCommunityChat={handleOpenCommunityChat}
             onOpenUserProfile={handleOpenUserProfile}
           />
         )}
@@ -461,7 +501,7 @@ function MainAppContent() {
             communities={communities}
             onToggleJoinChallenge={handleToggleJoinChallenge}
             onOpenAnalytics={() => setCurrentView('analytics')}
-            onOpenCommunityChat={() => setCurrentView('community_chat')}
+            onOpenCommunityChat={handleOpenCommunityChat}
             onOpenCreateCommunity={() => setCurrentView('create_community')}
             onOpenCreateChallenge={() => setCurrentView('create_challenge')}
             onStartRunForChallenge={(challengeId) => {
@@ -481,7 +521,7 @@ function MainAppContent() {
             onOpenAdminDashboard={() => setCurrentView('admin')}
             onOpenAnalytics={() => setCurrentView('analytics')}
             onOpenSettings={() => setCurrentView('settings')}
-            onOpenCommunityChat={() => setCurrentView('community_chat')}
+            onOpenCommunityChat={handleOpenCommunityChat}
             onOpenUserProfile={handleOpenUserProfile}
           />
         )}
@@ -532,8 +572,9 @@ function MainAppContent() {
           <CreateCommunityView
             onCancel={() => setCurrentView('challenges')}
             onCreate={async (newComm) => {
+              const newCommId = 'comm_' + Date.now();
               const fullCommunity: Community = {
-                id: 'comm_' + Date.now(),
+                id: newCommId,
                 name: newComm.name,
                 description: newComm.description,
                 location: newComm.location || 'Brasil',
@@ -542,23 +583,45 @@ function MainAppContent() {
                 membersCount: 1,
                 coverUrl: newComm.coverUrl,
                 createdBy: user?.fullName || 'Atleta ClubSport',
+                creatorId: user?.uid,
+                admins: user?.uid ? [user.uid] : [],
+                members: [
+                  {
+                    id: user?.uid || 'usr_creator',
+                    name: user?.fullName || 'Atleta ClubSport',
+                    avatar: user?.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+                    role: 'creator'
+                  }
+                ],
                 createdAt: new Date().toISOString()
               };
+
               setCommunities((prev) => [fullCommunity, ...prev]);
+
+              if (user && !user.clubs.includes(newComm.name)) {
+                updateProfile({ clubs: [...user.clubs, newComm.name] });
+              }
+
               try {
                 await createCommunity(fullCommunity);
               } catch (err) {
                 console.warn('Could not persist community to Supabase:', err);
               }
-              setCurrentView('challenges');
-              setActiveTab('challenges');
+
+              setSelectedCommunityId(newCommId);
+              setCurrentView('community_chat');
             }}
           />
         )}
 
         {currentView === 'community_chat' && (
           <CommunityChatView
-            onBack={() => setCurrentView('home')}
+            communityId={selectedCommunityId}
+            community={communities.find((c) => c.id === selectedCommunityId)}
+            allCommunities={communities}
+            onDeleteCommunity={handleDeleteCommunity}
+            onUpdateCommunity={handleUpdateCommunity}
+            onBack={() => setCurrentView('challenges')}
             onOpenUserProfile={handleOpenUserProfile}
           />
         )}

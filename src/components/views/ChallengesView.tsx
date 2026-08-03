@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Trophy, Flame, CheckCircle, Clock, Users, MapPin, Navigation, Compass, RefreshCw, Smartphone, Search, MessageSquare, Globe, Lock, Play } from 'lucide-react';
+import { Trophy, Flame, CheckCircle, Clock, Users, MapPin, Navigation, Compass, RefreshCw, Smartphone, Search, MessageSquare, Globe, Lock, Play, Crown, UserCheck, Shield } from 'lucide-react';
 import { Challenge, Community } from '../../types';
 import { initialCommunities } from '../../data/mockData';
 import { useOffline } from '../../context/OfflineContext';
@@ -50,6 +50,7 @@ export const ChallengesView: React.FC<ChallengesViewProps> = ({
   const [sportFilter, setSportFilter] = useState<string>('All');
   const [regionFilter, setRegionFilter] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [communityTab, setCommunityTab] = useState<'all' | 'my'>('all');
   const [userCoords, setUserCoords] = useState<{ lat: number; lng: number }>(() => {
     return resolveLocationCoords(user?.region);
   });
@@ -158,6 +159,18 @@ export const ChallengesView: React.FC<ChallengesViewProps> = ({
   });
 
   let filteredCommunities = processedCommunities.filter((c) => {
+    const isCreatedByUser = Boolean(
+      (user?.fullName && c.createdBy.toLowerCase() === user.fullName.toLowerCase()) ||
+      (user?.uid && c.creatorId === user.uid)
+    );
+    const isMemberOfUser = Boolean(
+      user?.clubs && (user.clubs.includes(c.name) || user.clubs.includes(c.id))
+    );
+
+    if (communityTab === 'my' && !isCreatedByUser && !isMemberOfUser) {
+      return false;
+    }
+
     const matchesSearch =
       !searchQuery ||
       c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -323,64 +336,111 @@ export const ChallengesView: React.FC<ChallengesViewProps> = ({
 
       {/* Comunidades do App Section */}
       <div className="space-y-3">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <h2 className="text-xs font-black uppercase text-orange-400 tracking-wider flex items-center gap-2">
             <Users className="w-4 h-4" />
-            <span>Comunidades ({filteredCommunities.length})</span>
+            <span>Grupos & Comunidades ({filteredCommunities.length})</span>
           </h2>
-          {onOpenCreateCommunity && (
-            <button
-              onClick={onOpenCreateCommunity}
-              className="text-[10px] font-bold text-orange-400 hover:text-orange-300 bg-orange-500/10 border border-orange-500/20 px-2.5 py-1 rounded-lg transition-all"
-            >
-              + Criar Comunidade
-            </button>
-          )}
+
+          <div className="flex items-center gap-2">
+            <div className="flex bg-zinc-900 border border-zinc-800 p-0.5 rounded-lg text-[10px]">
+              <button
+                onClick={() => setCommunityTab('all')}
+                className={`px-2.5 py-1 rounded-md font-bold transition-all ${
+                  communityTab === 'all'
+                    ? 'bg-orange-500 text-zinc-950 shadow-sm'
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                Todas
+              </button>
+              <button
+                onClick={() => setCommunityTab('my')}
+                className={`px-2.5 py-1 rounded-md font-bold transition-all flex items-center gap-1 ${
+                  communityTab === 'my'
+                    ? 'bg-orange-500 text-zinc-950 shadow-sm'
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                <Crown className="w-3 h-3 text-amber-400 fill-amber-400" />
+                <span>Meus Grupos</span>
+              </button>
+            </div>
+
+            {onOpenCreateCommunity && (
+              <button
+                onClick={onOpenCreateCommunity}
+                className="text-[10px] font-bold text-orange-400 hover:text-orange-300 bg-orange-500/10 border border-orange-500/20 px-2.5 py-1 rounded-lg transition-all"
+              >
+                + Criar
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="space-y-3">
-          {filteredCommunities.map((community) => (
-            <div
-              key={community.id}
-              className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden hover:border-zinc-700 transition-all shadow-md group"
-            >
-              {/* Cover Banner */}
-              <div className="relative h-28 w-full overflow-hidden">
-                <img
-                  src={community.coverUrl}
-                  alt={community.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-zinc-900/40 to-transparent" />
-                
-                <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/10 text-[10px] text-zinc-300 font-bold">
-                  {community.privacy === 'public' ? (
-                    <>
-                      <Globe className="w-3 h-3 text-emerald-400" />
-                      <span>Pública</span>
-                    </>
-                  ) : (
-                    <>
-                      <Lock className="w-3 h-3 text-amber-400" />
-                      <span>Privada</span>
-                    </>
-                  )}
+          {filteredCommunities.map((community) => {
+            const isCreatedByUser = Boolean(
+              (user?.fullName && community.createdBy.toLowerCase() === user.fullName.toLowerCase()) ||
+              (user?.uid && community.creatorId === user.uid)
+            );
+
+            return (
+              <div
+                key={community.id}
+                className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden hover:border-zinc-700 transition-all shadow-md group"
+              >
+                {/* Cover Banner */}
+                <div className="relative h-28 w-full overflow-hidden">
+                  <img
+                    src={community.coverUrl}
+                    alt={community.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-zinc-900/40 to-transparent" />
+                  
+                  <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5">
+                    {isCreatedByUser && (
+                      <span className="flex items-center gap-1 bg-amber-500/20 text-amber-300 border border-amber-500/40 backdrop-blur-md px-2 py-0.5 rounded-full text-[10px] font-bold shadow-md">
+                        <Crown className="w-3 h-3 fill-amber-400 text-amber-400" />
+                        <span>Criador</span>
+                      </span>
+                    )}
+
+                    <div className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/10 text-[10px] text-zinc-300 font-bold">
+                      {community.privacy === 'public' ? (
+                        <>
+                          <Globe className="w-3 h-3 text-emerald-400" />
+                          <span>Pública</span>
+                        </>
+                      ) : (
+                        <>
+                          <Lock className="w-3 h-3 text-amber-400" />
+                          <span>Privada</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="absolute bottom-2 left-3">
+                    <span className="text-[10px] font-black uppercase tracking-wider bg-orange-500 text-zinc-950 px-2 py-0.5 rounded-md">
+                      {community.sportCategory}
+                    </span>
+                  </div>
                 </div>
 
-                <div className="absolute bottom-2 left-3">
-                  <span className="text-[10px] font-black uppercase tracking-wider bg-orange-500 text-zinc-950 px-2 py-0.5 rounded-md">
-                    {community.sportCategory}
-                  </span>
-                </div>
-              </div>
-
-              {/* Community Details */}
-              <div className="p-3.5 space-y-2">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="text-sm font-black text-zinc-900 dark:text-white group-hover:text-orange-500 dark:group-hover:text-orange-400 transition-colors">
-                      {community.name}
-                    </h3>
+                {/* Community Details */}
+                <div className="p-3.5 space-y-2">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="text-sm font-black text-zinc-900 dark:text-white group-hover:text-orange-500 dark:group-hover:text-orange-400 transition-colors flex items-center gap-2">
+                        <span>{community.name}</span>
+                        {isCreatedByUser && (
+                          <span className="text-[9px] bg-orange-500/20 text-orange-400 border border-orange-500/30 px-1.5 py-0.2 rounded font-bold uppercase">
+                            Seu Grupo
+                          </span>
+                        )}
+                      </h3>
                     {(community.location || community.calculatedDistanceKm !== undefined) && (
                       <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                         <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400 bg-orange-500/10 border border-orange-500/20 px-2 py-0.5 rounded-md flex items-center gap-1">
@@ -421,7 +481,8 @@ export const ChallengesView: React.FC<ChallengesViewProps> = ({
                 </div>
               </div>
             </div>
-          ))}
+          );
+        })}
 
           {filteredCommunities.length === 0 && (
             <div className="p-6 bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 rounded-2xl text-center space-y-3 shadow-sm">

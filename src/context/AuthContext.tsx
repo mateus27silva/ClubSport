@@ -35,12 +35,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .single();
 
       if (data && !error) {
+        if (data.settings) {
+          try {
+            localStorage.setItem('clubsport_app_settings', JSON.stringify(data.settings));
+          } catch (e) {}
+        }
+
         const prof: UserProfile = {
           uid: data.id,
           fullName: data.full_name || nameHint || 'Atleta ClubSport',
           username: data.username || `@${(data.full_name || 'atleta').toLowerCase().replace(/\s+/g, '_')}`,
           email: data.email || sbUser.email || '',
-          bio: data.bio || 'Atleta do ClubSport.',
+          bio: data.bio !== undefined && data.bio !== null ? data.bio : 'Atleta do ClubSport.',
           primarySport: data.primary_sport || 'Running',
           region: data.region || 'São Paulo, SP, Brasil',
           role: data.role || 'user',

@@ -31,6 +31,7 @@ import {
   downloadGpxFile 
 } from '../../lib/runUtils';
 import { db, collection, addDoc, doc, updateDoc, increment, getDoc, setDoc } from '../../lib/firebase';
+import { createActivity } from '../../lib/supabase';
 import { GoogleRouteMap } from '../GoogleRouteMap';
 
 interface LiveTrackerViewProps {
@@ -273,9 +274,12 @@ export const LiveTrackerView: React.FC<LiveTrackerViewProps> = ({
       createdAt: new Date().toISOString()
     };
 
-    // Save into Firestore
+    // Save into Supabase & Firestore for real-time cross-device sync
     try {
-      // 1. Save Activity
+      // 1. Save Activity to Supabase
+      await createActivity(newActivity);
+
+      // 2. Save Activity to Firestore
       await addDoc(collection(db, 'activities'), {
         userId: newActivity.userId,
         userName: newActivity.userName,

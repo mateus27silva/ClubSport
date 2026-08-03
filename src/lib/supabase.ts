@@ -423,6 +423,34 @@ export async function createCommunity(community: Community): Promise<boolean> {
   }
 }
 
+export async function deleteCommunity(communityId: string): Promise<boolean> {
+  try {
+    const { error } = await supabase.from('communities').delete().eq('id', communityId);
+    if (error) {
+      handleSupabaseError(error, 'deleteCommunity');
+      return false;
+    }
+    return true;
+  } catch (err) {
+    handleSupabaseError(err, 'deleteCommunity catch');
+    return false;
+  }
+}
+
+export async function updateCommunity(communityId: string, updates: Partial<Community>): Promise<boolean> {
+  try {
+    const { error } = await supabase.from('communities').update(updates).eq('id', communityId);
+    if (error) {
+      handleSupabaseError(error, 'updateCommunity');
+      return false;
+    }
+    return true;
+  } catch (err) {
+    handleSupabaseError(err, 'updateCommunity catch');
+    return false;
+  }
+}
+
 /* ============================================================================
    COMMUNITY MESSAGES
    ============================================================================ */

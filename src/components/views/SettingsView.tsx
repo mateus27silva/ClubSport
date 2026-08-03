@@ -16,6 +16,8 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { supabase } from '../../lib/supabase';
+import { getDeviceLocale, getLanguageLabel } from '../../lib/localize';
 
 interface SettingsViewProps {
   onBack: () => void;
@@ -34,11 +36,91 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
-  // Preference states
-  const [unitsOfMeasure, setUnitsOfMeasure] = useState<'metric' | 'imperial'>('metric');
-  const [language, setLanguage] = useState<'pt-BR' | 'en-US'>('pt-BR');
-  const [pushNotifications, setPushNotifications] = useState(true);
-  const [emailNotifications, setEmailNotifications] = useState(false);
+  // Preference states loaded persistently from localStorage/Supabase
+  const [unitsOfMeasure, setUnitsOfMeasure] = useState<'metric' | 'imperial'>(() => {
+    try {
+      const saved = localStorage.getItem('clubsport_app_settings');
+      if (saved) return JSON.parse(saved).unitsOfMeasure || 'metric';
+    } catch (e) {}
+    return 'metric';
+  });
+
+  const [language, setLanguage] = useState<'auto' | 'pt-BR' | 'en-US' | 'es-ES'>(() => {
+    try {
+      const saved = localStorage.getItem('clubsport_app_settings');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.language) return parsed.language;
+      }
+    } catch (e) {}
+    return 'auto';
+  });
+
+  const [pushNotifications, setPushNotifications] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('clubsport_app_settings');
+      if (saved) return JSON.parse(saved).pushNotifications ?? true;
+    } catch (e) {}
+    return true;
+  });
+
+  const [emailNotifications, setEmailNotifications] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('clubsport_app_settings');
+      if (saved) return JSON.parse(saved).emailNotifications ?? false;
+    } catch (e) {}
+    return false;
+  });
+
+  // Privacy state
+  const [isPublicProfile, setIsPublicProfile] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('clubsport_app_settings');
+      if (saved) return JSON.parse(saved).isPublicProfile ?? true;
+    } catch (e) {}
+    return true;
+  });
+
+  const [activityDefaultPrivacy, setActivityDefaultPrivacy] = useState<'public' | 'followers' | 'private'>(() => {
+    try {
+      const saved = localStorage.getItem('clubsport_app_settings');
+      if (saved) return JSON.parse(saved).activityDefaultPrivacy || 'public';
+    } catch (e) {}
+    return 'public';
+  });
+
+  // Helper function to persist settings both locally and to Supabase
+  const persistSettings = async (updatedSettings: {
+    unitsOfMeasure?: 'metric' | 'imperial';
+    language?: 'auto' | 'pt-BR' | 'en-US' | 'es-ES';
+    pushNotifications?: boolean;
+    emailNotifications?: boolean;
+    isPublicProfile?: boolean;
+    activityDefaultPrivacy?: 'public' | 'followers' | 'private';
+  }) => {
+    try {
+      const current = {
+        unitsOfMeasure,
+        language,
+        pushNotifications,
+        emailNotifications,
+        isPublicProfile,
+        activityDefaultPrivacy,
+        ...updatedSettings
+      };
+
+      localStorage.setItem('clubsport_app_settings', JSON.stringify(current));
+
+      if (user?.uid) {
+        await supabase
+          .from('profiles')
+          .update({ settings: current })
+          .eq('id', user.uid);
+      }
+    } catch (err) {
+      console.warn('Error saving settings:', err);
+    }
+  };
 
   // Modal states
   const [activeModal, setActiveModal] = useState<
@@ -50,10 +132,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordMsg, setPasswordMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-
-  // Privacy state
-  const [isPublicProfile, setIsPublicProfile] = useState(true);
-  const [activityDefaultPrivacy, setActivityDefaultPrivacy] = useState<'public' | 'followers' | 'private'>('public');
 
   // Delete account state
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
@@ -245,7 +323,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   <div className="flex flex-col">
                     <span className="text-sm font-semibold text-zinc-100">Language</span>
                     <span className="text-xs text-zinc-400 font-medium mt-0.5">
-                      {language === 'pt-BR' ? 'Português (BR)' : 'English (US)'}
+                      {getLanguageLabel(language)}
                     </span>
                   </div>
                   <ChevronRight className="w-5 h-5 text-zinc-500 group-hover:translate-x-1 group-hover:text-zinc-300 transition-all" />
@@ -272,7 +350,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   <span className="text-sm font-semibold text-zinc-100">Push Notifications</span>
                 </div>
                 <button
-                  onClick={() => setPushNotifications(!pushNotifications)}
+                  onClick={() => {
+                    const newVal = !pushNotifications;
+                    setPushNotifications(newVal);
+                    persistSettings({ pushNotifications: newVal });
+                  }}
                   className={`relative w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none ${
                     pushNotifications ? 'bg-orange-500' : 'bg-zinc-700'
                   }`}
@@ -292,7 +374,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   <span className="text-sm font-semibold text-zinc-100">Email Notifications</span>
                 </div>
                 <button
-                  onClick={() => setEmailNotifications(!emailNotifications)}
+                  onClick={() => {
+                    const newVal = !emailNotifications;
+                    setEmailNotifications(newVal);
+                    persistSettings({ emailNotifications: newVal });
+                  }}
                   className={`relative w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none ${
                     emailNotifications ? 'bg-orange-500' : 'bg-zinc-700'
                   }`}
@@ -532,6 +618,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
               <button
                 onClick={() => {
+                  persistSettings({ isPublicProfile, activityDefaultPrivacy });
                   alert('Configurações de privacidade salvas!');
                   setActiveModal('none');
                 }}
@@ -566,6 +653,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               <div
                 onClick={() => {
                   setUnitsOfMeasure('metric');
+                  persistSettings({ unitsOfMeasure: 'metric' });
                   setActiveModal('none');
                 }}
                 className={`p-3.5 rounded-xl border cursor-pointer flex items-center justify-between ${
@@ -584,6 +672,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               <div
                 onClick={() => {
                   setUnitsOfMeasure('imperial');
+                  persistSettings({ unitsOfMeasure: 'imperial' });
                   setActiveModal('none');
                 }}
                 className={`p-3.5 rounded-xl border cursor-pointer flex items-center justify-between ${
@@ -618,13 +707,43 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               <div className="w-10 h-10 rounded-full bg-orange-500/20 border border-orange-500/40 flex items-center justify-center text-orange-400">
                 <Globe className="w-5 h-5" />
               </div>
-              <h3 className="text-lg font-bold text-white">Idioma / Language</h3>
+              <div>
+                <h3 className="text-lg font-bold text-white">Idioma / Language</h3>
+                <p className="text-[11px] text-zinc-400">Suporte a react-native-localize</p>
+              </div>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-2.5">
+              {/* Auto / System option via react-native-localize */}
+              <div
+                onClick={() => {
+                  setLanguage('auto');
+                  persistSettings({ language: 'auto' });
+                  setActiveModal('none');
+                }}
+                className={`p-3.5 rounded-xl border cursor-pointer flex items-center justify-between ${
+                  language === 'auto'
+                    ? 'bg-orange-500/10 border-orange-500 text-white'
+                    : 'bg-zinc-800/40 border-zinc-700/60 text-zinc-300'
+                }`}
+              >
+                <div>
+                  <div className="text-xs font-bold flex items-center gap-1.5">
+                    <span>Automático (Sistema)</span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-orange-500/20 text-orange-400 font-mono">RN-Localize</span>
+                  </div>
+                  <div className="text-[10px] text-zinc-400 mt-0.5">
+                    Detectado: {getDeviceLocale().languageTag} ({getDeviceLocale().source === 'react-native-localize' ? 'react-native-localize' : 'Navegador'})
+                  </div>
+                </div>
+                {language === 'auto' && <Check className="w-4 h-4 text-orange-400" />}
+              </div>
+
+              {/* Português (BR) */}
               <div
                 onClick={() => {
                   setLanguage('pt-BR');
+                  persistSettings({ language: 'pt-BR' });
                   setActiveModal('none');
                 }}
                 className={`p-3.5 rounded-xl border cursor-pointer flex items-center justify-between ${
@@ -640,9 +759,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 {language === 'pt-BR' && <Check className="w-4 h-4 text-orange-400" />}
               </div>
 
+              {/* English (US) */}
               <div
                 onClick={() => {
                   setLanguage('en-US');
+                  persistSettings({ language: 'en-US' });
                   setActiveModal('none');
                 }}
                 className={`p-3.5 rounded-xl border cursor-pointer flex items-center justify-between ${
@@ -656,6 +777,26 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   <div className="text-[10px] text-zinc-400">United States English</div>
                 </div>
                 {language === 'en-US' && <Check className="w-4 h-4 text-orange-400" />}
+              </div>
+
+              {/* Español (ES) */}
+              <div
+                onClick={() => {
+                  setLanguage('es-ES');
+                  persistSettings({ language: 'es-ES' });
+                  setActiveModal('none');
+                }}
+                className={`p-3.5 rounded-xl border cursor-pointer flex items-center justify-between ${
+                  language === 'es-ES'
+                    ? 'bg-orange-500/10 border-orange-500 text-white'
+                    : 'bg-zinc-800/40 border-zinc-700/60 text-zinc-300'
+                }`}
+              >
+                <div>
+                  <div className="text-xs font-bold">Español (ES)</div>
+                  <div className="text-[10px] text-zinc-400">Español de España</div>
+                </div>
+                {language === 'es-ES' && <Check className="w-4 h-4 text-orange-400" />}
               </div>
             </div>
           </div>

@@ -16,7 +16,9 @@ import {
   Phone,
   Calendar,
   ShieldCheck,
-  ArrowRight
+  ArrowRight,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import stadiumLandingImg from '../../assets/images/clubsport_stadium_landing_1785459901545.jpg';
@@ -43,6 +45,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, initialStep = 'we
     password: '',
     confirmPassword: ''
   });
+
+  // Password Visibility Toggle
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Sports selection state
   const [selectedSports, setSelectedSports] = useState<string[]>(['Running', 'Cycling']);
@@ -270,32 +276,42 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, initialStep = 'we
 
               <form onSubmit={handleSignInSubmit} className="space-y-4 max-w-sm mx-auto">
                 <div className="space-y-1">
-                  <label className="text-xs text-zinc-400 font-medium">Email</label>
-                  <div className="bg-zinc-900 border border-zinc-800 focus-within:border-orange-500 rounded-xl px-3.5 py-3 flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-zinc-500" />
+                  <label className="text-xs text-zinc-300 font-semibold">Email</label>
+                  <div className="bg-zinc-900/90 border border-zinc-700/80 focus-within:border-orange-500 focus-within:ring-1 focus-within:ring-orange-500 rounded-xl px-3.5 py-3 flex items-center gap-2.5 transition-all">
+                    <Mail className="w-4 h-4 text-orange-500 shrink-0" />
                     <input
                       type="email"
-                      placeholder="Email"
+                      placeholder="seu@email.com"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full bg-transparent text-sm text-white focus:outline-none placeholder:text-zinc-600"
+                      className="w-full bg-transparent text-sm sm:text-base font-semibold !text-white focus:outline-none placeholder:text-zinc-500 caret-orange-500"
+                      autoComplete="email"
                       required
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs text-zinc-400 font-medium">Password</label>
-                  <div className="bg-zinc-900 border border-zinc-800 focus-within:border-orange-500 rounded-xl px-3.5 py-3 flex items-center gap-2">
-                    <Lock className="w-4 h-4 text-zinc-500" />
+                  <label className="text-xs text-zinc-300 font-semibold">Password</label>
+                  <div className="bg-zinc-900/90 border border-zinc-700/80 focus-within:border-orange-500 focus-within:ring-1 focus-within:ring-orange-500 rounded-xl px-3.5 py-3 flex items-center gap-2.5 transition-all">
+                    <Lock className="w-4 h-4 text-orange-500 shrink-0" />
                     <input
-                      type="password"
-                      placeholder="Password"
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="••••••••"
                       value={formData.password}
                       onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                      className="w-full bg-transparent text-sm text-white focus:outline-none placeholder:text-zinc-600"
+                      className="w-full bg-transparent text-sm sm:text-base font-semibold !text-white focus:outline-none placeholder:text-zinc-500 caret-orange-500"
+                      autoComplete="current-password"
                       required
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="p-1 text-zinc-400 hover:text-white transition-colors shrink-0 focus:outline-none"
+                      title={showPassword ? "Esconder senha" : "Mostrar senha"}
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
                   </div>
                 </div>
 
@@ -396,10 +412,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, initialStep = 'we
                   <label className="text-xs text-zinc-300 font-semibold">Full Name</label>
                   <input
                     type="text"
-                    placeholder="Full Name"
+                    placeholder="Nome completo"
                     value={formData.fullName}
                     onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                    className="w-full bg-zinc-900 border border-zinc-800 focus:border-orange-500 rounded-xl px-4 py-3 text-xs text-white outline-none placeholder:text-zinc-600 transition-colors"
+                    className="w-full bg-zinc-900/90 border border-zinc-700/80 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-xl px-4 py-3 text-sm font-medium text-white outline-none placeholder:text-zinc-500 caret-orange-500 transition-colors"
                   />
                 </div>
 
@@ -409,10 +425,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, initialStep = 'we
                   </label>
                   <input
                     type="text"
-                    placeholder="Nickname (Athlete Name)"
+                    placeholder="Apelido de Atleta"
                     value={formData.nickname}
                     onChange={(e) => setFormData({ ...formData, nickname: e.target.value })}
-                    className="w-full bg-zinc-900 border border-zinc-800 focus:border-orange-500 rounded-xl px-4 py-3 text-xs text-white outline-none placeholder:text-zinc-600 transition-colors"
+                    className="w-full bg-zinc-900/90 border border-zinc-700/80 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-xl px-4 py-3 text-sm font-medium text-white outline-none placeholder:text-zinc-500 caret-orange-500 transition-colors"
                   />
                 </div>
 
@@ -420,10 +436,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, initialStep = 'we
                   <label className="text-xs text-zinc-300 font-semibold">Phone Number</label>
                   <input
                     type="tel"
-                    placeholder="Phone Number"
+                    placeholder="(11) 99999-9999"
                     value={formData.phoneNumber}
                     onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                    className="w-full bg-zinc-900 border border-zinc-800 focus:border-orange-500 rounded-xl px-4 py-3 text-xs text-white outline-none placeholder:text-zinc-600 transition-colors"
+                    className="w-full bg-zinc-900/90 border border-zinc-700/80 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-xl px-4 py-3 text-sm font-medium text-white outline-none placeholder:text-zinc-500 caret-orange-500 transition-colors"
                   />
                 </div>
 
@@ -431,10 +447,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, initialStep = 'we
                   <label className="text-xs text-zinc-300 font-semibold">Date of Birth</label>
                   <input
                     type="text"
-                    placeholder="Date of Birth"
+                    placeholder="DD/MM/AAAA"
                     value={formData.dateOfBirth}
                     onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
-                    className="w-full bg-zinc-900 border border-zinc-800 focus:border-orange-500 rounded-xl px-4 py-3 text-xs text-white outline-none placeholder:text-zinc-600 transition-colors"
+                    className="w-full bg-zinc-900/90 border border-zinc-700/80 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-xl px-4 py-3 text-sm font-medium text-white outline-none placeholder:text-zinc-500 caret-orange-500 transition-colors"
                   />
                 </div>
 
@@ -442,32 +458,53 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, initialStep = 'we
                   <label className="text-xs text-zinc-300 font-semibold">Email</label>
                   <input
                     type="email"
-                    placeholder="Email"
+                    placeholder="seu@email.com"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full bg-zinc-900 border border-zinc-800 focus:border-orange-500 rounded-xl px-4 py-3 text-xs text-white outline-none placeholder:text-zinc-600 transition-colors"
+                    className="w-full bg-zinc-900/90 border border-zinc-700/80 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-xl px-4 py-3 text-sm font-medium text-white outline-none placeholder:text-zinc-500 caret-orange-500 transition-colors"
+                    autoComplete="email"
                   />
                 </div>
 
                 <div className="space-y-1">
                   <label className="text-xs text-zinc-300 font-semibold">Password</label>
-                  <input
-                    type="password"
-                    placeholder="Password"
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className="w-full bg-zinc-900 border border-zinc-800 focus:border-orange-500 rounded-xl px-4 py-3 text-xs text-white outline-none placeholder:text-zinc-600 transition-colors"
-                  />
+                  <div className="relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="Criar senha"
+                      value={formData.password}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      className="w-full bg-zinc-900/90 border border-zinc-700/80 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-xl px-4 py-3 pr-10 text-sm font-medium text-white outline-none placeholder:text-zinc-500 caret-orange-500 transition-colors"
+                      autoComplete="new-password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-zinc-400 hover:text-white transition-colors"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
                 </div>
 
                 <div className="space-y-1">
-                  <input
-                    type="password"
-                    placeholder="Confirm Password"
-                    value={formData.confirmPassword}
-                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                    className="w-full bg-zinc-900 border border-zinc-800 focus:border-orange-500 rounded-xl px-4 py-3 text-xs text-white outline-none placeholder:text-zinc-600 transition-colors"
-                  />
+                  <div className="relative">
+                    <input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      placeholder="Confirmar senha"
+                      value={formData.confirmPassword}
+                      onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                      className="w-full bg-zinc-900/90 border border-zinc-700/80 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-xl px-4 py-3 pr-10 text-sm font-medium text-white outline-none placeholder:text-zinc-500 caret-orange-500 transition-colors"
+                      autoComplete="new-password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-zinc-400 hover:text-white transition-colors"
+                    >
+                      {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
                 </div>
 
                 <button
@@ -608,14 +645,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, initialStep = 'we
 
               {/* Region Search Input */}
               <div className="mt-6 mb-6">
-                <div className="bg-zinc-900 border border-zinc-800 focus-within:border-orange-500 rounded-xl px-4 py-3.5 flex items-center gap-2">
-                  <Search className="w-4 h-4 text-zinc-500" />
+                <div className="bg-zinc-900/90 border border-zinc-700/80 focus-within:border-orange-500 focus-within:ring-1 focus-within:ring-orange-500 rounded-xl px-4 py-3.5 flex items-center gap-2.5 transition-all">
+                  <Search className="w-4 h-4 text-orange-500 shrink-0" />
                   <input
                     type="text"
                     placeholder="Search for city or country"
                     value={regionSearch}
                     onChange={(e) => setRegionSearch(e.target.value)}
-                    className="w-full bg-transparent text-xs text-white focus:outline-none placeholder:text-zinc-600"
+                    className="w-full bg-transparent text-sm font-medium text-white focus:outline-none placeholder:text-zinc-500 caret-orange-500"
                   />
                 </div>
               </div>
@@ -698,14 +735,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, initialStep = 'we
                   Enter your email address and we'll send you instructions to reset your password.
                 </p>
 
-                <div className="bg-zinc-900 border border-zinc-800 rounded-xl px-3.5 py-3 flex items-center gap-2">
-                  <Mail className="w-4 h-4 text-zinc-500" />
+                <div className="bg-zinc-900/90 border border-zinc-700/80 focus-within:border-orange-500 focus-within:ring-1 focus-within:ring-orange-500 rounded-xl px-3.5 py-3 flex items-center gap-2.5 transition-all">
+                  <Mail className="w-4 h-4 text-orange-500 shrink-0" />
                   <input
                     type="email"
                     placeholder="Enter your email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full bg-transparent text-sm text-white focus:outline-none"
+                    className="w-full bg-transparent text-sm font-medium text-white focus:outline-none placeholder:text-zinc-500 caret-orange-500"
+                    autoComplete="email"
                     required
                   />
                 </div>

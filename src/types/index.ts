@@ -109,6 +109,13 @@ export interface Challenge {
   calculatedDistanceKm?: number;
 }
 
+export interface CommunityMember {
+  id: string;
+  name: string;
+  avatar: string;
+  role: 'creator' | 'admin' | 'member';
+}
+
 export interface Community {
   id: string;
   name: string;
@@ -119,6 +126,11 @@ export interface Community {
   membersCount: number;
   coverUrl: string;
   createdBy: string;
+  creatorId?: string;
+  admins?: string[];
+  members?: CommunityMember[];
+  pinnedMessageId?: string;
+  pinnedMessageText?: string;
   createdAt: string;
   lat?: number;
   lng?: number;
@@ -137,6 +149,7 @@ export interface CommunityMessage {
   repliesCount: number;
   flameCount: number;
   hasReacted?: boolean;
+  isPinned?: boolean;
   createdAt: string;
 }
 
