@@ -27,6 +27,7 @@ interface ProfileViewProps {
   onOpenConnectWatch: () => void;
   onOpenAdminDashboard: () => void;
   onOpenAnalytics: () => void;
+  onOpenSettings?: () => void;
   onOpenCommunityChat?: (communityId?: string) => void;
   onOpenUserProfile?: (userObj: { userId: string; userName: string; userAvatar?: string }) => void;
 }
@@ -38,6 +39,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   onOpenConnectWatch,
   onOpenAdminDashboard,
   onOpenAnalytics,
+  onOpenSettings,
   onOpenCommunityChat,
   onOpenUserProfile
 }) => {
@@ -149,6 +151,16 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             >
               <Shield className="w-3.5 h-3.5" />
               <span>Admin Panel</span>
+            </button>
+          )}
+
+          {onOpenSettings && (
+            <button
+              onClick={onOpenSettings}
+              className="p-2 rounded-xl bg-zinc-100 dark:bg-zinc-800/80 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700/60 transition-colors"
+              title="Configurações do App"
+            >
+              <Settings className="w-4 h-4 text-orange-500" />
             </button>
           )}
         </div>

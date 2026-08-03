@@ -35,6 +35,7 @@ import { AdminDashboardView } from './components/views/AdminDashboardView';
 import { CaptureView } from './components/views/CaptureView';
 import { QuickUploadView } from './components/views/QuickUploadView';
 import { EditProfileView } from './components/views/EditProfileView';
+import { SettingsView } from './components/views/SettingsView';
 import { CreateCommunityView } from './components/views/CreateCommunityView';
 import { CommunityChatView } from './components/views/CommunityChatView';
 import { CreateChallengeView } from './components/views/CreateChallengeView';
@@ -420,7 +421,7 @@ function MainAppContent() {
       <Header
         onOpenNotifications={() => setIsNotificationsOpen(true)}
         onOpenAuth={() => setIsAuthModalOpen(true)}
-        onOpenSettings={() => setCurrentView('edit_profile')}
+        onOpenSettings={() => setCurrentView('settings')}
         onOpenEditProfile={() => setCurrentView('edit_profile')}
         unreadCount={unreadNotifCount}
       />
@@ -475,8 +476,17 @@ function MainAppContent() {
             onOpenConnectWatch={() => setIsConnectWatchOpen(true)}
             onOpenAdminDashboard={() => setCurrentView('admin')}
             onOpenAnalytics={() => setCurrentView('analytics')}
+            onOpenSettings={() => setCurrentView('settings')}
             onOpenCommunityChat={() => setCurrentView('community_chat')}
             onOpenUserProfile={handleOpenUserProfile}
+          />
+        )}
+
+        {currentView === 'settings' && (
+          <SettingsView
+            onBack={() => setCurrentView('profile')}
+            onOpenEditProfile={() => setCurrentView('edit_profile')}
+            onOpenConnectWatch={() => setIsConnectWatchOpen(true)}
           />
         )}
 
