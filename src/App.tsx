@@ -327,6 +327,8 @@ function MainAppContent() {
       <Header
         onOpenNotifications={() => setIsNotificationsOpen(true)}
         onOpenAuth={() => setIsAuthModalOpen(true)}
+        onOpenSettings={() => setCurrentView('edit_profile')}
+        onOpenEditProfile={() => setCurrentView('edit_profile')}
         unreadCount={unreadNotifCount}
       />
 
