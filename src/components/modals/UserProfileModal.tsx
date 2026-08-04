@@ -18,7 +18,7 @@ import {
   Shield,
   Clock
 } from 'lucide-react';
-import { ActivityPost } from '../../types';
+import { ActivityPost, Community } from '../../types';
 import { useAuth } from '../../context/AuthContext';
 
 export interface TargetUserProfileInfo {
@@ -27,13 +27,19 @@ export interface TargetUserProfileInfo {
   userAvatar?: string;
   bio?: string;
   sport?: string;
+  clubs?: string[];
+  totalKm?: number;
+  points?: number;
+  primarySport?: string;
+  region?: string;
 }
 
 interface UserProfileModalProps {
   targetUser: TargetUserProfileInfo | null;
   onClose: () => void;
   activities?: ActivityPost[];
-  onOpenCommunityChat?: () => void;
+  communities?: Community[];
+  onOpenCommunityChat?: (communityId?: string) => void;
 }
 
 interface HighlightItem {
@@ -56,6 +62,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   targetUser,
   onClose,
   activities = [],
+  communities = [],
   onOpenCommunityChat
 }) => {
   const { user } = useAuth();
@@ -66,6 +73,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   const [challengeModalTab, setChallengeModalTab] = useState<'completed' | 'joined'>('completed');
   const [selectedHighlight, setSelectedHighlight] = useState<HighlightItem | null>(null);
   const [newCommentText, setNewCommentText] = useState('');
+
+  if (!targetUser) return null;
 
   const handleToggleFollow = () => {
     setIsFollowing((prev) => {
@@ -80,7 +89,51 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     (act) => act && (act.userId === targetUser?.userId || act.userName?.toLowerCase() === targetUser?.userName?.toLowerCase())
   );
 
-  const userClubs: string[] = targetUser?.clubs || [];
+  // Calculate target user communities
+  const targetUserCommunitiesMap = new Map<string, Community>();
+
+  (communities || []).forEach((c) => {
+    const isCreator = Boolean(
+      (targetUser?.userId && c.creatorId === targetUser.userId) ||
+      (targetUser?.userName && c.createdBy?.toLowerCase() === targetUser.userName.toLowerCase())
+    );
+    const isMember = Boolean(
+      c.members?.some(
+        (m) =>
+          (targetUser?.userId && m.id === targetUser.userId) ||
+          (targetUser?.userName && m.name?.toLowerCase() === targetUser.userName.toLowerCase())
+      )
+    );
+    const isAdmin = Boolean(targetUser?.userId && c.admins?.includes(targetUser.userId));
+    const isInClubsArray = Boolean(
+      targetUser?.clubs?.some(
+        (clubNameOrId) => clubNameOrId === c.name || clubNameOrId === c.id
+      )
+    );
+
+    if (isCreator || isMember || isAdmin || isInClubsArray) {
+      targetUserCommunitiesMap.set(c.id, c);
+    }
+  });
+
+  const userClubsList = Array.from(targetUserCommunitiesMap.values());
+  const matchedNames = new Set(userClubsList.map((c) => c.name));
+
+  (targetUser?.clubs || []).forEach((clubNameOrId) => {
+    if (!matchedNames.has(clubNameOrId) && !targetUserCommunitiesMap.has(clubNameOrId)) {
+      userClubsList.push({
+        id: clubNameOrId,
+        name: clubNameOrId,
+        description: 'Grupo Ativo no ClubSport',
+        sportCategory: 'Running',
+        privacy: 'public',
+        membersCount: 1,
+        coverUrl: 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&w=400&q=80',
+        createdBy: targetUser?.userName || 'Atleta',
+        createdAt: new Date().toISOString()
+      });
+    }
+  });
   const completedChallenges: any[] = [];
   const joinedChallenges: any[] = [];
 
@@ -143,21 +196,21 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in overflow-y-auto">
-      <div className="bg-zinc-950 border border-zinc-800 w-full max-w-lg rounded-t-3xl sm:rounded-3xl max-h-[92vh] flex flex-col overflow-hidden text-white shadow-2xl relative">
+    <div className="fixed inset-0 z-50 bg-black/70 dark:bg-black/90 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in overflow-y-auto">
+      <div className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 w-full max-w-lg rounded-t-3xl sm:rounded-3xl max-h-[92vh] flex flex-col overflow-hidden text-zinc-900 dark:text-white shadow-2xl relative">
         
         {/* Top Header Controls (Same style header bar as ProfileView) */}
-        <div className="sticky top-0 z-30 bg-zinc-950/90 backdrop-blur-md px-4 py-3 border-b border-zinc-800/80 flex items-center justify-between">
+        <div className="sticky top-0 z-30 bg-white/95 dark:bg-zinc-950/90 backdrop-blur-md px-4 py-3 border-b border-zinc-200 dark:border-zinc-800/80 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold text-white tracking-tight">Profile</h1>
-            <span className="text-[10px] font-bold text-orange-400 bg-orange-500/10 border border-orange-500/30 px-2.5 py-0.5 rounded-full uppercase tracking-wide">
+            <h1 className="text-xl font-bold text-zinc-900 dark:text-white tracking-tight">Profile</h1>
+            <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400 bg-orange-500/10 border border-orange-500/30 px-2.5 py-0.5 rounded-full uppercase tracking-wide">
               {targetUser.userName}
             </span>
           </div>
 
           <button
             onClick={onClose}
-            className="p-1.5 text-zinc-400 hover:text-white bg-zinc-900 hover:bg-zinc-800 rounded-full border border-zinc-700/50 transition-colors"
+            className="p-1.5 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-full border border-zinc-200 dark:border-zinc-700/50 transition-colors"
             title="Fechar Perfil"
           >
             <X className="w-5 h-5" />
@@ -170,7 +223,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
           {/* Profile Card Info */}
           <div className="flex flex-col items-center text-center space-y-3 pt-2">
             <div className="relative">
-              <div className="w-28 h-28 rounded-full border-4 border-orange-500 p-1 bg-zinc-950 shadow-xl shadow-orange-500/10">
+              <div className="w-28 h-28 rounded-full border-4 border-orange-500 p-1 bg-white dark:bg-zinc-950 shadow-xl shadow-orange-500/10">
                 <img
                   src={
                     targetUser.userAvatar ||
@@ -186,12 +239,12 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             </div>
 
             <div>
-              <h2 className="text-2xl font-black text-white">{targetUser.userName}</h2>
-              <p className="text-xs text-zinc-400 font-medium">
+              <h2 className="text-2xl font-black text-zinc-900 dark:text-white">{targetUser.userName}</h2>
+              <p className="text-xs text-zinc-600 dark:text-zinc-400 font-medium">
                 {targetUser.primarySport || 'Atleta'} • {targetUser.region || 'Comunidade ClubSport'}
               </p>
 
-              <p className="text-xs text-zinc-300 mt-2 max-w-xs leading-relaxed">
+              <p className="text-xs text-zinc-700 dark:text-zinc-300 mt-2 max-w-xs leading-relaxed">
                 {targetUser.bio || 'Atleta participante da comunidade ClubSport.'}
               </p>
             </div>
@@ -202,13 +255,13 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 onClick={handleToggleFollow}
                 className={`flex-1 py-2.5 px-4 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 shadow-md transition-all ${
                   isFollowing
-                    ? 'bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700'
+                    ? 'bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 border border-zinc-300 dark:border-zinc-700'
                     : 'bg-orange-500 hover:bg-orange-600 text-zinc-950 shadow-orange-500/10'
                 }`}
               >
                 {isFollowing ? (
                   <>
-                    <UserCheck className="w-4 h-4 text-emerald-400" />
+                    <UserCheck className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
                     <span>Seguindo</span>
                   </>
                 ) : (
@@ -224,10 +277,10 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   onClose();
                   if (onOpenCommunityChat) onOpenCommunityChat();
                 }}
-                className="py-2.5 px-3 bg-zinc-900 hover:bg-zinc-800 text-white border border-zinc-800 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-all"
+                className="py-2.5 px-3 bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-900 dark:text-white border border-zinc-300 dark:border-zinc-800 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-all"
                 title="Enviar Mensagem"
               >
-                <MessageCircle className="w-4 h-4 text-orange-400" />
+                <MessageCircle className="w-4 h-4 text-orange-500 dark:text-orange-400" />
                 <span>Mensagem</span>
               </button>
 
@@ -236,7 +289,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   navigator.clipboard?.writeText(window.location.href);
                   alert(`Link do perfil de ${targetUser.userName} copiado!`);
                 }}
-                className="py-2.5 px-3 bg-zinc-900 hover:bg-zinc-800 text-white border border-zinc-800 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-all"
+                className="py-2.5 px-3 bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-900 dark:text-white border border-zinc-300 dark:border-zinc-800 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-all"
                 title="Compartilhar Perfil"
               >
                 <Share2 className="w-4 h-4 text-orange-500" />
@@ -246,44 +299,44 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
           </div>
 
           {/* Clubs & Stats Row (Identical layout to ProfileView) */}
-          <div className="grid grid-cols-3 gap-3 bg-zinc-900 border border-zinc-800 p-4 rounded-2xl">
+          <div className="grid grid-cols-3 gap-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-4 rounded-2xl shadow-sm">
             {/* Clubs Column */}
             <div
               onClick={() => setIsClubsModalOpen(true)}
-              className="cursor-pointer group/clubs p-1 -m-1 rounded-xl hover:bg-zinc-800/60 transition-all border border-transparent hover:border-orange-500/30"
+              className="cursor-pointer group/clubs p-1 -m-1 rounded-xl hover:bg-zinc-200/60 dark:hover:bg-zinc-800/60 transition-all border border-transparent hover:border-orange-500/30"
               title="Clique para ver os grupos deste atleta"
             >
-              <span className="text-[10px] font-bold uppercase text-zinc-400 block mb-1 group-hover/clubs:text-orange-400 transition-colors">
-                CLUBS ({userClubs.length})
+              <span className="text-[10px] font-bold uppercase text-zinc-600 dark:text-zinc-400 block mb-1 group-hover/clubs:text-orange-500 dark:group-hover/clubs:text-orange-400 transition-colors">
+                CLUBS ({userClubsList.length})
               </span>
               <div className="flex items-center space-x-2">
                 <div className="text-xl font-black text-orange-500 font-mono">
-                  {userClubs.length}
+                  {userClubsList.length}
                 </div>
                 <div className="flex -space-x-1.5 overflow-hidden">
-                  {userClubs.map((club, idx) => (
-                    <div
-                      key={idx}
-                      title={club}
-                      className="w-6 h-6 rounded-full bg-zinc-800 border border-zinc-900 flex items-center justify-center text-orange-400 text-[9px] font-bold shadow"
-                    >
-                      {club.charAt(0)}
-                    </div>
+                  {userClubsList.slice(0, 4).map((club, idx) => (
+                    <img
+                      key={club.id || idx}
+                      src={club.coverUrl || 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&w=100&q=80'}
+                      alt={club.name}
+                      title={club.name}
+                      className="w-6 h-6 rounded-full object-cover border border-zinc-300 dark:border-zinc-900 shadow"
+                    />
                   ))}
                 </div>
               </div>
-              <span className="text-[9px] text-zinc-400 block mt-1 underline decoration-zinc-600 group-hover/clubs:text-orange-300">
+              <span className="text-[9px] text-zinc-500 dark:text-zinc-400 block mt-1 underline decoration-zinc-400 dark:decoration-zinc-600 group-hover/clubs:text-orange-500 dark:group-hover/clubs:text-orange-300">
                 Ver grupos →
               </span>
             </div>
 
             {/* Total KM */}
-            <div className="border-l border-zinc-800 pl-3">
-              <span className="text-[10px] font-bold uppercase text-zinc-400 block">Total KM</span>
+            <div className="border-l border-zinc-200 dark:border-zinc-800 pl-3">
+              <span className="text-[10px] font-bold uppercase text-zinc-600 dark:text-zinc-400 block">Total KM</span>
               <div className="text-xl font-black text-orange-500 font-mono tracking-tight">
                 {calculatedTotalKm.toFixed(1)}
               </div>
-              <span className="text-[9px] text-zinc-400 block truncate" title="Soma acumulada de atividades">
+              <span className="text-[9px] text-zinc-500 dark:text-zinc-400 block truncate" title="Soma acumulada de atividades">
                 KM CONCLUÍDOS
               </span>
             </div>
@@ -291,16 +344,16 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             {/* Desafios Concluídos vs Inscritos */}
             <div
               onClick={() => setIsCompletedChallengesModalOpen(true)}
-              className="border-l border-zinc-800 pl-3 cursor-pointer group/challenges hover:bg-zinc-800/40 p-1 -m-1 rounded-xl transition-all"
+              className="border-l border-zinc-200 dark:border-zinc-800 pl-3 cursor-pointer group/challenges hover:bg-zinc-200/40 dark:hover:bg-zinc-800/40 p-1 -m-1 rounded-xl transition-all"
               title="Clique para ver lista de desafios concluídos e em andamento"
             >
-              <span className="text-[10px] font-bold uppercase text-zinc-400 block group-hover/challenges:text-orange-400">
+              <span className="text-[10px] font-bold uppercase text-zinc-600 dark:text-zinc-400 block group-hover/challenges:text-orange-500 dark:group-hover/challenges:text-orange-400">
                 DESAFIOS
               </span>
               <div className="text-xl font-black text-orange-500 font-mono tracking-tight flex items-baseline gap-1">
                 <span>{completedChallenges.length}/{completedChallenges.length + joinedChallenges.length}</span>
               </div>
-              <span className="text-[9px] text-zinc-400 block truncate group-hover/challenges:text-orange-300 underline decoration-zinc-600">
+              <span className="text-[9px] text-zinc-500 dark:text-zinc-400 block truncate group-hover/challenges:text-orange-500 dark:group-hover/challenges:text-orange-300 underline decoration-zinc-400 dark:decoration-zinc-600">
                 CONCLUÍDOS / ENTROU →
               </span>
             </div>
@@ -430,10 +483,10 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
       {/* Modal: Detalhes da Publicação do Atleta */}
       {selectedHighlight && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
-          <div className="bg-zinc-950 border border-zinc-800 w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 z-50 bg-black/60 dark:bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-4 border-b border-zinc-800 bg-zinc-900/80">
+            <div className="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/80">
               <div className="flex items-center space-x-3">
                 <img
                   src={targetUser.userAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'}
@@ -441,72 +494,72 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   className="w-10 h-10 rounded-full border-2 border-orange-500 object-cover"
                 />
                 <div>
-                  <h3 className="text-xs font-bold text-white flex items-center gap-1.5">
+                  <h3 className="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-1.5">
                     <span>{targetUser.userName}</span>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-orange-500/20 text-orange-400 border border-orange-500/30">PRO</span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-orange-500/20 text-orange-600 dark:text-orange-400 border border-orange-500/30">PRO</span>
                   </h3>
-                  <p className="text-[10px] text-zinc-400">{selectedHighlight.sport} • ClubSport Elite</p>
+                  <p className="text-[10px] text-zinc-500 dark:text-zinc-400">{selectedHighlight.sport} • ClubSport Elite</p>
                 </div>
               </div>
 
               <button
                 onClick={() => setSelectedHighlight(null)}
-                className="text-zinc-400 hover:text-white p-1.5 rounded-xl hover:bg-zinc-800 transition-colors"
+                className="text-zinc-400 hover:text-zinc-900 dark:hover:text-white p-1.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Scrollable Content Body */}
-            <div className="overflow-y-auto space-y-4 p-4 flex-1 scrollbar-thin">
+            <div className="overflow-y-auto space-y-4 p-4 flex-1 no-scrollbar">
               {/* Publication Image Banner */}
-              <div className="relative rounded-2xl overflow-hidden border border-zinc-800 max-h-64 bg-zinc-900">
+              <div className="relative rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 max-h-64 bg-zinc-100 dark:bg-zinc-900">
                 <img
                   src={selectedHighlight.imageUrl}
                   alt={selectedHighlight.title}
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/80 via-transparent to-transparent" />
                 
                 {/* Metrics Overlay */}
-                <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between bg-zinc-950/90 backdrop-blur-md p-2.5 rounded-xl border border-zinc-800/80">
+                <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between bg-black/80 dark:bg-zinc-950/90 backdrop-blur-md p-2.5 rounded-xl border border-white/10 dark:border-zinc-800/80 text-white">
                   <div className="text-center">
-                    <span className="text-[9px] uppercase font-bold text-zinc-400 block">Distância</span>
+                    <span className="text-[9px] uppercase font-bold text-zinc-300 dark:text-zinc-400 block">Distância</span>
                     <span className="text-xs font-black text-orange-400 font-mono">{selectedHighlight.distance}</span>
                   </div>
-                  <div className="text-center border-l border-zinc-800 pl-2">
-                    <span className="text-[9px] uppercase font-bold text-zinc-400 block">Ritmo</span>
+                  <div className="text-center border-l border-white/10 dark:border-zinc-800 pl-2">
+                    <span className="text-[9px] uppercase font-bold text-zinc-300 dark:text-zinc-400 block">Ritmo</span>
                     <span className="text-xs font-black text-orange-400 font-mono">{selectedHighlight.pace}</span>
                   </div>
-                  <div className="text-center border-l border-zinc-800 pl-2">
-                    <span className="text-[9px] uppercase font-bold text-zinc-400 block">Duração</span>
+                  <div className="text-center border-l border-white/10 dark:border-zinc-800 pl-2">
+                    <span className="text-[9px] uppercase font-bold text-zinc-300 dark:text-zinc-400 block">Duração</span>
                     <span className="text-xs font-black text-orange-400 font-mono">{selectedHighlight.duration}</span>
                   </div>
-                  <div className="text-center border-l border-zinc-800 pl-2">
-                    <span className="text-[9px] uppercase font-bold text-zinc-400 block">Calorias</span>
+                  <div className="text-center border-l border-white/10 dark:border-zinc-800 pl-2">
+                    <span className="text-[9px] uppercase font-bold text-zinc-300 dark:text-zinc-400 block">Calorias</span>
                     <span className="text-xs font-black text-orange-400 font-mono">{selectedHighlight.calories}</span>
                   </div>
                 </div>
               </div>
 
               {/* Publication Description / Caption */}
-              <div className="bg-zinc-900/70 border border-zinc-800/80 p-3.5 rounded-2xl space-y-2">
-                <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wider block">
+              <div className="bg-zinc-50 dark:bg-zinc-900/70 border border-zinc-200 dark:border-zinc-800/80 p-3.5 rounded-2xl space-y-2">
+                <span className="text-[10px] font-bold text-orange-600 dark:text-orange-500 uppercase tracking-wider block">
                   Descrição da Publicação
                 </span>
-                <p className="text-xs text-zinc-200 leading-relaxed font-medium">
+                <p className="text-xs text-zinc-700 dark:text-zinc-200 leading-relaxed font-medium">
                   {selectedHighlight.caption}
                 </p>
               </div>
 
               {/* Action Buttons: Like & Share */}
-              <div className="flex items-center justify-between pt-1 border-t border-zinc-800/80">
+              <div className="flex items-center justify-between pt-1 border-t border-zinc-200 dark:border-zinc-800/80">
                 <button
                   onClick={() => handleToggleLikeHighlight(selectedHighlight.id)}
                   className={`flex items-center space-x-2 text-xs font-bold px-3 py-2 rounded-xl transition-all ${
                     selectedHighlight.isLiked
                       ? 'bg-red-500/10 text-red-500 border border-red-500/30'
-                      : 'bg-zinc-900 text-zinc-300 hover:bg-zinc-800 border border-zinc-800'
+                      : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800'
                   }`}
                 >
                   <Heart className={`w-4 h-4 ${selectedHighlight.isLiked ? 'fill-red-500 text-red-500' : ''}`} />
@@ -520,9 +573,9 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     navigator.clipboard?.writeText(window.location.href);
                     alert('Link da publicação copiado com sucesso!');
                   }}
-                  className="flex items-center space-x-1.5 text-xs font-bold text-zinc-300 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 px-3 py-2 rounded-xl transition-all"
+                  className="flex items-center space-x-1.5 text-xs font-bold text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 px-3 py-2 rounded-xl transition-all"
                 >
-                  <Share2 className="w-4 h-4 text-orange-400" />
+                  <Share2 className="w-4 h-4 text-orange-500 dark:text-orange-400" />
                   <span>Compartilhar</span>
                 </button>
               </div>
@@ -531,34 +584,34 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               <div className="space-y-3 pt-2">
                 <div className="flex items-center space-x-2">
                   <MessageCircle className="w-4 h-4 text-orange-500" />
-                  <h4 className="text-xs font-bold text-white uppercase tracking-wider">
+                  <h4 className="text-xs font-bold text-zinc-900 dark:text-white uppercase tracking-wider">
                     Comentários ({selectedHighlight.commentsList.length})
                   </h4>
                 </div>
 
                 {/* Comments List */}
-                <div className="space-y-2.5 max-h-52 overflow-y-auto pr-1 scrollbar-thin">
+                <div className="space-y-2.5 max-h-52 overflow-y-auto pr-1 no-scrollbar">
                   {selectedHighlight.commentsList.length === 0 ? (
-                    <p className="text-xs text-zinc-400 py-2 italic text-center">
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 py-2 italic text-center">
                       Nenhum comentário ainda. Seja o primeiro a comentar!
                     </p>
                   ) : (
                     selectedHighlight.commentsList.map((comm) => (
                       <div
                         key={comm.id}
-                        className="p-3 bg-zinc-900/90 border border-zinc-800/80 rounded-2xl flex items-start space-x-3"
+                        className="p-3 bg-zinc-50 dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-800/80 rounded-2xl flex items-start space-x-3"
                       >
                         <img
                           src={comm.avatar}
                           alt={comm.author}
-                          className="w-8 h-8 rounded-full object-cover border border-zinc-700 flex-shrink-0"
+                          className="w-8 h-8 rounded-full object-cover border border-zinc-300 dark:border-zinc-700 flex-shrink-0"
                         />
                         <div className="flex-1 space-y-0.5">
                           <div className="flex items-center justify-between">
-                            <span className="text-xs font-bold text-white">{comm.author}</span>
-                            <span className="text-[10px] text-zinc-400">{comm.timeAgo}</span>
+                            <span className="text-xs font-bold text-zinc-900 dark:text-white">{comm.author}</span>
+                            <span className="text-[10px] text-zinc-500 dark:text-zinc-400">{comm.timeAgo}</span>
                           </div>
-                          <p className="text-xs text-zinc-300 font-normal leading-relaxed">
+                          <p className="text-xs text-zinc-700 dark:text-zinc-300 font-normal leading-relaxed">
                             {comm.text}
                           </p>
                         </div>
@@ -570,18 +623,18 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             </div>
 
             {/* Modal Footer: Comment Input Form */}
-            <form onSubmit={handleAddComment} className="p-3 bg-zinc-900 border-t border-zinc-800 flex items-center space-x-2">
+            <form onSubmit={handleAddComment} className="p-3 bg-zinc-50 dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800 flex items-center space-x-2">
               <input
                 type="text"
                 placeholder="Escreva um comentário..."
                 value={newCommentText}
                 onChange={(e) => setNewCommentText(e.target.value)}
-                className="flex-1 bg-zinc-950 border border-zinc-800 focus:border-orange-500 rounded-xl px-3.5 py-2.5 text-xs text-white outline-none placeholder:text-zinc-500 transition-colors"
+                className="flex-1 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 focus:border-orange-500 rounded-xl px-3.5 py-2.5 text-xs text-zinc-900 dark:text-white outline-none placeholder:text-zinc-400 dark:placeholder:text-zinc-500 transition-colors"
               />
               <button
                 type="submit"
                 disabled={!newCommentText.trim()}
-                className="px-4 py-2.5 bg-orange-500 hover:bg-orange-600 disabled:opacity-40 disabled:hover:bg-orange-500 text-zinc-950 font-bold text-xs rounded-xl flex items-center gap-1.5 transition-all"
+                className="px-4 py-2.5 bg-orange-500 hover:bg-orange-600 disabled:opacity-40 disabled:hover:bg-orange-500 text-white dark:text-zinc-950 font-bold text-xs rounded-xl flex items-center gap-1.5 transition-all"
               >
                 <Send className="w-3.5 h-3.5" />
                 <span>Enviar</span>
@@ -593,61 +646,65 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
       {/* Modal: Lista de Grupos do Atleta */}
       {isClubsModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-zinc-900 border border-zinc-800 w-full max-w-md rounded-3xl p-6 text-white space-y-4 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+        <div className="fixed inset-0 z-50 bg-black/60 dark:bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 w-full max-w-md rounded-3xl p-6 text-zinc-900 dark:text-white space-y-4 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-3">
               <div className="flex items-center space-x-2">
                 <Users className="w-5 h-5 text-orange-500" />
-                <h3 className="text-sm font-bold text-white">
-                  Grupos & Comunidades ({userClubs.length})
+                <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
+                  Grupos & Comunidades ({userClubsList.length})
                 </h3>
               </div>
               <button
                 onClick={() => setIsClubsModalOpen(false)}
-                className="text-zinc-400 hover:text-white p-1 rounded-lg hover:bg-zinc-800"
+                className="text-zinc-400 hover:text-zinc-900 dark:hover:text-white p-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <p className="text-xs text-zinc-400 leading-relaxed">
+            <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
               Grupos dos quais {targetUser.userName} faz parte na comunidade ClubSport.
             </p>
 
-            <div className="space-y-2.5 max-h-72 overflow-y-auto scrollbar-thin">
-              {userClubs.length === 0 ? (
-                <div className="p-6 text-center text-xs text-zinc-500 italic border border-zinc-800/80 rounded-2xl bg-zinc-950">
+            <div className="space-y-2.5 max-h-72 overflow-y-auto no-scrollbar">
+              {userClubsList.length === 0 ? (
+                <div className="p-6 text-center text-xs text-zinc-500 italic border border-zinc-200 dark:border-zinc-800/80 rounded-2xl bg-zinc-50 dark:bg-zinc-950">
                   Este atleta ainda não participa de nenhuma comunidade.
                 </div>
               ) : (
-                userClubs.map((clubName, idx) => (
+                userClubsList.map((club) => (
                   <div
-                    key={idx}
+                    key={club.id}
                     onClick={() => {
                       setIsClubsModalOpen(false);
                       onClose();
                       if (onOpenCommunityChat) {
-                        onOpenCommunityChat();
+                        onOpenCommunityChat(club.id);
                       }
                     }}
-                    className="flex items-center justify-between p-3.5 bg-zinc-950 border border-zinc-800/80 hover:border-orange-500/50 rounded-2xl cursor-pointer hover:bg-zinc-800/60 transition-all group"
+                    className="flex items-center justify-between p-3.5 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800/80 hover:border-orange-500/50 rounded-2xl cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-all group"
                   >
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-lg group-hover:scale-105 transition-transform">
-                        🏆
-                      </div>
-                      <div>
-                        <h4 className="text-xs font-bold text-white group-hover:text-orange-400 transition-colors">
-                          {clubName}
+                    <div className="flex items-center space-x-3 min-w-0 pr-2">
+                      <img
+                        src={club.coverUrl || 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&w=100&q=80'}
+                        alt={club.name}
+                        className="w-10 h-10 rounded-xl object-cover border border-zinc-200 dark:border-zinc-800 group-hover:scale-105 transition-transform shrink-0"
+                      />
+                      <div className="min-w-0">
+                        <h4 className="text-xs font-bold text-zinc-900 dark:text-white group-hover:text-orange-500 dark:group-hover:text-orange-400 transition-colors truncate">
+                          {club.name}
                         </h4>
-                        <div className="flex items-center space-x-2 text-[10px] text-zinc-400 mt-0.5">
-                          <span className="text-orange-400/90 font-semibold">Comunidade Ativa</span>
+                        <div className="flex items-center space-x-2 text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+                          <span className="text-orange-600 dark:text-orange-400 font-semibold">{club.sportCategory || 'Comunidade'}</span>
+                          <span>•</span>
+                          <span>{club.membersCount || club.members?.length || 1} membros</span>
                         </div>
                       </div>
                     </div>
 
-                    <button className="px-3.5 py-1.5 bg-orange-500/10 group-hover:bg-orange-500 text-orange-400 group-hover:text-zinc-950 font-bold text-xs rounded-xl transition-all border border-orange-500/30">
-                      Abrir
+                    <button className="px-3.5 py-1.5 bg-orange-500/10 group-hover:bg-orange-500 text-orange-600 dark:text-orange-400 group-hover:text-white dark:group-hover:text-zinc-950 font-bold text-xs rounded-xl transition-all border border-orange-500/30 shrink-0">
+                      Ver Chat →
                     </button>
                   </div>
                 ))
@@ -659,40 +716,40 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
       {/* Modal: Lista de Desafios do Atleta (Concluídos & Em Andamento) */}
       {isCompletedChallengesModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
-          <div className="bg-zinc-950 border border-zinc-800 w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 z-50 bg-black/60 dark:bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-4 border-b border-zinc-800 bg-zinc-900/80">
+            <div className="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/80">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-full bg-orange-500/10 border border-orange-500/30 flex items-center justify-center text-orange-400">
+                <div className="w-10 h-10 rounded-full bg-orange-500/10 border border-orange-500/30 flex items-center justify-center text-orange-600 dark:text-orange-400">
                   <Trophy className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+                  <h3 className="text-xs font-bold text-zinc-900 dark:text-white uppercase tracking-wider">
                     Desafios do Atleta
                   </h3>
-                  <p className="text-[10px] text-zinc-400">
-                    {completedChallenges.length} concluídos de {completedChallenges.length + joinedChallenges.length} desafios
+                  <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                    {completedChallenges.length} concluídos de {completedChallenges.length + joinedChallenges.length} desafios inscritos
                   </p>
                 </div>
               </div>
 
               <button
                 onClick={() => setIsCompletedChallengesModalOpen(false)}
-                className="text-zinc-400 hover:text-white p-1.5 rounded-xl hover:bg-zinc-800 transition-colors"
+                className="text-zinc-400 hover:text-zinc-900 dark:hover:text-white p-1.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Modal Navigation Tabs */}
-            <div className="grid grid-cols-2 gap-2 p-3 bg-zinc-900/60 border-b border-zinc-800">
+            <div className="grid grid-cols-2 gap-2 p-3 bg-zinc-100/80 dark:bg-zinc-900/60 border-b border-zinc-200 dark:border-zinc-800">
               <button
                 onClick={() => setChallengeModalTab('completed')}
                 className={`py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
                   challengeModalTab === 'completed'
-                    ? 'bg-orange-500 text-zinc-950 shadow-md shadow-orange-500/20'
-                    : 'text-zinc-400 hover:text-white bg-zinc-900/80'
+                    ? 'bg-orange-500 text-white dark:text-zinc-950 shadow-md shadow-orange-500/20'
+                    : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white bg-white dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800'
                 }`}
               >
                 <Award className="w-3.5 h-3.5" />
@@ -703,8 +760,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 onClick={() => setChallengeModalTab('joined')}
                 className={`py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
                   challengeModalTab === 'joined'
-                    ? 'bg-orange-500 text-zinc-950 shadow-md shadow-orange-500/20'
-                    : 'text-zinc-400 hover:text-white bg-zinc-900/80'
+                    ? 'bg-orange-500 text-white dark:text-zinc-950 shadow-md shadow-orange-500/20'
+                    : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white bg-white dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800'
                 }`}
               >
                 <Zap className="w-3.5 h-3.5" />
@@ -713,85 +770,103 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             </div>
 
             {/* Modal Body / Challenges List */}
-            <div className="p-4 overflow-y-auto space-y-3 flex-1 scrollbar-thin">
+            <div className="p-4 overflow-y-auto space-y-3 flex-1 no-scrollbar">
               {challengeModalTab === 'completed' && (
-                completedChallenges.map((item) => (
-                  <div
-                    key={item.id}
-                    className="bg-zinc-900/90 border border-emerald-500/30 rounded-2xl p-3.5 space-y-3 relative overflow-hidden shadow-lg"
-                  >
-                    <div className="flex items-start justify-between relative z-10">
-                      <div className="space-y-1">
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold">
-                          🏆 CONCLUÍDO • 100%
-                        </span>
-                        <h4 className="text-sm font-black text-white uppercase tracking-tight">
-                          {item.title}
-                        </h4>
-                        <p className="text-xs font-bold text-zinc-300">
-                          Meta: {item.targetValue} {item.unit}
-                        </p>
-                      </div>
-
-                      <div className="w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 flex-shrink-0">
-                        <CheckCircle className="w-5 h-5" />
-                      </div>
-                    </div>
-
-                    <div className="space-y-1 relative z-10">
-                      <div className="w-full bg-zinc-950 rounded-full h-2.5 overflow-hidden border border-zinc-800">
-                        <div className="bg-emerald-500 h-full rounded-full w-full" />
-                      </div>
-                      <div className="flex items-center justify-between text-[10px] text-zinc-400 font-mono">
-                        <span>{item.targetValue} / {item.targetValue} {item.unit}</span>
-                        <span className="text-emerald-400 font-bold">+500 PTS GANHOS</span>
-                      </div>
-                    </div>
+                completedChallenges.length === 0 ? (
+                  <div className="text-center py-8 space-y-2">
+                    <Trophy className="w-8 h-8 text-zinc-400 dark:text-zinc-600 mx-auto" />
+                    <p className="text-xs text-zinc-600 dark:text-zinc-400 font-medium">
+                      Nenhum desafio concluído ainda. Complete seu primeiro desafio para desbloquear troféus!
+                    </p>
                   </div>
-                ))
-              )}
-
-              {challengeModalTab === 'joined' && (
-                joinedChallenges.map((item) => {
-                  const percent = Math.min(100, Math.round((item.currentValue / item.targetValue) * 100));
-                  return (
+                ) : (
+                  completedChallenges.map((item) => (
                     <div
                       key={item.id}
-                      className="bg-zinc-900/90 border border-orange-500/30 rounded-2xl p-3.5 space-y-3 relative overflow-hidden shadow-lg"
+                      className="bg-emerald-50/60 dark:bg-zinc-900/90 border border-emerald-500/30 rounded-2xl p-3.5 space-y-3 relative overflow-hidden shadow-sm"
                     >
                       <div className="flex items-start justify-between relative z-10">
                         <div className="space-y-1">
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-orange-500/10 border border-orange-500/30 text-orange-400 text-[10px] font-bold">
-                            ⚡ INSCRITO • EM ANDAMENTO
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold">
+                            🏆 CONCLUÍDO • 100%
                           </span>
-                          <h4 className="text-sm font-black text-white uppercase tracking-tight">
+                          <h4 className="text-sm font-black text-zinc-900 dark:text-white uppercase tracking-tight">
                             {item.title}
                           </h4>
-                          <p className="text-xs font-bold text-zinc-300">
+                          <p className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
                             Meta: {item.targetValue} {item.unit}
                           </p>
                         </div>
 
-                        <div className="w-10 h-10 rounded-full bg-orange-500/20 border border-orange-500/40 flex items-center justify-center text-orange-400 font-mono text-xs font-bold flex-shrink-0">
-                          {percent}%
+                        <div className="w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400 flex-shrink-0">
+                          <CheckCircle className="w-5 h-5" />
                         </div>
                       </div>
 
                       <div className="space-y-1 relative z-10">
-                        <div className="w-full bg-zinc-950 rounded-full h-2.5 overflow-hidden border border-zinc-800">
-                          <div
-                            className="bg-orange-500 h-full rounded-full transition-all duration-500"
-                            style={{ width: `${percent}%` }}
-                          />
+                        <div className="w-full bg-zinc-200 dark:bg-zinc-950 rounded-full h-2.5 overflow-hidden border border-zinc-300 dark:border-zinc-800">
+                          <div className="bg-emerald-500 h-full rounded-full w-full" />
                         </div>
-                        <div className="flex items-center justify-between text-[10px] text-zinc-400 font-mono">
-                          <span>{item.currentValue} / {item.targetValue} {item.unit}</span>
-                          <span className="text-orange-400 font-bold">Inscrição Ativa</span>
+                        <div className="flex items-center justify-between text-[10px] text-zinc-500 dark:text-zinc-400 font-mono">
+                          <span>{item.targetValue} / {item.targetValue} {item.unit}</span>
+                          <span className="text-emerald-600 dark:text-emerald-400 font-bold">+500 PTS GANHOS</span>
                         </div>
                       </div>
                     </div>
-                  );
-                })
+                  ))
+                )
+              )}
+
+              {challengeModalTab === 'joined' && (
+                joinedChallenges.length === 0 ? (
+                  <div className="text-center py-8 space-y-2">
+                    <Zap className="w-8 h-8 text-zinc-400 dark:text-zinc-600 mx-auto" />
+                    <p className="text-xs text-zinc-600 dark:text-zinc-400 font-medium">
+                      Este atleta não possui desafios em andamento no momento.
+                    </p>
+                  </div>
+                ) : (
+                  joinedChallenges.map((item) => {
+                    const percent = Math.min(100, Math.round((item.currentValue / item.targetValue) * 100));
+                    return (
+                      <div
+                        key={item.id}
+                        className="bg-orange-50/60 dark:bg-zinc-900/90 border border-orange-500/30 rounded-2xl p-3.5 space-y-3 relative overflow-hidden shadow-sm"
+                      >
+                        <div className="flex items-start justify-between relative z-10">
+                          <div className="space-y-1">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-orange-500/10 border border-orange-500/30 text-orange-600 dark:text-orange-400 text-[10px] font-bold">
+                              ⚡ INSCRITO • EM ANDAMENTO
+                            </span>
+                            <h4 className="text-sm font-black text-zinc-900 dark:text-white uppercase tracking-tight">
+                              {item.title}
+                            </h4>
+                            <p className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
+                              Meta: {item.targetValue} {item.unit}
+                            </p>
+                          </div>
+
+                          <div className="w-10 h-10 rounded-full bg-orange-500/20 border border-orange-500/40 flex items-center justify-center text-orange-600 dark:text-orange-400 font-mono text-xs font-bold flex-shrink-0">
+                            {percent}%
+                          </div>
+                        </div>
+
+                        <div className="space-y-1 relative z-10">
+                          <div className="w-full bg-zinc-200 dark:bg-zinc-950 rounded-full h-2.5 overflow-hidden border border-zinc-300 dark:border-zinc-800">
+                            <div
+                              className="bg-orange-500 h-full rounded-full transition-all duration-500"
+                              style={{ width: `${percent}%` }}
+                            />
+                          </div>
+                          <div className="flex items-center justify-between text-[10px] text-zinc-500 dark:text-zinc-400 font-mono">
+                            <span>{item.currentValue} / {item.targetValue} {item.unit}</span>
+                            <span className="text-orange-600 dark:text-orange-400 font-bold">Inscrição Ativa</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )
               )}
             </div>
           </div>

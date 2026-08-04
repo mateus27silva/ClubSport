@@ -300,39 +300,39 @@ export const CommunityChatView: React.FC<CommunityChatProps> = ({
   });
 
   return (
-    <div className="flex flex-col h-screen max-w-lg mx-auto bg-black text-white pb-20 relative">
+    <div className="flex flex-col h-screen max-w-lg mx-auto bg-white dark:bg-black text-zinc-900 dark:text-white pb-20 relative">
       {/* Community Header with Admin / Creator controls */}
-      <div className="p-3.5 border-b border-zinc-800 flex items-center justify-between bg-zinc-950/95 backdrop-blur-md sticky top-0 z-30 shadow-md">
+      <div className="p-3.5 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between bg-white/95 dark:bg-zinc-950/95 backdrop-blur-md sticky top-0 z-30 shadow-sm dark:shadow-md">
         <div className="flex items-center space-x-3">
-          <button onClick={onBack} className="p-1.5 hover:bg-zinc-800 rounded-xl transition-colors">
-            <ChevronLeft className="w-6 h-6 text-zinc-300" />
+          <button onClick={onBack} className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition-colors">
+            <ChevronLeft className="w-6 h-6 text-zinc-700 dark:text-zinc-300" />
           </button>
 
           <div className="flex items-center space-x-2.5">
             <img
               src={activeComm.coverUrl}
               alt={activeComm.name}
-              className="w-10 h-10 rounded-xl object-cover border border-zinc-800 shadow-sm"
+              className="w-10 h-10 rounded-xl object-cover border border-zinc-200 dark:border-zinc-800 shadow-sm"
             />
             <div>
               <div className="flex items-center space-x-1.5">
-                <h1 className="text-sm font-black text-white leading-tight truncate max-w-[170px] sm:max-w-[220px]">
+                <h1 className="text-sm font-black text-zinc-900 dark:text-white leading-tight truncate max-w-[170px] sm:max-w-[220px]">
                   {activeComm.name}
                 </h1>
                 {isCreator ? (
-                  <span className="flex items-center gap-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[9px] font-bold px-1.5 py-0.2 rounded-md">
-                    <Crown className="w-2.5 h-2.5 fill-amber-400 text-amber-400" />
+                  <span className="flex items-center gap-0.5 bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/40 text-[9px] font-bold px-1.5 py-0.2 rounded-md">
+                    <Crown className="w-2.5 h-2.5 fill-amber-500 text-amber-500" />
                     Criador
                   </span>
                 ) : isAdmin ? (
-                  <span className="flex items-center gap-0.5 bg-orange-500/20 text-orange-400 border border-orange-500/40 text-[9px] font-bold px-1.5 py-0.2 rounded-md">
-                    <Shield className="w-2.5 h-2.5 text-orange-400" />
+                  <span className="flex items-center gap-0.5 bg-orange-500/20 text-orange-600 dark:text-orange-400 border border-orange-500/40 text-[9px] font-bold px-1.5 py-0.2 rounded-md">
+                    <Shield className="w-2.5 h-2.5 text-orange-500" />
                     Admin
                   </span>
                 ) : null}
               </div>
-              <p className="text-[10px] text-zinc-400 flex items-center gap-1 mt-0.5">
-                <span className="font-bold text-orange-400">{activeComm.sportCategory}</span>
+              <p className="text-[10px] text-zinc-500 dark:text-zinc-400 flex items-center gap-1 mt-0.5">
+                <span className="font-bold text-orange-600 dark:text-orange-400">{activeComm.sportCategory}</span>
                 <span>•</span>
                 <span>{activeComm.membersCount || activeComm.members?.length || 1} membros</span>
               </p>
@@ -343,7 +343,7 @@ export const CommunityChatView: React.FC<CommunityChatProps> = ({
         {/* Action Button: Manage Group */}
         <button
           onClick={() => setIsManageModalOpen(true)}
-          className="p-2 bg-zinc-900 hover:bg-zinc-800 text-orange-400 rounded-xl border border-zinc-800 transition-all flex items-center gap-1.5 text-xs font-bold shadow-sm"
+          className="p-2 bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-orange-600 dark:text-orange-400 rounded-xl border border-zinc-200 dark:border-zinc-800 transition-all flex items-center gap-1.5 text-xs font-bold shadow-sm"
           title="Gerenciar Grupo"
         >
           <Shield className="w-4 h-4 text-orange-500" />
@@ -353,23 +353,23 @@ export const CommunityChatView: React.FC<CommunityChatProps> = ({
 
       {/* PINNED MESSAGE BANNER (📌 Mensagem Fixada) */}
       {activeComm.pinnedMessageText && (
-        <div className="bg-gradient-to-r from-orange-500/20 via-zinc-900 to-amber-500/10 border-b border-orange-500/30 px-4 py-2.5 flex items-center justify-between text-xs backdrop-blur-md sticky top-[61px] z-20">
+        <div className="bg-gradient-to-r from-orange-500/10 dark:from-orange-500/20 via-zinc-100 dark:via-zinc-900 to-amber-500/10 border-b border-orange-500/30 px-4 py-2.5 flex items-center justify-between text-xs backdrop-blur-md sticky top-[61px] z-20">
           <div className="flex items-center space-x-2.5 min-w-0 pr-2">
             <div className="p-1.5 bg-orange-500/20 rounded-lg shrink-0 border border-orange-500/40">
-              <Pin className="w-3.5 h-3.5 text-orange-400 fill-orange-400" />
+              <Pin className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400 fill-orange-500" />
             </div>
             <div className="min-w-0">
-              <span className="text-[9px] font-black uppercase text-orange-400 tracking-wider block">
+              <span className="text-[9px] font-black uppercase text-orange-600 dark:text-orange-400 tracking-wider block">
                 Mensagem Fixada
               </span>
-              <p className="text-xs text-white font-medium truncate">{activeComm.pinnedMessageText}</p>
+              <p className="text-xs text-zinc-900 dark:text-white font-medium truncate">{activeComm.pinnedMessageText}</p>
             </div>
           </div>
 
           {isAdmin && (
             <button
               onClick={handleUnpinMessage}
-              className="text-[10px] text-zinc-400 hover:text-white underline shrink-0 font-bold px-1.5 py-1"
+              className="text-[10px] text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white underline shrink-0 font-bold px-1.5 py-1"
             >
               Desafixar
             </button>
@@ -397,27 +397,27 @@ export const CommunityChatView: React.FC<CommunityChatProps> = ({
                     src={msg.userAvatar}
                     alt={msg.userName}
                     onClick={() => onOpenUserProfile?.({ userId: msg.userId, userName: msg.userName, userAvatar: msg.userAvatar })}
-                    className="w-9 h-9 rounded-full object-cover border border-zinc-800 cursor-pointer hover:scale-105 transition-transform"
+                    className="w-9 h-9 rounded-full object-cover border border-zinc-200 dark:border-zinc-800 cursor-pointer hover:scale-105 transition-transform"
                   />
                   <div>
                     <h3
                       onClick={() => onOpenUserProfile?.({ userId: msg.userId, userName: msg.userName, userAvatar: msg.userAvatar })}
-                      className="text-xs font-bold text-white cursor-pointer hover:text-orange-400 hover:underline flex items-center gap-1.5"
+                      className="text-xs font-bold text-zinc-900 dark:text-white cursor-pointer hover:text-orange-600 dark:hover:text-orange-400 hover:underline flex items-center gap-1.5"
                     >
                       <span>{msg.userName}</span>
                       {isOwnMsg && (
-                        <span className="text-[9px] bg-orange-500/20 text-orange-400 border border-orange-500/30 px-1.5 py-0.2 rounded-full font-bold">
+                        <span className="text-[9px] bg-orange-500/20 text-orange-600 dark:text-orange-400 border border-orange-500/30 px-1.5 py-0.2 rounded-full font-bold">
                           Você
                         </span>
                       )}
                       {isMsgPinned && (
-                        <span className="text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/40 px-1.5 py-0.2 rounded-md font-bold flex items-center gap-0.5">
-                          <Pin className="w-2.5 h-2.5 fill-amber-400 text-amber-400" />
+                        <span className="text-[9px] bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/40 px-1.5 py-0.2 rounded-md font-bold flex items-center gap-0.5">
+                          <Pin className="w-2.5 h-2.5 fill-amber-500 text-amber-500" />
                           Fixada
                         </span>
                       )}
                     </h3>
-                    <span className="text-[10px] text-zinc-500">{msg.createdAt}</span>
+                    <span className="text-[10px] text-zinc-400 dark:text-zinc-500">{msg.createdAt}</span>
                   </div>
                 </div>
 
@@ -426,7 +426,7 @@ export const CommunityChatView: React.FC<CommunityChatProps> = ({
                   {isAdmin && (
                     <button
                       onClick={() => handlePinMessage(msg.text, msg.id)}
-                      className="text-zinc-500 hover:text-orange-400 p-1 rounded hover:bg-zinc-800 transition-colors"
+                      className="text-zinc-400 dark:text-zinc-500 hover:text-orange-600 dark:hover:text-orange-400 p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                       title="Fixar Mensagem no Grupo"
                     >
                       <Pin className="w-3.5 h-3.5" />
@@ -440,7 +440,7 @@ export const CommunityChatView: React.FC<CommunityChatProps> = ({
                           setMessages((prev) => prev.filter((m) => m.id !== msg.id));
                         }
                       }}
-                      className="text-zinc-500 hover:text-red-400 p-1 rounded hover:bg-zinc-800 transition-colors"
+                      className="text-zinc-400 dark:text-zinc-500 hover:text-red-600 dark:hover:text-red-400 p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                       title="Excluir mensagem"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -450,11 +450,11 @@ export const CommunityChatView: React.FC<CommunityChatProps> = ({
               </div>
 
               {/* Message Body Text */}
-              <p className="text-xs text-zinc-200 leading-relaxed pl-11 font-medium">{msg.text}</p>
+              <p className="text-xs text-zinc-800 dark:text-zinc-200 leading-relaxed pl-11 font-medium">{msg.text}</p>
 
               {/* Media Highlight Video / Photo */}
               {msg.mediaUrl && (
-                <div className="ml-11 relative rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-950 max-h-56">
+                <div className="ml-11 relative rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-950 max-h-56">
                   <img src={msg.mediaUrl} alt="Match highlight" className="w-full h-full object-cover" />
                   {msg.id === 'msg_1' && (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/30">
@@ -468,11 +468,11 @@ export const CommunityChatView: React.FC<CommunityChatProps> = ({
 
               {/* Action Bar: Reply & Flame Reactions */}
               <div className="ml-11 flex items-center space-x-4 pt-1">
-                <button className="flex items-center space-x-1.5 px-3 py-1 rounded-full bg-zinc-900 text-zinc-300 text-xs font-semibold hover:bg-zinc-800 border border-zinc-800">
+                <button className="flex items-center space-x-1.5 px-3 py-1 rounded-full bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 text-xs font-semibold hover:bg-zinc-200 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800">
                   <MessageSquare className="w-3.5 h-3.5" />
                   <span>Reply</span>
                   {msg.repliesCount > 0 && (
-                    <span className="text-zinc-400 ml-1">{msg.repliesCount} Replies</span>
+                    <span className="text-zinc-500 dark:text-zinc-400 ml-1">{msg.repliesCount} Replies</span>
                   )}
                 </button>
 
@@ -480,8 +480,8 @@ export const CommunityChatView: React.FC<CommunityChatProps> = ({
                   onClick={() => handleReactFlame(msg.id)}
                   className={`flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-bold border transition-colors ${
                     msg.hasReacted
-                      ? 'bg-orange-500/20 text-orange-400 border-orange-500/40'
-                      : 'bg-zinc-900 text-zinc-400 border-zinc-800 hover:text-white'
+                      ? 'bg-orange-500/10 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400 border-orange-500/30 dark:border-orange-500/40'
+                      : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:text-zinc-900 dark:hover:text-white'
                   }`}
                 >
                   <Flame className={`w-3.5 h-3.5 ${msg.hasReacted ? 'fill-orange-500 text-orange-500' : ''}`} />
@@ -494,8 +494,8 @@ export const CommunityChatView: React.FC<CommunityChatProps> = ({
       </div>
 
       {/* Input Message Bar */}
-      <div className="p-3 bg-zinc-950 border-t border-zinc-900 flex items-center space-x-2">
-        <button className="p-2.5 rounded-full bg-zinc-900 hover:bg-zinc-800 text-zinc-400">
+      <div className="p-3 bg-white dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-900 flex items-center space-x-2">
+        <button className="p-2.5 rounded-full bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
           <Plus className="w-5 h-5" />
         </button>
 
@@ -506,16 +506,16 @@ export const CommunityChatView: React.FC<CommunityChatProps> = ({
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl pl-4 pr-10 py-2.5 text-xs text-white focus:outline-none focus:border-orange-500 placeholder:text-zinc-500"
+            className="w-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl pl-4 pr-10 py-2.5 text-xs text-zinc-900 dark:text-white focus:outline-none focus:border-orange-500 placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
           />
-          <button className="absolute right-3 top-2.5 text-zinc-400 hover:text-white">
+          <button className="absolute right-3 top-2.5 text-zinc-400 hover:text-zinc-900 dark:hover:text-white">
             <Mic className="w-4 h-4" />
           </button>
         </div>
 
         <button
           onClick={handleSendMessage}
-          className="p-2.5 rounded-2xl bg-orange-500 hover:bg-orange-600 text-zinc-950 font-bold shadow-md shadow-orange-500/20 active:scale-95 transition-all"
+          className="p-2.5 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white dark:text-zinc-950 font-bold shadow-md shadow-orange-500/20 active:scale-95 transition-all"
         >
           <Send className="w-4 h-4" />
         </button>
@@ -523,36 +523,36 @@ export const CommunityChatView: React.FC<CommunityChatProps> = ({
 
       {/* GROUP MANAGEMENT MODAL ("Gerenciar Grupo & Comunidade") */}
       {isManageModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
-          <div className="bg-zinc-950 border border-zinc-800 w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[85vh]">
+        <div className="fixed inset-0 z-50 bg-black/60 dark:bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[85vh]">
             {/* Modal Header */}
-            <div className="p-4 border-b border-zinc-800 bg-zinc-900/90 flex items-center justify-between">
+            <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/90 flex items-center justify-between">
               <div className="flex items-center space-x-2.5">
-                <div className="p-2 bg-orange-500/20 rounded-xl border border-orange-500/30 text-orange-400">
+                <div className="p-2 bg-orange-500/20 rounded-xl border border-orange-500/30 text-orange-600 dark:text-orange-400">
                   <Shield className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-black text-white">Gerenciar Grupo</h3>
-                  <p className="text-[10px] text-zinc-400">{activeComm.name}</p>
+                  <h3 className="text-sm font-black text-zinc-900 dark:text-white">Gerenciar Grupo</h3>
+                  <p className="text-[10px] text-zinc-500 dark:text-zinc-400">{activeComm.name}</p>
                 </div>
               </div>
 
               <button
                 onClick={() => setIsManageModalOpen(false)}
-                className="text-zinc-400 hover:text-white p-1.5 rounded-xl hover:bg-zinc-800 transition-colors"
+                className="text-zinc-400 hover:text-zinc-900 dark:hover:text-white p-1.5 rounded-xl hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Navigation Tabs */}
-            <div className="flex border-b border-zinc-800 bg-zinc-900/50 p-1 text-xs font-bold overflow-x-auto no-scrollbar">
+            <div className="flex border-b border-zinc-200 dark:border-zinc-800 bg-zinc-100/80 dark:bg-zinc-900/50 p-1 text-xs font-bold overflow-x-auto no-scrollbar">
               <button
                 onClick={() => setManageTab('members')}
                 className={`flex-1 min-w-[90px] py-2 px-3 rounded-xl transition-all flex items-center justify-center gap-1.5 ${
                   manageTab === 'members'
-                    ? 'bg-orange-500 text-zinc-950 shadow-md font-black'
-                    : 'text-zinc-400 hover:text-white'
+                    ? 'bg-orange-500 text-white dark:text-zinc-950 shadow-md font-black'
+                    : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
                 }`}
               >
                 <Users className="w-3.5 h-3.5" />
@@ -563,8 +563,8 @@ export const CommunityChatView: React.FC<CommunityChatProps> = ({
                 onClick={() => setManageTab('add')}
                 className={`flex-1 min-w-[90px] py-2 px-3 rounded-xl transition-all flex items-center justify-center gap-1.5 ${
                   manageTab === 'add'
-                    ? 'bg-orange-500 text-zinc-950 shadow-md font-black'
-                    : 'text-zinc-400 hover:text-white'
+                    ? 'bg-orange-500 text-white dark:text-zinc-950 shadow-md font-black'
+                    : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
                 }`}
               >
                 <UserPlus className="w-3.5 h-3.5" />
@@ -575,8 +575,8 @@ export const CommunityChatView: React.FC<CommunityChatProps> = ({
                 onClick={() => setManageTab('pin')}
                 className={`flex-1 min-w-[90px] py-2 px-3 rounded-xl transition-all flex items-center justify-center gap-1.5 ${
                   manageTab === 'pin'
-                    ? 'bg-orange-500 text-zinc-950 shadow-md font-black'
-                    : 'text-zinc-400 hover:text-white'
+                    ? 'bg-orange-500 text-white dark:text-zinc-950 shadow-md font-black'
+                    : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
                 }`}
               >
                 <Pin className="w-3.5 h-3.5" />
@@ -588,8 +588,8 @@ export const CommunityChatView: React.FC<CommunityChatProps> = ({
                   onClick={() => setManageTab('danger')}
                   className={`py-2 px-3 rounded-xl transition-all flex items-center justify-center gap-1.5 ${
                     manageTab === 'danger'
-                      ? 'bg-red-500/20 text-red-400 border border-red-500/40 font-black'
-                      : 'text-zinc-500 hover:text-red-400'
+                      ? 'bg-red-500/20 text-red-600 dark:text-red-400 border border-red-500/40 font-black'
+                      : 'text-zinc-400 dark:text-zinc-500 hover:text-red-600 dark:hover:text-red-400'
                   }`}
                   title="Configurações Avançadas / Excluir"
                 >
@@ -603,9 +603,9 @@ export const CommunityChatView: React.FC<CommunityChatProps> = ({
               {/* TAB 1: MEMBERS LIST & ADMIN PROMOTION / EXPULSION */}
               {manageTab === 'members' && (
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between text-xs text-zinc-400">
+                  <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
                     <span>Membros e Administradores</span>
-                    <span className="text-[10px] bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded-md text-zinc-300">
+                    <span className="text-[10px] bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-2 py-0.5 rounded-md text-zinc-700 dark:text-zinc-300">
                       Criador: {activeComm.createdBy}
                     </span>
                   </div>
@@ -625,25 +625,25 @@ export const CommunityChatView: React.FC<CommunityChatProps> = ({
                       return (
                         <div
                           key={m.id}
-                          className="bg-zinc-900/90 border border-zinc-800 p-3 rounded-2xl flex items-center justify-between"
+                          className="bg-zinc-50 dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-800 p-3 rounded-2xl flex items-center justify-between"
                         >
                           <div className="flex items-center space-x-3">
-                            <img src={m.avatar} alt={m.name} className="w-9 h-9 rounded-full object-cover border border-zinc-800" />
+                            <img src={m.avatar} alt={m.name} className="w-9 h-9 rounded-full object-cover border border-zinc-200 dark:border-zinc-800" />
                             <div>
-                              <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
+                              <h4 className="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-1.5">
                                 <span>{m.name}</span>
                                 {isMemberCreator ? (
-                                  <span className="text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/40 px-1.5 py-0.2 rounded font-bold flex items-center gap-0.5">
-                                    <Crown className="w-2.5 h-2.5 fill-amber-400 text-amber-400" />
+                                  <span className="text-[9px] bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/40 px-1.5 py-0.2 rounded font-bold flex items-center gap-0.5">
+                                    <Crown className="w-2.5 h-2.5 fill-amber-500 text-amber-500" />
                                     Criador
                                   </span>
                                 ) : isMemberAdmin ? (
-                                  <span className="text-[9px] bg-orange-500/20 text-orange-400 border border-orange-500/40 px-1.5 py-0.2 rounded font-bold flex items-center gap-0.5">
-                                    <Shield className="w-2.5 h-2.5 text-orange-400" />
+                                  <span className="text-[9px] bg-orange-500/20 text-orange-600 dark:text-orange-400 border border-orange-500/40 px-1.5 py-0.2 rounded font-bold flex items-center gap-0.5">
+                                    <Shield className="w-2.5 h-2.5 text-orange-500" />
                                     Admin
                                   </span>
                                 ) : (
-                                  <span className="text-[9px] bg-zinc-800 text-zinc-400 px-1.5 py-0.2 rounded">
+                                  <span className="text-[9px] bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 px-1.5 py-0.2 rounded">
                                     Membro
                                   </span>
                                 )}
@@ -657,7 +657,7 @@ export const CommunityChatView: React.FC<CommunityChatProps> = ({
                               {!isMemberAdmin && (
                                 <button
                                   onClick={() => handlePromoteAdmin(m.id, m.name)}
-                                  className="px-2.5 py-1 bg-orange-500/10 hover:bg-orange-500 text-orange-400 hover:text-zinc-950 font-bold text-[10px] rounded-lg border border-orange-500/30 transition-all flex items-center gap-1"
+                                  className="px-2.5 py-1 bg-orange-500/10 hover:bg-orange-500 text-orange-600 dark:text-orange-400 hover:text-white dark:hover:text-zinc-950 font-bold text-[10px] rounded-lg border border-orange-500/30 transition-all flex items-center gap-1"
                                   title="Tornar Administrador"
                                 >
                                   <Star className="w-3 h-3" />
@@ -667,7 +667,7 @@ export const CommunityChatView: React.FC<CommunityChatProps> = ({
 
                               <button
                                 onClick={() => handleKickMember(m.id, m.name)}
-                                className="px-2 py-1 bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white font-bold text-[10px] rounded-lg border border-red-500/30 transition-all flex items-center gap-1"
+                                className="px-2 py-1 bg-red-500/10 hover:bg-red-500 text-red-600 dark:text-red-400 hover:text-white font-bold text-[10px] rounded-lg border border-red-500/30 transition-all flex items-center gap-1"
                                 title="Expulsar do Grupo"
                               >
                                 <UserX className="w-3 h-3" />
@@ -686,15 +686,15 @@ export const CommunityChatView: React.FC<CommunityChatProps> = ({
               {manageTab === 'add' && (
                 <div className="space-y-3">
                   <div className="space-y-1">
-                    <label className="text-xs font-bold text-white block">Buscar Atletas Registrados</label>
+                    <label className="text-xs font-bold text-zinc-900 dark:text-white block">Buscar Atletas Registrados</label>
                     <div className="relative">
-                      <Search className="w-4 h-4 text-zinc-500 absolute left-3 top-3" />
+                      <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-3" />
                       <input
                         type="text"
                         placeholder="Nome do atleta..."
                         value={userSearchQuery}
                         onChange={(e) => setUserSearchQuery(e.target.value)}
-                        className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-9 pr-4 py-2.5 text-xs text-white focus:outline-none focus:border-orange-500"
+                        className="w-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl pl-9 pr-4 py-2.5 text-xs text-zinc-900 dark:text-white focus:outline-none focus:border-orange-500"
                       />
                     </div>
                   </div>
@@ -708,16 +708,16 @@ export const CommunityChatView: React.FC<CommunityChatProps> = ({
                       filteredAvailableUsers.map((u) => (
                         <div
                           key={u.id}
-                          className="p-2.5 bg-zinc-900/90 border border-zinc-800 rounded-xl flex items-center justify-between"
+                          className="p-2.5 bg-zinc-50 dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-800 rounded-xl flex items-center justify-between"
                         >
                           <div className="flex items-center space-x-2.5">
-                            <img src={u.avatar} alt={u.name} className="w-8 h-8 rounded-full object-cover border border-zinc-800" />
-                            <span className="text-xs font-bold text-white">{u.name}</span>
+                            <img src={u.avatar} alt={u.name} className="w-8 h-8 rounded-full object-cover border border-zinc-200 dark:border-zinc-800" />
+                            <span className="text-xs font-bold text-zinc-900 dark:text-white">{u.name}</span>
                           </div>
 
                           <button
                             onClick={() => handleAddMember(u)}
-                            className="px-3 py-1 bg-orange-500 hover:bg-orange-600 text-zinc-950 font-bold text-xs rounded-lg transition-all flex items-center gap-1 shadow-sm"
+                            className="px-3 py-1 bg-orange-500 hover:bg-orange-600 text-white dark:text-zinc-950 font-bold text-xs rounded-lg transition-all flex items-center gap-1 shadow-sm"
                           >
                             <UserPlus className="w-3.5 h-3.5" />
                             <span>Adicionar</span>
@@ -733,8 +733,8 @@ export const CommunityChatView: React.FC<CommunityChatProps> = ({
               {manageTab === 'pin' && (
                 <div className="space-y-3">
                   <div className="space-y-1">
-                    <label className="text-xs font-bold text-white block">Mensagem Fixada no Topo do Chat</label>
-                    <p className="text-[11px] text-zinc-400">
+                    <label className="text-xs font-bold text-zinc-900 dark:text-white block">Mensagem Fixada no Topo do Chat</label>
+                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
                       Esta mensagem aparecerá em destaque no topo do grupo para todos os participantes.
                     </p>
                     <textarea
@@ -742,7 +742,7 @@ export const CommunityChatView: React.FC<CommunityChatProps> = ({
                       placeholder="Escreva um aviso ou comunicado oficial..."
                       value={pinInputText}
                       onChange={(e) => setPinInputText(e.target.value)}
-                      className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-orange-500 resize-none"
+                      className="w-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-3 text-xs text-zinc-900 dark:text-white focus:outline-none focus:border-orange-500 resize-none"
                     />
                   </div>
 
@@ -750,7 +750,7 @@ export const CommunityChatView: React.FC<CommunityChatProps> = ({
                     <button
                       onClick={() => handlePinMessage(pinInputText)}
                       disabled={!pinInputText.trim()}
-                      className="flex-1 py-2.5 bg-orange-500 hover:bg-orange-600 disabled:opacity-40 text-zinc-950 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-md"
+                      className="flex-1 py-2.5 bg-orange-500 hover:bg-orange-600 disabled:opacity-40 text-white dark:text-zinc-950 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-md"
                     >
                       <Pin className="w-4 h-4" />
                       <span>Salvar Mensagem Fixada</span>
@@ -759,7 +759,7 @@ export const CommunityChatView: React.FC<CommunityChatProps> = ({
                     {activeComm.pinnedMessageText && (
                       <button
                         onClick={handleUnpinMessage}
-                        className="py-2.5 px-4 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white font-bold text-xs rounded-xl border border-zinc-800 transition-all"
+                        className="py-2.5 px-4 bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white font-bold text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 transition-all"
                       >
                         Remover
                       </button>
@@ -770,12 +770,12 @@ export const CommunityChatView: React.FC<CommunityChatProps> = ({
 
               {/* TAB 4: DANGER ZONE (DELETE GROUP) */}
               {manageTab === 'danger' && isAdmin && (
-                <div className="p-4 bg-red-950/20 border border-red-500/30 rounded-2xl space-y-3">
-                  <div className="flex items-center space-x-2 text-red-400">
+                <div className="p-4 bg-red-500/10 dark:bg-red-950/20 border border-red-500/30 rounded-2xl space-y-3">
+                  <div className="flex items-center space-x-2 text-red-600 dark:text-red-400">
                     <AlertTriangle className="w-5 h-5" />
                     <h4 className="text-xs font-black uppercase tracking-wider">Zona de Perigo</h4>
                   </div>
-                  <p className="text-xs text-zinc-300 leading-relaxed">
+                  <p className="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed">
                     Excluir este grupo removerá permanentemente todos os dados, mensagens e históricos vinculados a ele. Apenas o criador ou administradores podem executar esta ação.
                   </p>
 

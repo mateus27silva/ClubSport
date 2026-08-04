@@ -50,7 +50,6 @@ export const ChallengesView: React.FC<ChallengesViewProps> = ({
   const [sportFilter, setSportFilter] = useState<string>('All');
   const [regionFilter, setRegionFilter] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [communityTab, setCommunityTab] = useState<'all' | 'my'>('all');
   const [userCoords, setUserCoords] = useState<{ lat: number; lng: number }>(() => {
     return resolveLocationCoords(user?.region);
   });
@@ -159,18 +158,6 @@ export const ChallengesView: React.FC<ChallengesViewProps> = ({
   });
 
   let filteredCommunities = processedCommunities.filter((c) => {
-    const isCreatedByUser = Boolean(
-      (user?.fullName && c.createdBy.toLowerCase() === user.fullName.toLowerCase()) ||
-      (user?.uid && c.creatorId === user.uid)
-    );
-    const isMemberOfUser = Boolean(
-      user?.clubs && (user.clubs.includes(c.name) || user.clubs.includes(c.id))
-    );
-
-    if (communityTab === 'my' && !isCreatedByUser && !isMemberOfUser) {
-      return false;
-    }
-
     const matchesSearch =
       !searchQuery ||
       c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -342,40 +329,14 @@ export const ChallengesView: React.FC<ChallengesViewProps> = ({
             <span>Grupos & Comunidades ({filteredCommunities.length})</span>
           </h2>
 
-          <div className="flex items-center gap-2">
-            <div className="flex bg-zinc-900 border border-zinc-800 p-0.5 rounded-lg text-[10px]">
-              <button
-                onClick={() => setCommunityTab('all')}
-                className={`px-2.5 py-1 rounded-md font-bold transition-all ${
-                  communityTab === 'all'
-                    ? 'bg-orange-500 text-zinc-950 shadow-sm'
-                    : 'text-zinc-400 hover:text-white'
-                }`}
-              >
-                Todas
-              </button>
-              <button
-                onClick={() => setCommunityTab('my')}
-                className={`px-2.5 py-1 rounded-md font-bold transition-all flex items-center gap-1 ${
-                  communityTab === 'my'
-                    ? 'bg-orange-500 text-zinc-950 shadow-sm'
-                    : 'text-zinc-400 hover:text-white'
-                }`}
-              >
-                <Crown className="w-3 h-3 text-amber-400 fill-amber-400" />
-                <span>Meus Grupos</span>
-              </button>
-            </div>
-
-            {onOpenCreateCommunity && (
-              <button
-                onClick={onOpenCreateCommunity}
-                className="text-[10px] font-bold text-orange-400 hover:text-orange-300 bg-orange-500/10 border border-orange-500/20 px-2.5 py-1 rounded-lg transition-all"
-              >
-                + Criar
-              </button>
-            )}
-          </div>
+          {onOpenCreateCommunity && (
+            <button
+              onClick={onOpenCreateCommunity}
+              className="text-[10px] font-bold text-orange-400 hover:text-orange-300 bg-orange-500/10 border border-orange-500/20 px-2.5 py-1 rounded-lg transition-all"
+            >
+              + Criar
+            </button>
+          )}
         </div>
 
         <div className="space-y-3">
@@ -433,7 +394,7 @@ export const ChallengesView: React.FC<ChallengesViewProps> = ({
                 <div className="p-3.5 space-y-2">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h3 className="text-sm font-black text-zinc-900 dark:text-white group-hover:text-orange-500 dark:group-hover:text-orange-400 transition-colors flex items-center gap-2">
+                      <h3 className="text-base sm:text-lg font-black text-white group-hover:text-orange-400 transition-colors flex items-center gap-2">
                         <span>{community.name}</span>
                         {isCreatedByUser && (
                           <span className="text-[9px] bg-orange-500/20 text-orange-400 border border-orange-500/30 px-1.5 py-0.2 rounded font-bold uppercase">

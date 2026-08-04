@@ -274,7 +274,7 @@ export const CaptureView: React.FC<CaptureViewProps> = ({ onNextToUpload, onClos
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black text-white flex flex-col justify-between max-w-lg mx-auto overflow-hidden">
+    <div className="fixed inset-0 z-50 bg-white dark:bg-black text-zinc-900 dark:text-white flex flex-col justify-between max-w-lg mx-auto overflow-hidden">
       {/* Native Mobile Camera File Input Fallback */}
       <input
         type="file"
@@ -301,25 +301,25 @@ export const CaptureView: React.FC<CaptureViewProps> = ({ onNextToUpload, onClos
 
       {/* Top Bar */}
       <div className="p-4 flex items-center justify-between z-20">
-        <button onClick={onClose} className="p-2 hover:bg-zinc-800 rounded-full">
+        <button onClick={onClose} className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full text-zinc-700 dark:text-zinc-300">
           <ChevronDown className="w-6 h-6" />
         </button>
 
         <div className="flex items-center gap-2">
           <Radio className="w-4 h-4 text-red-500 animate-pulse" />
-          <span className="text-xs font-mono font-bold text-white">ClubSport Live API</span>
+          <span className="text-xs font-mono font-bold text-zinc-900 dark:text-white">ClubSport Live API</span>
         </div>
 
         <button
           onClick={() => onNextToUpload(capturedImage, postType)}
-          className="text-sm font-bold text-orange-500 hover:text-orange-400 bg-orange-500/10 px-3 py-1.5 rounded-xl border border-orange-500/20"
+          className="text-sm font-bold text-orange-600 dark:text-orange-500 hover:text-orange-500 bg-orange-500/10 px-3 py-1.5 rounded-xl border border-orange-500/20"
         >
           Avançar
         </button>
       </div>
 
       {/* Camera / Live Stream Viewfinder Box */}
-      <div className="relative mx-3 flex-1 rounded-3xl overflow-hidden bg-zinc-950 border border-zinc-800 flex items-center justify-center">
+      <div className="relative mx-3 flex-1 rounded-3xl overflow-hidden bg-zinc-900 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center">
         <video
           ref={videoRef}
           autoPlay
@@ -337,9 +337,9 @@ export const CaptureView: React.FC<CaptureViewProps> = ({ onNextToUpload, onClos
 
         {/* Permission Warning Overlay */}
         {cameraError && (
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm p-6 flex flex-col items-center justify-center text-center z-20 space-y-3">
-            <AlertCircle className="w-10 h-10 text-orange-400" />
-            <p className="text-xs text-zinc-200 font-medium leading-relaxed max-w-xs">
+          <div className="absolute inset-0 bg-white/90 dark:bg-black/80 backdrop-blur-sm p-6 flex flex-col items-center justify-center text-center z-20 space-y-3">
+            <AlertCircle className="w-10 h-10 text-orange-500" />
+            <p className="text-xs text-zinc-800 dark:text-zinc-200 font-medium leading-relaxed max-w-xs">
               {cameraError}
             </p>
             <button
@@ -355,7 +355,7 @@ export const CaptureView: React.FC<CaptureViewProps> = ({ onNextToUpload, onClos
         {/* Focus Reticle Crosshairs for normal post */}
         {postType !== 'Live' && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="w-32 h-32 border-2 border-white/40 rounded-xl relative">
+            <div className="w-32 h-32 border-2 border-white/60 dark:border-white/40 rounded-xl relative">
               <div className="absolute top-0 left-0 w-4 h-4 border-t-4 border-l-4 -mt-1 -ml-1 border-orange-500" />
               <div className="absolute top-0 right-0 w-4 h-4 border-t-4 border-r-4 -mt-1 -mr-1 border-orange-500" />
               <div className="absolute bottom-0 left-0 w-4 h-4 border-b-4 border-l-4 -mb-1 -ml-1 border-orange-500" />
@@ -379,8 +379,8 @@ export const CaptureView: React.FC<CaptureViewProps> = ({ onNextToUpload, onClos
                   )}
                 </div>
 
-                <div className="bg-zinc-900/80 backdrop-blur-md px-2.5 py-1 rounded-full flex items-center gap-1 text-[10px] font-bold text-white border border-zinc-700">
-                  <Eye className="w-3 h-3 text-red-400" />
+                <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md px-2.5 py-1 rounded-full flex items-center gap-1 text-[10px] font-bold text-zinc-900 dark:text-white border border-zinc-200 dark:border-zinc-700">
+                  <Eye className="w-3 h-3 text-red-500 dark:text-red-400" />
                   <span>{viewerCount}</span>
                 </div>
               </div>
@@ -400,14 +400,14 @@ export const CaptureView: React.FC<CaptureViewProps> = ({ onNextToUpload, onClos
 
             {/* AI Coach Floating Overlay */}
             {isLiveActive && showAiCoach && (
-              <div className="absolute top-12 left-3 right-3 bg-zinc-950/90 border border-orange-500/40 p-2.5 rounded-2xl backdrop-blur-md z-20 flex items-start gap-2 shadow-xl animate-fade-in">
-                <Sparkles className="w-4 h-4 text-orange-400 shrink-0 mt-0.5" />
+              <div className="absolute top-12 left-3 right-3 bg-white/95 dark:bg-zinc-950/90 border border-orange-500/40 p-2.5 rounded-2xl backdrop-blur-md z-20 flex items-start gap-2 shadow-xl animate-fade-in">
+                <Sparkles className="w-4 h-4 text-orange-500 dark:text-orange-400 shrink-0 mt-0.5" />
                 <div className="flex-1">
-                  <p className="text-[11px] font-semibold text-zinc-100 leading-snug">{aiCoachMsg}</p>
+                  <p className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 leading-snug">{aiCoachMsg}</p>
                 </div>
                 <button
                   onClick={() => setShowAiCoach(false)}
-                  className="text-[10px] text-zinc-400 hover:text-white px-1"
+                  className="text-[10px] text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white px-1"
                 >
                   ✕
                 </button>
@@ -417,10 +417,10 @@ export const CaptureView: React.FC<CaptureViewProps> = ({ onNextToUpload, onClos
             {/* Live Chat Stream Overlay */}
             <div className="absolute bottom-3 left-3 right-3 z-20 space-y-2 max-h-[160px] overflow-y-auto no-scrollbar pointer-events-auto">
               {comments.map((c) => (
-                <div key={c.id} className="flex items-center gap-2 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 w-fit max-w-[90%]">
+                <div key={c.id} className="flex items-center gap-2 bg-white/85 dark:bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-zinc-200 dark:border-white/10 w-fit max-w-[90%] shadow-sm">
                   <img src={c.avatarUrl} alt={c.userName} className="w-5 h-5 rounded-full object-cover border border-orange-500/50 shrink-0" />
-                  <span className="text-[11px] font-bold text-orange-400 shrink-0">{c.userName}:</span>
-                  <span className="text-[11px] font-medium text-white truncate">{c.text}</span>
+                  <span className="text-[11px] font-bold text-orange-600 dark:text-orange-400 shrink-0">{c.userName}:</span>
+                  <span className="text-[11px] font-medium text-zinc-900 dark:text-white truncate">{c.text}</span>
                 </div>
               ))}
             </div>
@@ -429,17 +429,17 @@ export const CaptureView: React.FC<CaptureViewProps> = ({ onNextToUpload, onClos
       </div>
 
       {/* Bottom Controls */}
-      <div className="p-4 space-y-4 bg-zinc-950/90 backdrop-blur-md border-t border-zinc-900 z-20">
+      <div className="p-4 space-y-4 bg-white/95 dark:bg-zinc-950/90 backdrop-blur-md border-t border-zinc-200 dark:border-zinc-900 z-20">
         {/* Live Chat Input Bar when Live is Active */}
         {postType === 'Live' && isLiveActive && (
-          <div className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 rounded-2xl px-3 py-1.5">
+          <div className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-3 py-1.5">
             <input
               type="text"
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSendComment()}
               placeholder="Enviar mensagem ao vivo..."
-              className="w-full bg-transparent text-xs text-white placeholder-zinc-500 focus:outline-none"
+              className="w-full bg-transparent text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none"
             />
             <button
               onClick={handleSendComment}
@@ -461,7 +461,7 @@ export const CaptureView: React.FC<CaptureViewProps> = ({ onNextToUpload, onClos
           {/* Gallery / File Button */}
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="p-3 rounded-full bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800"
+            className="p-3 rounded-full bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-800"
             title="Escolher Foto da Galeria ou Câmera Nativa"
           >
             <Image className="w-6 h-6" />
@@ -503,7 +503,7 @@ export const CaptureView: React.FC<CaptureViewProps> = ({ onNextToUpload, onClos
           {/* Camera Flip Button */}
           <button
             onClick={toggleFacingMode}
-            className="p-3 rounded-full bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800"
+            className="p-3 rounded-full bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-800"
             title="Inverter Câmera (Frontal / Traseira)"
           >
             <RefreshCw className="w-6 h-6" />
@@ -518,7 +518,7 @@ export const CaptureView: React.FC<CaptureViewProps> = ({ onNextToUpload, onClos
               setIsLiveActive(false);
             }}
             className={`pb-1 border-b-2 transition-colors ${
-              postType === 'Post' ? 'border-orange-500 text-orange-500' : 'border-transparent text-zinc-400'
+              postType === 'Post' ? 'border-orange-500 text-orange-600 dark:text-orange-500' : 'border-transparent text-zinc-500 dark:text-zinc-400'
             }`}
           >
             Post
@@ -529,7 +529,7 @@ export const CaptureView: React.FC<CaptureViewProps> = ({ onNextToUpload, onClos
               setIsLiveActive(false);
             }}
             className={`pb-1 border-b-2 transition-colors ${
-              postType === 'Story' ? 'border-orange-500 text-orange-500' : 'border-transparent text-zinc-400'
+              postType === 'Story' ? 'border-orange-500 text-orange-600 dark:text-orange-500' : 'border-transparent text-zinc-500 dark:text-zinc-400'
             }`}
           >
             Story
@@ -537,12 +537,12 @@ export const CaptureView: React.FC<CaptureViewProps> = ({ onNextToUpload, onClos
           <button
             onClick={() => setPostType('Live')}
             className={`pb-1 border-b-2 transition-colors flex items-center gap-1.5 ${
-              postType === 'Live' ? 'border-red-500 text-red-500 font-black' : 'border-transparent text-zinc-400'
+              postType === 'Live' ? 'border-red-500 text-red-600 dark:text-red-500 font-black' : 'border-transparent text-zinc-500 dark:text-zinc-400'
             }`}
           >
             <span
               className={`w-2 h-2 rounded-full ${
-                postType === 'Live' ? 'bg-red-500 animate-pulse' : 'bg-zinc-500'
+                postType === 'Live' ? 'bg-red-500 animate-pulse' : 'bg-zinc-400 dark:bg-zinc-500'
               }`}
             />
             Live Transmissão
@@ -552,27 +552,27 @@ export const CaptureView: React.FC<CaptureViewProps> = ({ onNextToUpload, onClos
 
       {/* Live Stream Ended Summary Modal */}
       {showEndSummary && (
-        <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md p-6 flex flex-col justify-center items-center text-center">
-          <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-3xl max-w-sm w-full space-y-4">
+        <div className="fixed inset-0 z-50 bg-black/70 dark:bg-black/90 backdrop-blur-md p-6 flex flex-col justify-center items-center text-center">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 rounded-3xl max-w-sm w-full space-y-4 shadow-2xl">
             <div className="w-16 h-16 bg-red-500/10 border border-red-500/20 rounded-full flex items-center justify-center mx-auto text-red-500">
               <Radio className="w-8 h-8 animate-pulse" />
             </div>
 
             <div>
-              <h3 className="text-xl font-black text-white">Transmissão Encerrada</h3>
-              <p className="text-xs text-zinc-400 mt-1">
+              <h3 className="text-xl font-black text-zinc-900 dark:text-white">Transmissão Encerrada</h3>
+              <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
                 Sua live com a comunidade ClubSport foi um sucesso!
               </p>
             </div>
 
-            <div className="grid grid-cols-3 gap-2 bg-zinc-950 p-3 rounded-2xl border border-zinc-800">
+            <div className="grid grid-cols-3 gap-2 bg-zinc-50 dark:bg-zinc-950 p-3 rounded-2xl border border-zinc-200 dark:border-zinc-800">
               <div>
                 <span className="text-[10px] text-zinc-500 block font-semibold">DURAÇÃO</span>
-                <span className="text-sm font-mono font-bold text-white">{formatTime(liveDuration || 142)}</span>
+                <span className="text-sm font-mono font-bold text-zinc-900 dark:text-white">{formatTime(liveDuration || 142)}</span>
               </div>
               <div>
                 <span className="text-[10px] text-zinc-500 block font-semibold">ESPECTADORES</span>
-                <span className="text-sm font-mono font-bold text-orange-400">{viewerCount}</span>
+                <span className="text-sm font-mono font-bold text-orange-600 dark:text-orange-400">{viewerCount}</span>
               </div>
               <div>
                 <span className="text-[10px] text-zinc-500 block font-semibold">CURTIDAS</span>
@@ -590,7 +590,7 @@ export const CaptureView: React.FC<CaptureViewProps> = ({ onNextToUpload, onClos
 
               <button
                 onClick={onClose}
-                className="w-full py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs rounded-xl transition-all"
+                className="w-full py-2.5 bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-900 dark:text-white font-bold text-xs rounded-xl transition-all"
               >
                 Voltar
               </button>

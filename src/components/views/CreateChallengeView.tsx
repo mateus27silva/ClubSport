@@ -177,12 +177,12 @@ export const CreateChallengeView: React.FC<CreateChallengeViewProps> = ({
       <div className="flex items-center justify-between pt-2">
         <button
           onClick={onCancel}
-          className="flex items-center gap-1.5 text-xs font-bold text-orange-400 hover:text-white"
+          className="flex items-center gap-1.5 text-xs font-bold text-orange-500 dark:text-orange-400 hover:text-zinc-900 dark:hover:text-white"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Cancelar</span>
         </button>
-        <h1 className="text-base font-black text-white tracking-tight uppercase flex items-center gap-2">
+        <h1 className="text-base font-black text-zinc-900 dark:text-white tracking-tight uppercase flex items-center gap-2">
           <Trophy className="w-5 h-5 text-orange-500" />
           <span>Publicar Desafio</span>
         </h1>
@@ -206,18 +206,18 @@ export const CreateChallengeView: React.FC<CreateChallengeViewProps> = ({
       {/* Banner Cover Box (Upload + Drag & Drop) */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <label className="text-xs font-bold text-zinc-300 block uppercase flex items-center gap-1.5">
+          <label className="text-xs font-bold text-zinc-800 dark:text-zinc-300 block uppercase flex items-center gap-1.5">
             <ImageIcon className="w-4 h-4 text-orange-500" />
             <span>Imagem de Capa do Desafio</span>
           </label>
-          <span className="text-[10px] text-zinc-400">Upload ou Escolha de Esporte</span>
+          <span className="text-[10px] text-zinc-500 dark:text-zinc-400">Upload ou Escolha de Esporte</span>
         </div>
 
         <div
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
-          className={`w-full h-44 rounded-2xl border-2 border-dashed transition-all bg-zinc-900 flex flex-col items-center justify-center space-y-3 relative overflow-hidden group ${
+          className={`w-full h-44 rounded-2xl border-2 border-dashed transition-all bg-white dark:bg-zinc-900 flex flex-col items-center justify-center space-y-3 relative overflow-hidden group shadow-sm ${
             isDragging
               ? 'border-orange-500 bg-orange-500/10 scale-[1.01]'
               : 'border-orange-500/40 hover:border-orange-500'
@@ -229,7 +229,7 @@ export const CreateChallengeView: React.FC<CreateChallengeViewProps> = ({
             className="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-60 transition-opacity"
           />
 
-          <div className="relative z-10 flex flex-col items-center gap-2 px-4 py-3 bg-zinc-950/85 rounded-2xl border border-zinc-800 shadow-xl backdrop-blur-sm max-w-[90%] text-center">
+          <div className="relative z-10 flex flex-col items-center gap-2 px-4 py-3 bg-white/90 dark:bg-zinc-950/85 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xl backdrop-blur-sm max-w-[90%] text-center">
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
@@ -239,7 +239,7 @@ export const CreateChallengeView: React.FC<CreateChallengeViewProps> = ({
               <span>Alterar Imagem de Capa</span>
             </button>
 
-            <p className="text-[10px] text-zinc-400 font-medium">
+            <p className="text-[10px] text-zinc-600 dark:text-zinc-400 font-medium">
               Arraste e solte uma foto aqui ou escolha uma modalidade abaixo
             </p>
           </div>
@@ -248,10 +248,10 @@ export const CreateChallengeView: React.FC<CreateChallengeViewProps> = ({
         {/* Presets / All Sports Options */}
         <div className="space-y-1 pt-1">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] text-zinc-400 font-bold uppercase">
+            <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase">
               OPÇÕES RÁPIDAS (TODOS OS ESPORTES):
             </span>
-            <span className="text-[10px] text-orange-400 font-mono">
+            <span className="text-[10px] text-orange-500 dark:text-orange-400 font-mono">
               {presetBanners.length} Esportes Disponíveis
             </span>
           </div>
@@ -268,7 +268,7 @@ export const CreateChallengeView: React.FC<CreateChallengeViewProps> = ({
                 className={`text-[11px] font-bold px-3 py-1.5 rounded-xl border transition-all flex-shrink-0 flex items-center gap-1 ${
                   bannerUrl === p.url
                     ? 'bg-orange-500 text-zinc-950 border-orange-500 shadow-md shadow-orange-500/20'
-                    : 'bg-zinc-900 text-zinc-300 border-zinc-800 hover:text-white hover:border-zinc-700'
+                    : 'bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-800 hover:text-zinc-900 dark:hover:text-white'
                 }`}
               >
                 {p.label}
@@ -282,32 +282,32 @@ export const CreateChallengeView: React.FC<CreateChallengeViewProps> = ({
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Challenge Title */}
         <div className="space-y-1">
-          <label className="text-xs font-bold text-white block uppercase">Título do Desafio *</label>
+          <label className="text-xs font-bold text-zinc-800 dark:text-white block uppercase">Título do Desafio *</label>
           <input
             type="text"
             required
             placeholder="EX: DESAFIO 10K CORRIDA NO IBI"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-xs font-bold text-white uppercase placeholder:normal-case placeholder:text-zinc-600 focus:outline-none focus:border-orange-500"
+            className="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl px-4 py-3 text-xs font-bold text-zinc-900 dark:text-white uppercase placeholder:normal-case placeholder:text-zinc-400 focus:outline-none focus:border-orange-500"
           />
         </div>
 
         {/* Challenge Description */}
         <div className="space-y-1">
-          <label className="text-xs font-bold text-white block uppercase">Descritivo do Desafio</label>
+          <label className="text-xs font-bold text-zinc-800 dark:text-white block uppercase">Descritivo do Desafio</label>
           <textarea
             rows={3}
             placeholder="Descreva as regras, premiações ou detalhes do desafio..."
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder:text-zinc-600 focus:outline-none focus:border-orange-500 resize-none"
+            className="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none focus:border-orange-500 resize-none"
           />
         </div>
 
         {/* Scope Selection (Global vs Local) */}
         <div className="space-y-1">
-          <label className="text-xs font-bold text-white block uppercase">Alcance do Desafio</label>
+          <label className="text-xs font-bold text-zinc-800 dark:text-white block uppercase">Alcance do Desafio</label>
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
@@ -315,7 +315,7 @@ export const CreateChallengeView: React.FC<CreateChallengeViewProps> = ({
               className={`py-2.5 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-2 ${
                 scope === 'global'
                   ? 'bg-orange-500 text-zinc-950 border-orange-500 shadow-md'
-                  : 'bg-zinc-900 text-zinc-400 border-zinc-800 hover:text-white'
+                  : 'bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:text-zinc-900 dark:hover:text-white'
               }`}
             >
               🌐 Global (Mundo todo)
@@ -326,7 +326,7 @@ export const CreateChallengeView: React.FC<CreateChallengeViewProps> = ({
               className={`py-2.5 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-2 ${
                 scope === 'local'
                   ? 'bg-orange-500 text-zinc-950 border-orange-500 shadow-md'
-                  : 'bg-zinc-900 text-zinc-400 border-zinc-800 hover:text-white'
+                  : 'bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:text-zinc-900 dark:hover:text-white'
               }`}
             >
               📍 Local (GPS / Presencial)
@@ -336,30 +336,30 @@ export const CreateChallengeView: React.FC<CreateChallengeViewProps> = ({
 
         {/* Location options if local */}
         {scope === 'local' && (
-          <div className="p-3.5 bg-zinc-900/80 border border-orange-500/30 rounded-2xl space-y-3">
+          <div className="p-3.5 bg-zinc-50 dark:bg-zinc-900/80 border border-orange-500/30 rounded-2xl space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-orange-400 flex items-center gap-1.5">
+              <span className="text-xs font-bold text-orange-500 dark:text-orange-400 flex items-center gap-1.5">
                 <MapPin className="w-4 h-4" /> Localização do Desafio
               </span>
               <button
                 type="button"
                 onClick={handleFetchLocation}
                 disabled={isLocating}
-                className="text-[10px] font-bold text-zinc-300 hover:text-white bg-zinc-800 border border-zinc-700 px-2.5 py-1 rounded-lg flex items-center gap-1"
+                className="text-[10px] font-bold text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white bg-zinc-200 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 px-2.5 py-1 rounded-lg flex items-center gap-1"
               >
-                <Sparkles className="w-3 h-3 text-orange-400" />
+                <Sparkles className="w-3 h-3 text-orange-500 dark:text-orange-400" />
                 {isLocating ? 'Obtendo GPS...' : 'Usar GPS Atual'}
               </button>
             </div>
 
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-zinc-400 block">Nome do Local / Ponto de Encontro</label>
+              <label className="text-[10px] font-bold text-zinc-600 dark:text-zinc-400 block">Nome do Local / Ponto de Encontro</label>
               <input
                 type="text"
                 placeholder="Ex: Parque do Ibirapuera, São Paulo - SP"
                 value={locationName}
                 onChange={(e) => setLocationName(e.target.value)}
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-orange-500"
+                className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-zinc-900 dark:text-white focus:outline-none focus:border-orange-500"
               />
             </div>
 
@@ -371,7 +371,7 @@ export const CreateChallengeView: React.FC<CreateChallengeViewProps> = ({
                   step="any"
                   value={lat}
                   onChange={(e) => setLat(parseFloat(e.target.value) || 0)}
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-1.5 text-zinc-300 focus:outline-none"
+                  className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-xl px-3 py-1.5 text-zinc-900 dark:text-zinc-300 focus:outline-none"
                 />
               </div>
               <div>
@@ -381,7 +381,7 @@ export const CreateChallengeView: React.FC<CreateChallengeViewProps> = ({
                   step="any"
                   value={lng}
                   onChange={(e) => setLng(parseFloat(e.target.value) || 0)}
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-1.5 text-zinc-300 focus:outline-none"
+                  className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-xl px-3 py-1.5 text-zinc-900 dark:text-zinc-300 focus:outline-none"
                 />
               </div>
             </div>
@@ -390,7 +390,7 @@ export const CreateChallengeView: React.FC<CreateChallengeViewProps> = ({
 
         {/* Challenge Type */}
         <div className="space-y-1">
-          <label className="text-xs font-bold text-white block uppercase">Modalidade do Desafio</label>
+          <label className="text-xs font-bold text-zinc-800 dark:text-white block uppercase">Modalidade do Desafio</label>
           <div className="grid grid-cols-3 gap-2">
             <button
               type="button"
@@ -401,7 +401,7 @@ export const CreateChallengeView: React.FC<CreateChallengeViewProps> = ({
               className={`py-2 rounded-xl text-xs font-bold border transition-all ${
                 type === 'distance'
                   ? 'bg-orange-500 text-zinc-950 border-orange-500'
-                  : 'bg-zinc-900 text-zinc-400 border-zinc-800 hover:text-white'
+                  : 'bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:text-zinc-900 dark:hover:text-white'
               }`}
             >
               Distância
@@ -415,7 +415,7 @@ export const CreateChallengeView: React.FC<CreateChallengeViewProps> = ({
               className={`py-2 rounded-xl text-xs font-bold border transition-all ${
                 type === 'sprint'
                   ? 'bg-orange-500 text-zinc-950 border-orange-500'
-                  : 'bg-zinc-900 text-zinc-400 border-zinc-800 hover:text-white'
+                  : 'bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:text-zinc-900 dark:hover:text-white'
               }`}
             >
               Sprint / Velocidade
@@ -429,7 +429,7 @@ export const CreateChallengeView: React.FC<CreateChallengeViewProps> = ({
               className={`py-2 rounded-xl text-xs font-bold border transition-all ${
                 type === 'calories'
                   ? 'bg-orange-500 text-zinc-950 border-orange-500'
-                  : 'bg-zinc-900 text-zinc-400 border-zinc-800 hover:text-white'
+                  : 'bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:text-zinc-900 dark:hover:text-white'
               }`}
             >
               Calorias
@@ -440,39 +440,39 @@ export const CreateChallengeView: React.FC<CreateChallengeViewProps> = ({
         {/* Target Value & Unit */}
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1">
-            <label className="text-xs font-bold text-white block uppercase">Meta numéricas</label>
+            <label className="text-xs font-bold text-zinc-800 dark:text-white block uppercase">Meta numéricas</label>
             <input
               type="number"
               required
               min={1}
               value={targetValue}
               onChange={(e) => setTargetValue(Number(e.target.value))}
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-xs font-mono font-bold text-white focus:outline-none focus:border-orange-500"
+              className="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl px-4 py-3 text-xs font-mono font-bold text-zinc-900 dark:text-white focus:outline-none focus:border-orange-500"
             />
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-bold text-white block uppercase">Unidade de Medida</label>
+            <label className="text-xs font-bold text-zinc-800 dark:text-white block uppercase">Unidade de Medida</label>
             <input
               type="text"
               required
               placeholder="KM, KCAL, SWIM..."
               value={unit}
               onChange={(e) => setUnit(e.target.value.toUpperCase())}
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-xs font-mono font-bold text-white uppercase focus:outline-none focus:border-orange-500"
+              className="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl px-4 py-3 text-xs font-mono font-bold text-zinc-900 dark:text-white uppercase focus:outline-none focus:border-orange-500"
             />
           </div>
         </div>
 
         {/* Date & Time Expiration Selector */}
-        <div className="space-y-2 p-3.5 bg-zinc-900/90 border border-orange-500/30 rounded-2xl">
+        <div className="space-y-2 p-3.5 bg-zinc-50 dark:bg-zinc-900/90 border border-orange-500/30 rounded-2xl">
           <div className="flex items-center justify-between">
-            <label className="text-xs font-bold text-white uppercase flex items-center gap-1.5">
+            <label className="text-xs font-bold text-zinc-800 dark:text-white uppercase flex items-center gap-1.5">
               <Calendar className="w-4 h-4 text-orange-500" />
               <span>Data e Hora de Expiração do Desafio</span>
             </label>
 
-            <span className="text-[10px] font-mono font-bold text-orange-400 bg-orange-500/10 border border-orange-500/30 px-2 py-0.5 rounded-md flex items-center gap-1">
+            <span className="text-[10px] font-mono font-bold text-orange-600 dark:text-orange-400 bg-orange-500/10 border border-orange-500/30 px-2 py-0.5 rounded-md flex items-center gap-1">
               <Clock className="w-3 h-3" />
               {endsIn}
             </span>
@@ -484,13 +484,13 @@ export const CreateChallengeView: React.FC<CreateChallengeViewProps> = ({
               required
               value={expirationDateTime}
               onChange={(e) => setExpirationDateTime(e.target.value)}
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs font-mono font-bold text-white focus:outline-none focus:border-orange-500 transition-colors [color-scheme:dark]"
+              className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs font-mono font-bold text-zinc-900 dark:text-white focus:outline-none focus:border-orange-500 transition-colors [color-scheme:light] dark:[color-scheme:dark]"
             />
           </div>
 
           {/* Quick Expiration Shortcuts */}
           <div className="space-y-1 pt-1">
-            <span className="text-[10px] font-bold text-zinc-400 uppercase block">Atalhos de Expiração:</span>
+            <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase block">Atalhos de Expiração:</span>
             <div className="grid grid-cols-4 gap-1.5">
               {[
                 { label: '+24 Horas', days: 1 },
@@ -502,7 +502,7 @@ export const CreateChallengeView: React.FC<CreateChallengeViewProps> = ({
                   key={idx}
                   type="button"
                   onClick={() => setExpirationDateTime(getDefaultExpirationDate(shortcut.days))}
-                  className="py-1.5 bg-zinc-950 hover:bg-zinc-800 border border-zinc-800 hover:border-orange-500/50 text-zinc-300 hover:text-white rounded-lg text-[10px] font-bold transition-all"
+                  className="py-1.5 bg-white dark:bg-zinc-950 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 hover:border-orange-500/50 text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white rounded-lg text-[10px] font-bold transition-all"
                 >
                   {shortcut.label}
                 </button>

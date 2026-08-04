@@ -137,22 +137,22 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
         {onBack && (
           <button
             onClick={onBack}
-            className="p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white"
+            className="p-2 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-colors"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
         )}
-        <h1 className="text-2xl font-black text-white tracking-tight">Evolução Esportiva</h1>
+        <h1 className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">Evolução Esportiva</h1>
       </div>
 
       {/* Time Filter Tabs */}
-      <div className="grid grid-cols-3 gap-2 bg-zinc-900 p-1.5 rounded-2xl border border-zinc-800">
+      <div className="grid grid-cols-3 gap-2 bg-white dark:bg-zinc-900 p-1.5 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
         <button
           onClick={() => setTimeRange('7d')}
           className={`py-2 rounded-xl text-xs font-bold transition-all ${
             timeRange === '7d'
               ? 'bg-orange-500 text-zinc-950 shadow-md shadow-orange-500/20'
-              : 'text-zinc-400 hover:text-white'
+              : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
           }`}
         >
           Últimos 7 dias
@@ -162,7 +162,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
           className={`py-2 rounded-xl text-xs font-bold transition-all ${
             timeRange === 'month'
               ? 'bg-orange-500 text-zinc-950 shadow-md shadow-orange-500/20'
-              : 'text-zinc-400 hover:text-white'
+              : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
           }`}
         >
           Último Mês
@@ -172,7 +172,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
           className={`py-2 rounded-xl text-xs font-bold transition-all ${
             timeRange === 'year'
               ? 'bg-orange-500 text-zinc-950 shadow-md shadow-orange-500/20'
-              : 'text-zinc-400 hover:text-white'
+              : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
           }`}
         >
           Ano
@@ -180,18 +180,18 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
       </div>
 
       {/* Average Pace Curve Chart */}
-      <div className="bg-zinc-900 border border-zinc-800 p-4 rounded-2xl space-y-3 shadow-xl">
+      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-4 rounded-2xl space-y-3 shadow-sm dark:shadow-xl">
         <div className="flex items-center justify-between">
-          <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+          <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
             PACE MÉDIO (MIN/KM)
           </div>
-          <span className="text-xs font-mono font-bold text-orange-400">{avgPace} min/km</span>
+          <span className="text-xs font-mono font-bold text-orange-600 dark:text-orange-400">{avgPace} min/km</span>
         </div>
 
         {filteredActivities.length === 0 ? (
-          <div className="h-44 w-full flex flex-col items-center justify-center border border-dashed border-zinc-800 rounded-xl p-4 text-center space-y-2">
-            <Activity className="w-8 h-8 text-zinc-600" />
-            <p className="text-xs text-zinc-400 font-medium">Nenhum treino no período selecionado</p>
+          <div className="h-44 w-full flex flex-col items-center justify-center border border-dashed border-zinc-300 dark:border-zinc-800 rounded-xl p-4 text-center space-y-2 bg-zinc-50 dark:bg-transparent">
+            <Activity className="w-8 h-8 text-zinc-400 dark:text-zinc-600" />
+            <p className="text-xs text-zinc-600 dark:text-zinc-400 font-medium">Nenhum treino no período selecionado</p>
             <p className="text-[10px] text-zinc-500">Registre treinos no botão '+' para visualizar o gráfico de evolução.</p>
           </div>
         ) : (
@@ -204,11 +204,11 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
                     <stop offset="95%" stopColor="#f97316" stopOpacity={0.0} />
                   </linearGradient>
                 </defs>
-                <XAxis dataKey="day" stroke="#71717a" fontSize={10} tickLine={false} />
-                <YAxis stroke="#71717a" fontSize={10} tickLine={false} />
+                <XAxis dataKey="day" stroke="#a1a1aa" fontSize={10} tickLine={false} />
+                <YAxis stroke="#a1a1aa" fontSize={10} tickLine={false} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#09090b',
+                    backgroundColor: '#18181b',
                     borderColor: '#27272a',
                     borderRadius: '8px',
                     color: '#fff',
@@ -233,42 +233,42 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
       {/* 3 Metric Cards Grid */}
       <div className="grid grid-cols-3 gap-3">
         {/* Pace Improvement */}
-        <div className="bg-zinc-900 border border-zinc-800 p-3 rounded-2xl text-center space-y-1">
-          <div className="w-8 h-8 rounded-full bg-orange-500/10 text-orange-400 mx-auto flex items-center justify-center">
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-3 rounded-2xl text-center space-y-1 shadow-sm">
+          <div className="w-8 h-8 rounded-full bg-orange-500/10 text-orange-500 dark:text-orange-400 mx-auto flex items-center justify-center">
             <Zap className="w-4 h-4" />
           </div>
-          <span className="text-[9px] font-bold uppercase text-zinc-400 block leading-tight">
+          <span className="text-[9px] font-bold uppercase text-zinc-600 dark:text-zinc-400 block leading-tight">
             PACE MÉDIO
           </span>
-          <div className="text-xs font-black text-white flex items-center justify-center gap-0.5 font-mono">
+          <div className="text-xs font-black text-zinc-900 dark:text-white flex items-center justify-center gap-0.5 font-mono">
             {avgPace}
           </div>
           <span className="text-[9px] text-zinc-500 uppercase">MIN/KM</span>
         </div>
 
         {/* Endurance Growth */}
-        <div className="bg-zinc-900 border border-zinc-800 p-3 rounded-2xl text-center space-y-1">
-          <div className="w-8 h-8 rounded-full bg-orange-500/10 text-orange-400 mx-auto flex items-center justify-center">
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-3 rounded-2xl text-center space-y-1 shadow-sm">
+          <div className="w-8 h-8 rounded-full bg-orange-500/10 text-orange-500 dark:text-orange-400 mx-auto flex items-center justify-center">
             <Timer className="w-4 h-4" />
           </div>
-          <span className="text-[9px] font-bold uppercase text-zinc-400 block leading-tight">
+          <span className="text-[9px] font-bold uppercase text-zinc-600 dark:text-zinc-400 block leading-tight">
             TEMPO TOTAL
           </span>
-          <div className="text-xs font-black text-white font-mono">
+          <div className="text-xs font-black text-zinc-900 dark:text-white font-mono">
             {totalHours}
           </div>
           <span className="text-[9px] text-zinc-500 uppercase">HORAS</span>
         </div>
 
         {/* Achievement Progress */}
-        <div className="bg-zinc-900 border border-zinc-800 p-3 rounded-2xl text-center space-y-1">
-          <div className="w-8 h-8 rounded-full bg-orange-500/10 text-orange-400 mx-auto flex items-center justify-center">
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-3 rounded-2xl text-center space-y-1 shadow-sm">
+          <div className="w-8 h-8 rounded-full bg-orange-500/10 text-orange-500 dark:text-orange-400 mx-auto flex items-center justify-center">
             <Award className="w-4 h-4" />
           </div>
-          <span className="text-[9px] font-bold uppercase text-zinc-400 block leading-tight">
+          <span className="text-[9px] font-bold uppercase text-zinc-600 dark:text-zinc-400 block leading-tight">
             DESAFIOS
           </span>
-          <div className="text-xs font-black text-white font-mono">
+          <div className="text-xs font-black text-zinc-900 dark:text-white font-mono">
             {challengeProgressPercent}
           </div>
           <span className="text-[9px] text-zinc-500 uppercase">CONCLUÍDOS</span>
@@ -276,8 +276,8 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
       </div>
 
       {/* Milestones */}
-      <div className="bg-zinc-900 border border-zinc-800 p-4 rounded-2xl space-y-3">
-        <h2 className="text-xs font-bold uppercase text-zinc-400 tracking-wider">
+      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-4 rounded-2xl space-y-3 shadow-sm">
+        <h2 className="text-xs font-bold uppercase text-zinc-600 dark:text-zinc-400 tracking-wider">
           MARCOS ALCANÇADOS
         </h2>
 
@@ -285,35 +285,35 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
           <div className="grid grid-cols-3 gap-3">
             {/* Milestone 1 */}
             <div className="flex flex-col items-center text-center space-y-1">
-              <div className="w-14 h-14 rounded-full border-2 border-orange-500 flex items-center justify-center bg-zinc-950">
-                <Timer className="w-5 h-5 text-orange-400" />
+              <div className="w-14 h-14 rounded-full border-2 border-orange-500 flex items-center justify-center bg-zinc-100 dark:bg-zinc-950">
+                <Timer className="w-5 h-5 text-orange-500 dark:text-orange-400" />
               </div>
-              <span className="text-[10px] font-bold text-white block">{milestones.maxDist}</span>
+              <span className="text-[10px] font-bold text-zinc-900 dark:text-white block">{milestones.maxDist}</span>
               <span className="text-[9px] text-zinc-500 uppercase block">MAIOR DISTÂNCIA</span>
             </div>
 
             {/* Milestone 2 */}
             <div className="flex flex-col items-center text-center space-y-1">
-              <div className="w-14 h-14 rounded-full border-2 border-amber-500 flex items-center justify-center bg-zinc-950">
-                <Zap className="w-5 h-5 text-amber-400" />
+              <div className="w-14 h-14 rounded-full border-2 border-amber-500 flex items-center justify-center bg-zinc-100 dark:bg-zinc-950">
+                <Zap className="w-5 h-5 text-amber-500 dark:text-amber-400" />
               </div>
-              <span className="text-[10px] font-bold text-white block">{milestones.maxTime}</span>
+              <span className="text-[10px] font-bold text-zinc-900 dark:text-white block">{milestones.maxTime}</span>
               <span className="text-[9px] text-zinc-500 uppercase block">MAIOR DURAÇÃO</span>
             </div>
 
             {/* Milestone 3 */}
             <div className="flex flex-col items-center text-center space-y-1">
-              <div className="w-14 h-14 rounded-full border-2 border-orange-600 flex items-center justify-center bg-zinc-950">
+              <div className="w-14 h-14 rounded-full border-2 border-orange-600 flex items-center justify-center bg-zinc-100 dark:bg-zinc-950">
                 <Trophy className="w-5 h-5 text-orange-500" />
               </div>
-              <span className="text-[10px] font-bold text-white block">{milestones.bestPace}</span>
+              <span className="text-[10px] font-bold text-zinc-900 dark:text-white block">{milestones.bestPace}</span>
               <span className="text-[9px] text-zinc-500 uppercase block">MELHOR PACE</span>
             </div>
           </div>
         ) : (
-          <div className="p-4 text-center space-y-1 border border-dashed border-zinc-800 rounded-xl">
-            <Trophy className="w-6 h-6 text-zinc-600 mx-auto" />
-            <p className="text-xs text-zinc-400 font-medium">Nenhum marco registrado ainda</p>
+          <div className="p-4 text-center space-y-1 border border-dashed border-zinc-300 dark:border-zinc-800 rounded-xl bg-zinc-50 dark:bg-transparent">
+            <Trophy className="w-6 h-6 text-zinc-400 dark:text-zinc-600 mx-auto" />
+            <p className="text-xs text-zinc-600 dark:text-zinc-400 font-medium">Nenhum marco registrado ainda</p>
             <p className="text-[10px] text-zinc-500">
               Inicie um treino para que o ClubSport identifique suas melhores marcas esportivas!
             </p>

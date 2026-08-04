@@ -516,6 +516,7 @@ function MainAppContent() {
           <ProfileView
             challenges={challenges}
             activities={activities}
+            communities={communities}
             onOpenEditProfile={() => setCurrentView('edit_profile')}
             onOpenConnectWatch={() => setIsConnectWatchOpen(true)}
             onOpenAdminDashboard={() => setCurrentView('admin')}
@@ -738,9 +739,11 @@ function MainAppContent() {
           targetUser={selectedUserProfile}
           onClose={() => setSelectedUserProfile(null)}
           activities={activities}
-          onOpenCommunityChat={() => {
+          communities={communities}
+          onOpenCommunityChat={(commId) => {
             setSelectedUserProfile(null);
-            setCurrentView('community_chat');
+            if (commId) handleOpenCommunityChat(commId);
+            else setCurrentView('community_chat');
           }}
         />
       )}

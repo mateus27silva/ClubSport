@@ -177,19 +177,19 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white pb-28 pt-2 max-w-2xl mx-auto px-4 font-sans antialiased">
+    <div className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white pb-28 pt-2 max-w-2xl mx-auto px-4 font-sans antialiased">
       {/* Top Bar Header */}
-      <header className="sticky top-0 z-30 bg-zinc-950/95 backdrop-blur-md h-16 flex items-center justify-between border-b border-zinc-800/80 px-1 mb-6">
+      <header className="sticky top-0 z-30 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-md h-16 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800/80 px-1 mb-6">
         <button
           onClick={onBack}
-          className="p-2 -ml-2 rounded-full text-zinc-300 hover:text-white hover:bg-zinc-900 transition-colors active:scale-95"
+          className="p-2 -ml-2 rounded-full text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors active:scale-95"
           title="Voltar"
         >
           <ArrowLeft className="w-6 h-6" />
         </button>
 
         {!isSearchOpen ? (
-          <h1 className="text-xl font-black uppercase tracking-tight text-white font-sans">
+          <h1 className="text-xl font-black uppercase tracking-tight text-zinc-900 dark:text-white font-sans">
             SETTINGS
           </h1>
         ) : (
@@ -200,12 +200,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar nas configurações..."
               autoFocus
-              className="w-full bg-zinc-900 border border-zinc-700/80 rounded-full px-4 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-orange-500"
+              className="w-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700/80 rounded-full px-4 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:border-orange-500"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1.5 text-zinc-400 hover:text-white"
+                className="absolute right-3 top-1.5 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -218,7 +218,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             setIsSearchOpen(!isSearchOpen);
             if (isSearchOpen) setSearchQuery('');
           }}
-          className="p-2 -mr-2 rounded-full text-zinc-300 hover:text-white hover:bg-zinc-900 transition-colors"
+          className="p-2 -mr-2 rounded-full text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
           title="Pesquisar"
         >
           {isSearchOpen ? <X className="w-5 h-5" /> : <Search className="w-5 h-5" />}
@@ -236,22 +236,22 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           matchesSearch('privacy') ||
           matchesSearch('privacidade')) && (
           <section className="space-y-2">
-            <h2 className="text-xs font-black uppercase tracking-widest text-orange-500 font-mono">
+            <h2 className="text-xs font-black uppercase tracking-widest text-orange-600 dark:text-orange-500 font-mono">
               ACCOUNT
             </h2>
 
-            <div className="bg-zinc-900/80 border border-zinc-800/90 rounded-xl overflow-hidden divide-y divide-zinc-800/80 shadow-md">
+            <div className="bg-white dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800/90 rounded-xl overflow-hidden divide-y divide-zinc-200 dark:divide-zinc-800/80 shadow-sm dark:shadow-md">
               {/* Edit Profile */}
               {(matchesSearch('edit profile') || matchesSearch('editar perfil')) && (
                 <div
                   onClick={onOpenEditProfile}
-                  className="flex items-center justify-between p-4 hover:bg-zinc-800/50 transition-colors cursor-pointer group"
+                  className="flex items-center justify-between p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer group"
                 >
                   <div className="flex items-center gap-3">
-                    <User className="w-5 h-5 text-zinc-300 group-hover:text-orange-400 transition-colors" />
-                    <span className="text-sm font-semibold text-zinc-100">Edit Profile</span>
+                    <User className="w-5 h-5 text-zinc-600 dark:text-zinc-300 group-hover:text-orange-500 dark:group-hover:text-orange-400 transition-colors" />
+                    <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Edit Profile</span>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-zinc-500 group-hover:translate-x-1 group-hover:text-zinc-300 transition-all" />
+                  <ChevronRight className="w-5 h-5 text-zinc-400 dark:text-zinc-500 group-hover:translate-x-1 group-hover:text-zinc-700 dark:group-hover:text-zinc-300 transition-all" />
                 </div>
               )}
 
@@ -259,13 +259,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               {(matchesSearch('change password') || matchesSearch('senha')) && (
                 <div
                   onClick={() => setActiveModal('password')}
-                  className="flex items-center justify-between p-4 hover:bg-zinc-800/50 transition-colors cursor-pointer group"
+                  className="flex items-center justify-between p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer group"
                 >
                   <div className="flex items-center gap-3">
-                    <Lock className="w-5 h-5 text-zinc-300 group-hover:text-orange-400 transition-colors" />
-                    <span className="text-sm font-semibold text-zinc-100">Change Password</span>
+                    <Lock className="w-5 h-5 text-zinc-600 dark:text-zinc-300 group-hover:text-orange-500 dark:group-hover:text-orange-400 transition-colors" />
+                    <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Change Password</span>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-zinc-500 group-hover:translate-x-1 group-hover:text-zinc-300 transition-all" />
+                  <ChevronRight className="w-5 h-5 text-zinc-400 dark:text-zinc-500 group-hover:translate-x-1 group-hover:text-zinc-700 dark:group-hover:text-zinc-300 transition-all" />
                 </div>
               )}
 
@@ -273,13 +273,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               {(matchesSearch('privacy') || matchesSearch('privacidade')) && (
                 <div
                   onClick={() => setActiveModal('privacy')}
-                  className="flex items-center justify-between p-4 hover:bg-zinc-800/50 transition-colors cursor-pointer group"
+                  className="flex items-center justify-between p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer group"
                 >
                   <div className="flex items-center gap-3">
-                    <Shield className="w-5 h-5 text-zinc-300 group-hover:text-orange-400 transition-colors" />
-                    <span className="text-sm font-semibold text-zinc-100">Privacy</span>
+                    <Shield className="w-5 h-5 text-zinc-600 dark:text-zinc-300 group-hover:text-orange-500 dark:group-hover:text-orange-400 transition-colors" />
+                    <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Privacy</span>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-zinc-500 group-hover:translate-x-1 group-hover:text-zinc-300 transition-all" />
+                  <ChevronRight className="w-5 h-5 text-zinc-400 dark:text-zinc-500 group-hover:translate-x-1 group-hover:text-zinc-700 dark:group-hover:text-zinc-300 transition-all" />
                 </div>
               )}
             </div>
@@ -293,24 +293,24 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           matchesSearch('language') ||
           matchesSearch('idioma')) && (
           <section className="space-y-2">
-            <h2 className="text-xs font-black uppercase tracking-widest text-orange-500 font-mono">
+            <h2 className="text-xs font-black uppercase tracking-widest text-orange-600 dark:text-orange-500 font-mono">
               PREFERENCES
             </h2>
 
-            <div className="bg-zinc-900/80 border border-zinc-800/90 rounded-xl overflow-hidden divide-y divide-zinc-800/80 shadow-md">
+            <div className="bg-white dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800/90 rounded-xl overflow-hidden divide-y divide-zinc-200 dark:divide-zinc-800/80 shadow-sm dark:shadow-md">
               {/* Units of Measure */}
               {(matchesSearch('units') || matchesSearch('unidades')) && (
                 <div
                   onClick={() => setActiveModal('units')}
-                  className="flex items-center justify-between p-4 hover:bg-zinc-800/50 transition-colors cursor-pointer group"
+                  className="flex items-center justify-between p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer group"
                 >
                   <div className="flex flex-col">
-                    <span className="text-sm font-semibold text-zinc-100">Units of Measure</span>
-                    <span className="text-xs text-zinc-400 font-medium mt-0.5">
+                    <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Units of Measure</span>
+                    <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium mt-0.5">
                       {unitsOfMeasure === 'metric' ? 'Metric (km, kg)' : 'Imperial (mi, lbs)'}
                     </span>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-zinc-500 group-hover:translate-x-1 group-hover:text-zinc-300 transition-all" />
+                  <ChevronRight className="w-5 h-5 text-zinc-400 dark:text-zinc-500 group-hover:translate-x-1 group-hover:text-zinc-700 dark:group-hover:text-zinc-300 transition-all" />
                 </div>
               )}
 
@@ -318,15 +318,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               {(matchesSearch('language') || matchesSearch('idioma')) && (
                 <div
                   onClick={() => setActiveModal('language')}
-                  className="flex items-center justify-between p-4 hover:bg-zinc-800/50 transition-colors cursor-pointer group"
+                  className="flex items-center justify-between p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer group"
                 >
                   <div className="flex flex-col">
-                    <span className="text-sm font-semibold text-zinc-100">Language</span>
-                    <span className="text-xs text-zinc-400 font-medium mt-0.5">
+                    <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Language</span>
+                    <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium mt-0.5">
                       {getLanguageLabel(language)}
                     </span>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-zinc-500 group-hover:translate-x-1 group-hover:text-zinc-300 transition-all" />
+                  <ChevronRight className="w-5 h-5 text-zinc-400 dark:text-zinc-500 group-hover:translate-x-1 group-hover:text-zinc-700 dark:group-hover:text-zinc-300 transition-all" />
                 </div>
               )}
             </div>
@@ -338,16 +338,16 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           matchesSearch('push') ||
           matchesSearch('email')) && (
           <section className="space-y-2">
-            <h2 className="text-xs font-black uppercase tracking-widest text-orange-500 font-mono">
+            <h2 className="text-xs font-black uppercase tracking-widest text-orange-600 dark:text-orange-500 font-mono">
               NOTIFICATIONS
             </h2>
 
-            <div className="bg-zinc-900/80 border border-zinc-800/90 rounded-xl overflow-hidden divide-y divide-zinc-800/80 shadow-md">
+            <div className="bg-white dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800/90 rounded-xl overflow-hidden divide-y divide-zinc-200 dark:divide-zinc-800/80 shadow-sm dark:shadow-md">
               {/* Push Notifications */}
               <div className="flex items-center justify-between p-4">
                 <div className="flex items-center gap-3">
-                  <Bell className="w-5 h-5 text-zinc-300" />
-                  <span className="text-sm font-semibold text-zinc-100">Push Notifications</span>
+                  <Bell className="w-5 h-5 text-zinc-600 dark:text-zinc-300" />
+                  <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Push Notifications</span>
                 </div>
                 <button
                   onClick={() => {
@@ -356,7 +356,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                     persistSettings({ pushNotifications: newVal });
                   }}
                   className={`relative w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none ${
-                    pushNotifications ? 'bg-orange-500' : 'bg-zinc-700'
+                    pushNotifications ? 'bg-orange-500' : 'bg-zinc-300 dark:bg-zinc-700'
                   }`}
                 >
                   <span
@@ -370,8 +370,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               {/* Email Notifications */}
               <div className="flex items-center justify-between p-4">
                 <div className="flex items-center gap-3">
-                  <Mail className="w-5 h-5 text-zinc-300" />
-                  <span className="text-sm font-semibold text-zinc-100">Email Notifications</span>
+                  <Mail className="w-5 h-5 text-zinc-600 dark:text-zinc-300" />
+                  <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Email Notifications</span>
                 </div>
                 <button
                   onClick={() => {
@@ -380,7 +380,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                     persistSettings({ emailNotifications: newVal });
                   }}
                   className={`relative w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none ${
-                    emailNotifications ? 'bg-orange-500' : 'bg-zinc-700'
+                    emailNotifications ? 'bg-orange-500' : 'bg-zinc-300 dark:bg-zinc-700'
                   }`}
                 >
                   <span
@@ -400,22 +400,22 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           matchesSearch('garmin') ||
           matchesSearch('strava')) && (
           <section className="space-y-2">
-            <h2 className="text-xs font-black uppercase tracking-widest text-orange-500 font-mono">
+            <h2 className="text-xs font-black uppercase tracking-widest text-orange-600 dark:text-orange-500 font-mono">
               CONNECTED DEVICES
             </h2>
 
-            <div className="bg-zinc-900/80 border border-zinc-800/90 rounded-xl overflow-hidden shadow-md">
+            <div className="bg-white dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800/90 rounded-xl overflow-hidden shadow-sm dark:shadow-md">
               <div
                 onClick={onOpenConnectWatch}
-                className="flex items-center justify-between p-4 hover:bg-zinc-800/50 transition-colors cursor-pointer group"
+                className="flex items-center justify-between p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer group"
               >
                 <div className="flex items-center gap-3">
-                  <Watch className="w-5 h-5 text-zinc-300 group-hover:text-orange-400 transition-colors" />
-                  <span className="text-sm font-semibold text-zinc-100">
+                  <Watch className="w-5 h-5 text-zinc-600 dark:text-zinc-300 group-hover:text-orange-500 dark:group-hover:text-orange-400 transition-colors" />
+                  <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                     Manage Watch / App Connections
                   </span>
                 </div>
-                <ChevronRight className="w-5 h-5 text-zinc-500 group-hover:translate-x-1 group-hover:text-zinc-300 transition-all" />
+                <ChevronRight className="w-5 h-5 text-zinc-400 dark:text-zinc-500 group-hover:translate-x-1 group-hover:text-zinc-700 dark:group-hover:text-zinc-300 transition-all" />
               </div>
             </div>
           </section>
@@ -437,7 +437,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <div className="text-center">
             <button
               onClick={() => setActiveModal('delete')}
-              className="text-[10px] font-mono tracking-[0.2em] uppercase text-zinc-500 hover:text-red-400 transition-colors py-2 px-4"
+              className="text-[10px] font-mono tracking-[0.2em] uppercase text-zinc-500 hover:text-red-600 dark:hover:text-red-400 transition-colors py-2 px-4"
             >
               DELETE ACCOUNT
             </button>
@@ -451,22 +451,22 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
       {/* 1. CHANGE PASSWORD MODAL */}
       {activeModal === 'password' && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-md p-6 relative animate-in fade-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 bg-black/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl w-full max-w-md p-6 relative animate-in fade-in zoom-in-95 duration-150 shadow-2xl">
             <button
               onClick={() => setActiveModal('none')}
-              className="absolute top-4 right-4 text-zinc-400 hover:text-white"
+              className="absolute top-4 right-4 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
             >
               <X className="w-5 h-5" />
             </button>
 
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-orange-500/20 border border-orange-500/40 flex items-center justify-center text-orange-400">
+              <div className="w-10 h-10 rounded-full bg-orange-500/10 border border-orange-500/30 flex items-center justify-center text-orange-600 dark:text-orange-400">
                 <Lock className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white">Alterar Senha</h3>
-                <p className="text-xs text-zinc-400">Atualize sua senha de acesso ao ClubSport</p>
+                <h3 className="text-lg font-bold text-zinc-900 dark:text-white">Alterar Senha</h3>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">Atualize sua senha de acesso ao ClubSport</p>
               </div>
             </div>
 
@@ -474,8 +474,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               <div
                 className={`p-3 rounded-xl text-xs font-semibold mb-4 ${
                   passwordMsg.type === 'success'
-                    ? 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-300'
-                    : 'bg-red-500/20 border border-red-500/40 text-red-300'
+                    ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300'
+                    : 'bg-red-500/10 border border-red-500/30 text-red-700 dark:text-red-300'
                 }`}
               >
                 {passwordMsg.text}
@@ -484,7 +484,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
             <form onSubmit={handlePasswordSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-zinc-400 mb-1">
+                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-400 mb-1">
                   Senha Atual
                 </label>
                 <input
@@ -492,12 +492,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-orange-500"
+                  className="w-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm text-zinc-900 dark:text-white focus:outline-none focus:border-orange-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-400 mb-1">
+                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-400 mb-1">
                   Nova Senha
                 </label>
                 <input
@@ -505,12 +505,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-orange-500"
+                  className="w-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm text-zinc-900 dark:text-white focus:outline-none focus:border-orange-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-400 mb-1">
+                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-400 mb-1">
                   Confirmar Nova Senha
                 </label>
                 <input
@@ -518,7 +518,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-orange-500"
+                  className="w-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm text-zinc-900 dark:text-white focus:outline-none focus:border-orange-500"
                 />
               </div>
 
@@ -526,7 +526,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 <button
                   type="button"
                   onClick={() => setActiveModal('none')}
-                  className="flex-1 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-bold rounded-xl"
+                  className="flex-1 py-2.5 bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-300 text-xs font-bold rounded-xl"
                 >
                   Cancelar
                 </button>
@@ -544,37 +544,37 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
       {/* 2. PRIVACY MODAL */}
       {activeModal === 'privacy' && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-md p-6 relative animate-in fade-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 bg-black/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl w-full max-w-md p-6 relative animate-in fade-in zoom-in-95 duration-150 shadow-2xl">
             <button
               onClick={() => setActiveModal('none')}
-              className="absolute top-4 right-4 text-zinc-400 hover:text-white"
+              className="absolute top-4 right-4 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
             >
               <X className="w-5 h-5" />
             </button>
 
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-orange-500/20 border border-orange-500/40 flex items-center justify-center text-orange-400">
+              <div className="w-10 h-10 rounded-full bg-orange-500/10 border border-orange-500/30 flex items-center justify-center text-orange-600 dark:text-orange-400">
                 <Shield className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white">Privacidade e Visibilidade</h3>
-                <p className="text-xs text-zinc-400">Controle quem pode ver seu perfil e treinos</p>
+                <h3 className="text-lg font-bold text-zinc-900 dark:text-white">Privacidade e Visibilidade</h3>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">Controle quem pode ver seu perfil e treinos</p>
               </div>
             </div>
 
             <div className="space-y-5">
-              <div className="flex items-center justify-between p-3 bg-zinc-800/50 rounded-xl border border-zinc-700/60">
+              <div className="flex items-center justify-between p-3 bg-zinc-100 dark:bg-zinc-800/50 rounded-xl border border-zinc-200 dark:border-zinc-700/60">
                 <div>
-                  <span className="text-xs font-bold text-white block">Perfil Público</span>
-                  <span className="text-[11px] text-zinc-400 block">
+                  <span className="text-xs font-bold text-zinc-900 dark:text-white block">Perfil Público</span>
+                  <span className="text-[11px] text-zinc-500 dark:text-zinc-400 block">
                     Permitir que outros atletas vejam seu perfil no ranking
                   </span>
                 </div>
                 <button
                   onClick={() => setIsPublicProfile(!isPublicProfile)}
                   className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${
-                    isPublicProfile ? 'bg-orange-500' : 'bg-zinc-700'
+                    isPublicProfile ? 'bg-orange-500' : 'bg-zinc-300 dark:bg-zinc-700'
                   }`}
                 >
                   <span
@@ -586,7 +586,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-zinc-300 mb-2">
+                <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-2">
                   Privacidade Padrão das Atividades
                 </label>
                 <div className="space-y-2">
@@ -600,16 +600,16 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                       onClick={() => setActivityDefaultPrivacy(opt.id as any)}
                       className={`p-3 rounded-xl border cursor-pointer flex items-center justify-between transition-colors ${
                         activityDefaultPrivacy === opt.id
-                          ? 'bg-orange-500/10 border-orange-500 text-white'
-                          : 'bg-zinc-800/40 border-zinc-700/60 text-zinc-300 hover:bg-zinc-800'
+                          ? 'bg-orange-500/10 border-orange-500 text-zinc-900 dark:text-white font-semibold'
+                          : 'bg-zinc-50 dark:bg-zinc-800/40 border-zinc-200 dark:border-zinc-700/60 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800'
                       }`}
                     >
                       <div>
                         <div className="text-xs font-bold">{opt.label}</div>
-                        <div className="text-[10px] text-zinc-400">{opt.desc}</div>
+                        <div className="text-[10px] text-zinc-500 dark:text-zinc-400">{opt.desc}</div>
                       </div>
                       {activityDefaultPrivacy === opt.id && (
-                        <Check className="w-4 h-4 text-orange-400" />
+                        <Check className="w-4 h-4 text-orange-600 dark:text-orange-400" />
                       )}
                     </div>
                   ))}
@@ -633,20 +633,20 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
       {/* 3. UNITS MODAL */}
       {activeModal === 'units' && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-sm p-6 relative animate-in fade-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 bg-black/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl w-full max-w-sm p-6 relative animate-in fade-in zoom-in-95 duration-150 shadow-2xl">
             <button
               onClick={() => setActiveModal('none')}
-              className="absolute top-4 right-4 text-zinc-400 hover:text-white"
+              className="absolute top-4 right-4 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
             >
               <X className="w-5 h-5" />
             </button>
 
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-orange-500/20 border border-orange-500/40 flex items-center justify-center text-orange-400">
+              <div className="w-10 h-10 rounded-full bg-orange-500/10 border border-orange-500/30 flex items-center justify-center text-orange-600 dark:text-orange-400">
                 <Ruler className="w-5 h-5" />
               </div>
-              <h3 className="text-lg font-bold text-white">Unidades de Medida</h3>
+              <h3 className="text-lg font-bold text-zinc-900 dark:text-white">Unidades de Medida</h3>
             </div>
 
             <div className="space-y-3">
@@ -658,15 +658,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 }}
                 className={`p-3.5 rounded-xl border cursor-pointer flex items-center justify-between ${
                   unitsOfMeasure === 'metric'
-                    ? 'bg-orange-500/10 border-orange-500 text-white'
-                    : 'bg-zinc-800/40 border-zinc-700/60 text-zinc-300'
+                    ? 'bg-orange-500/10 border-orange-500 text-zinc-900 dark:text-white font-semibold'
+                    : 'bg-zinc-50 dark:bg-zinc-800/40 border-zinc-200 dark:border-zinc-700/60 text-zinc-700 dark:text-zinc-300'
                 }`}
               >
                 <div>
                   <div className="text-xs font-bold">Métrico</div>
-                  <div className="text-[10px] text-zinc-400">Quilômetros (km), Quilogramas (kg)</div>
+                  <div className="text-[10px] text-zinc-500 dark:text-zinc-400">Quilômetros (km), Quilogramas (kg)</div>
                 </div>
-                {unitsOfMeasure === 'metric' && <Check className="w-4 h-4 text-orange-400" />}
+                {unitsOfMeasure === 'metric' && <Check className="w-4 h-4 text-orange-600 dark:text-orange-400" />}
               </div>
 
               <div
@@ -677,15 +677,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 }}
                 className={`p-3.5 rounded-xl border cursor-pointer flex items-center justify-between ${
                   unitsOfMeasure === 'imperial'
-                    ? 'bg-orange-500/10 border-orange-500 text-white'
-                    : 'bg-zinc-800/40 border-zinc-700/60 text-zinc-300'
+                    ? 'bg-orange-500/10 border-orange-500 text-zinc-900 dark:text-white font-semibold'
+                    : 'bg-zinc-50 dark:bg-zinc-800/40 border-zinc-200 dark:border-zinc-700/60 text-zinc-700 dark:text-zinc-300'
                 }`}
               >
                 <div>
                   <div className="text-xs font-bold">Imperial</div>
-                  <div className="text-[10px] text-zinc-400">Milhas (mi), Libras (lbs)</div>
+                  <div className="text-[10px] text-zinc-500 dark:text-zinc-400">Milhas (mi), Libras (lbs)</div>
                 </div>
-                {unitsOfMeasure === 'imperial' && <Check className="w-4 h-4 text-orange-400" />}
+                {unitsOfMeasure === 'imperial' && <Check className="w-4 h-4 text-orange-600 dark:text-orange-400" />}
               </div>
             </div>
           </div>
@@ -694,22 +694,22 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
       {/* 4. LANGUAGE MODAL */}
       {activeModal === 'language' && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-sm p-6 relative animate-in fade-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 bg-black/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl w-full max-w-sm p-6 relative animate-in fade-in zoom-in-95 duration-150 shadow-2xl">
             <button
               onClick={() => setActiveModal('none')}
-              className="absolute top-4 right-4 text-zinc-400 hover:text-white"
+              className="absolute top-4 right-4 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
             >
               <X className="w-5 h-5" />
             </button>
 
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-orange-500/20 border border-orange-500/40 flex items-center justify-center text-orange-400">
+              <div className="w-10 h-10 rounded-full bg-orange-500/10 border border-orange-500/30 flex items-center justify-center text-orange-600 dark:text-orange-400">
                 <Globe className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white">Idioma / Language</h3>
-                <p className="text-[11px] text-zinc-400">Suporte a react-native-localize</p>
+                <h3 className="text-lg font-bold text-zinc-900 dark:text-white">Idioma / Language</h3>
+                <p className="text-[11px] text-zinc-500 dark:text-zinc-400">Suporte a react-native-localize</p>
               </div>
             </div>
 
@@ -723,20 +723,20 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 }}
                 className={`p-3.5 rounded-xl border cursor-pointer flex items-center justify-between ${
                   language === 'auto'
-                    ? 'bg-orange-500/10 border-orange-500 text-white'
-                    : 'bg-zinc-800/40 border-zinc-700/60 text-zinc-300'
+                    ? 'bg-orange-500/10 border-orange-500 text-zinc-900 dark:text-white font-semibold'
+                    : 'bg-zinc-50 dark:bg-zinc-800/40 border-zinc-200 dark:border-zinc-700/60 text-zinc-700 dark:text-zinc-300'
                 }`}
               >
                 <div>
                   <div className="text-xs font-bold flex items-center gap-1.5">
                     <span>Automático (Sistema)</span>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-orange-500/20 text-orange-400 font-mono">RN-Localize</span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-orange-500/20 text-orange-600 dark:text-orange-400 font-mono">RN-Localize</span>
                   </div>
-                  <div className="text-[10px] text-zinc-400 mt-0.5">
+                  <div className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">
                     Detectado: {getDeviceLocale().languageTag} ({getDeviceLocale().source === 'react-native-localize' ? 'react-native-localize' : 'Navegador'})
                   </div>
                 </div>
-                {language === 'auto' && <Check className="w-4 h-4 text-orange-400" />}
+                {language === 'auto' && <Check className="w-4 h-4 text-orange-600 dark:text-orange-400" />}
               </div>
 
               {/* Português (BR) */}
@@ -748,15 +748,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 }}
                 className={`p-3.5 rounded-xl border cursor-pointer flex items-center justify-between ${
                   language === 'pt-BR'
-                    ? 'bg-orange-500/10 border-orange-500 text-white'
-                    : 'bg-zinc-800/40 border-zinc-700/60 text-zinc-300'
+                    ? 'bg-orange-500/10 border-orange-500 text-zinc-900 dark:text-white font-semibold'
+                    : 'bg-zinc-50 dark:bg-zinc-800/40 border-zinc-200 dark:border-zinc-700/60 text-zinc-700 dark:text-zinc-300'
                 }`}
               >
                 <div>
                   <div className="text-xs font-bold">Português (BR)</div>
-                  <div className="text-[10px] text-zinc-400">Português do Brasil</div>
+                  <div className="text-[10px] text-zinc-500 dark:text-zinc-400">Português do Brasil</div>
                 </div>
-                {language === 'pt-BR' && <Check className="w-4 h-4 text-orange-400" />}
+                {language === 'pt-BR' && <Check className="w-4 h-4 text-orange-600 dark:text-orange-400" />}
               </div>
 
               {/* English (US) */}
@@ -768,15 +768,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 }}
                 className={`p-3.5 rounded-xl border cursor-pointer flex items-center justify-between ${
                   language === 'en-US'
-                    ? 'bg-orange-500/10 border-orange-500 text-white'
-                    : 'bg-zinc-800/40 border-zinc-700/60 text-zinc-300'
+                    ? 'bg-orange-500/10 border-orange-500 text-zinc-900 dark:text-white font-semibold'
+                    : 'bg-zinc-50 dark:bg-zinc-800/40 border-zinc-200 dark:border-zinc-700/60 text-zinc-700 dark:text-zinc-300'
                 }`}
               >
                 <div>
                   <div className="text-xs font-bold">English (US)</div>
-                  <div className="text-[10px] text-zinc-400">United States English</div>
+                  <div className="text-[10px] text-zinc-500 dark:text-zinc-400">United States English</div>
                 </div>
-                {language === 'en-US' && <Check className="w-4 h-4 text-orange-400" />}
+                {language === 'en-US' && <Check className="w-4 h-4 text-orange-600 dark:text-orange-400" />}
               </div>
 
               {/* Español (ES) */}
@@ -788,15 +788,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 }}
                 className={`p-3.5 rounded-xl border cursor-pointer flex items-center justify-between ${
                   language === 'es-ES'
-                    ? 'bg-orange-500/10 border-orange-500 text-white'
-                    : 'bg-zinc-800/40 border-zinc-700/60 text-zinc-300'
+                    ? 'bg-orange-500/10 border-orange-500 text-zinc-900 dark:text-white font-semibold'
+                    : 'bg-zinc-50 dark:bg-zinc-800/40 border-zinc-200 dark:border-zinc-700/60 text-zinc-700 dark:text-zinc-300'
                 }`}
               >
                 <div>
                   <div className="text-xs font-bold">Español (ES)</div>
-                  <div className="text-[10px] text-zinc-400">Español de España</div>
+                  <div className="text-[10px] text-zinc-500 dark:text-zinc-400">Español de España</div>
                 </div>
-                {language === 'es-ES' && <Check className="w-4 h-4 text-orange-400" />}
+                {language === 'es-ES' && <Check className="w-4 h-4 text-orange-600 dark:text-orange-400" />}
               </div>
             </div>
           </div>
@@ -805,47 +805,47 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
       {/* 5. DELETE ACCOUNT MODAL */}
       {activeModal === 'delete' && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-zinc-900 border border-red-500/30 rounded-2xl w-full max-w-md p-6 relative animate-in fade-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 bg-black/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-zinc-900 border border-red-500/30 rounded-2xl w-full max-w-md p-6 relative animate-in fade-in zoom-in-95 duration-150 shadow-2xl">
             <button
               onClick={() => setActiveModal('none')}
-              className="absolute top-4 right-4 text-zinc-400 hover:text-white"
+              className="absolute top-4 right-4 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
             >
               <X className="w-5 h-5" />
             </button>
 
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-red-500/20 border border-red-500/40 flex items-center justify-center text-red-400">
+              <div className="w-10 h-10 rounded-full bg-red-500/10 border border-red-500/40 flex items-center justify-center text-red-600 dark:text-red-400">
                 <AlertTriangle className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white">Excluir Conta Permanentemente</h3>
-                <p className="text-xs text-red-400">Esta ação é irreversível</p>
+                <h3 className="text-lg font-bold text-zinc-900 dark:text-white">Excluir Conta Permanentemente</h3>
+                <p className="text-xs text-red-600 dark:text-red-400 font-medium">Esta ação é irreversível</p>
               </div>
             </div>
 
-            <p className="text-xs text-zinc-300 mb-4 leading-relaxed">
+            <p className="text-xs text-zinc-700 dark:text-zinc-300 mb-4 leading-relaxed">
               Ao deletar sua conta, todos os seus treinos, estatísticas, fotos, medalhas e participação em clubes serão permanentemente excluídos do banco de dados do ClubSport.
             </p>
 
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-zinc-400 mb-1">
-                  Digite <span className="text-red-400 font-bold">DELETAR</span> para confirmar:
+                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-400 mb-1">
+                  Digite <span className="text-red-600 dark:text-red-400 font-bold">DELETAR</span> para confirmar:
                 </label>
                 <input
                   type="text"
                   value={deleteConfirmText}
                   onChange={(e) => setDeleteConfirmText(e.target.value)}
                   placeholder="DELETAR"
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-red-500"
+                  className="w-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm text-zinc-900 dark:text-white focus:outline-none focus:border-red-500"
                 />
               </div>
 
               <div className="pt-2 flex gap-3">
                 <button
                   onClick={() => setActiveModal('none')}
-                  className="flex-1 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-bold rounded-xl"
+                  className="flex-1 py-2.5 bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-300 text-xs font-bold rounded-xl"
                 >
                   Cancelar
                 </button>

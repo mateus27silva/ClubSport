@@ -97,11 +97,11 @@ export const CreateCommunityView: React.FC<CreateCommunityProps> = ({ onCancel, 
 
       {/* Header bar */}
       <div className="flex items-center justify-between pt-2">
-        <button onClick={onCancel} className="text-xs font-bold text-orange-400 hover:text-white">
+        <button onClick={onCancel} className="text-xs font-bold text-orange-500 dark:text-orange-400 hover:text-zinc-900 dark:hover:text-white">
           Cancel
         </button>
-        <h1 className="text-lg font-black text-white tracking-tight">Create New Community</h1>
-        <button onClick={handleSave} className="text-xs font-bold text-zinc-400 hover:text-white">
+        <h1 className="text-lg font-black text-zinc-900 dark:text-white tracking-tight">Create New Community</h1>
+        <button onClick={handleSave} className="text-xs font-bold text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white">
           Next
         </button>
       </div>
@@ -109,13 +109,13 @@ export const CreateCommunityView: React.FC<CreateCommunityProps> = ({ onCancel, 
       {/* Upload Cover Image Box */}
       <div
         onClick={() => fileInputRef.current?.click()}
-        className="w-full h-36 rounded-2xl border-2 border-dashed border-orange-500/50 hover:border-orange-500 bg-zinc-900 flex flex-col items-center justify-center space-y-2 cursor-pointer transition-all relative overflow-hidden group shadow-lg"
+        className="w-full h-36 rounded-2xl border-2 border-dashed border-orange-500/50 hover:border-orange-500 bg-white dark:bg-zinc-900 flex flex-col items-center justify-center space-y-2 cursor-pointer transition-all relative overflow-hidden group shadow-lg"
       >
         <img src={coverUrl} alt="Cover preview" className="absolute inset-0 w-full h-full object-cover opacity-30 group-hover:scale-105 transition-transform duration-300" />
-        <div className="relative z-10 flex flex-col items-center gap-1.5 bg-black/60 px-4 py-2 rounded-xl backdrop-blur-sm border border-zinc-800">
-          <Upload className="w-6 h-6 text-orange-400" />
-          <span className="text-xs font-black text-white uppercase tracking-wider">Upload Cover Image</span>
-          <span className="text-[10px] text-zinc-400 font-medium">Clique para selecionar imagem</span>
+        <div className="relative z-10 flex flex-col items-center gap-1.5 bg-white/90 dark:bg-black/60 px-4 py-2 rounded-xl backdrop-blur-sm border border-zinc-200 dark:border-zinc-800 shadow-md">
+          <Upload className="w-6 h-6 text-orange-500" />
+          <span className="text-xs font-black text-zinc-900 dark:text-white uppercase tracking-wider">Upload Cover Image</span>
+          <span className="text-[10px] text-zinc-600 dark:text-zinc-400 font-medium">Clique para selecionar imagem</span>
         </div>
       </div>
 
@@ -123,32 +123,32 @@ export const CreateCommunityView: React.FC<CreateCommunityProps> = ({ onCancel, 
       <div className="space-y-4">
         {/* Name */}
         <div className="space-y-1">
-          <label className="text-xs font-bold text-white block">Community Name *</label>
+          <label className="text-xs font-bold text-zinc-800 dark:text-white block">Community Name *</label>
           <input
             type="text"
             placeholder="Enter name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-orange-500"
+            className="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl px-4 py-3 text-xs text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none focus:border-orange-500"
           />
         </div>
 
         {/* Description */}
         <div className="space-y-1">
-          <label className="text-xs font-bold text-white block">Description</label>
+          <label className="text-xs font-bold text-zinc-800 dark:text-white block">Description</label>
           <textarea
             rows={3}
             placeholder="Tell us about your community"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-orange-500 resize-none"
+            className="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl px-4 py-3 text-xs text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none focus:border-orange-500 resize-none"
           />
         </div>
 
         {/* Community Location / Localidade */}
         <div className="space-y-1">
-          <label className="text-xs font-bold text-white block uppercase tracking-wider flex items-center gap-1.5">
-            <MapPin className="w-3.5 h-3.5 text-orange-400" />
+          <label className="text-xs font-bold text-zinc-800 dark:text-white block uppercase tracking-wider flex items-center gap-1.5">
+            <MapPin className="w-3.5 h-3.5 text-orange-500" />
             <span>Community Location / Localidade</span>
           </label>
           <input
@@ -156,17 +156,17 @@ export const CreateCommunityView: React.FC<CreateCommunityProps> = ({ onCancel, 
             placeholder="Ex: São Paulo, SP, Brasil (ou Global)"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-orange-500"
+            className="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl px-4 py-3 text-xs text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none focus:border-orange-500"
           />
         </div>
 
         {/* Sport Category */}
         <div className="space-y-1">
-          <label className="text-xs font-bold text-white block">Sport Category</label>
+          <label className="text-xs font-bold text-zinc-800 dark:text-white block">Sport Category</label>
           <select
             value={sportCategory}
             onChange={(e) => setSportCategory(e.target.value as SportType)}
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-orange-500"
+            className="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl px-4 py-3 text-xs text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none focus:border-orange-500"
           >
             <option value="Running">Running</option>
             <option value="Cycling">Cycling</option>
@@ -178,13 +178,13 @@ export const CreateCommunityView: React.FC<CreateCommunityProps> = ({ onCancel, 
 
         {/* Privacy Switch (Image 10) */}
         <div className="space-y-2">
-          <label className="text-xs font-bold text-white block">Privacy</label>
-          <div className="flex items-center space-x-6 bg-zinc-900 border border-zinc-800 p-3 rounded-xl text-xs text-white">
+          <label className="text-xs font-bold text-zinc-800 dark:text-white block">Privacy</label>
+          <div className="flex items-center space-x-6 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 p-3 rounded-xl text-xs text-zinc-900 dark:text-white">
             <span className="font-medium">Public</span>
             <button
               onClick={() => setPrivacy(privacy === 'public' ? 'private' : 'public')}
               className={`w-12 h-6 rounded-full p-1 transition-colors ${
-                privacy === 'public' ? 'bg-orange-500' : 'bg-zinc-700'
+                privacy === 'public' ? 'bg-orange-500' : 'bg-zinc-300 dark:bg-zinc-700'
               }`}
             >
               <div
@@ -199,13 +199,13 @@ export const CreateCommunityView: React.FC<CreateCommunityProps> = ({ onCancel, 
 
         {/* Initial Members Invite List (Image 10) */}
         <div className="space-y-3">
-          <label className="text-xs font-bold text-white block">Initial Members</label>
+          <label className="text-xs font-bold text-zinc-800 dark:text-white block">Initial Members</label>
           <div className="relative">
             <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-3" />
             <input
               type="text"
               placeholder="Search friends to invite"
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-9 pr-4 py-2.5 text-xs text-white focus:outline-none"
+              className="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl pl-9 pr-4 py-2.5 text-xs text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none"
             />
           </div>
 
@@ -216,7 +216,7 @@ export const CreateCommunityView: React.FC<CreateCommunityProps> = ({ onCancel, 
               return (
                 <div
                   key={userItem.id}
-                  className="flex items-center justify-between p-2.5 bg-zinc-900 border border-zinc-800 rounded-xl"
+                  className="flex items-center justify-between p-2.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-sm"
                 >
                   <div className="flex items-center space-x-3">
                     <img
@@ -224,14 +224,14 @@ export const CreateCommunityView: React.FC<CreateCommunityProps> = ({ onCancel, 
                       alt={userItem.name}
                       className="w-9 h-9 rounded-full object-cover"
                     />
-                    <span className="text-xs font-bold text-white">{userItem.name}</span>
+                    <span className="text-xs font-bold text-zinc-900 dark:text-white">{userItem.name}</span>
                   </div>
 
                   <button
                     onClick={() => toggleInvite(userItem.id)}
                     className={`px-4 py-1.5 rounded-xl font-bold text-xs uppercase transition-all ${
                       isInvited
-                        ? 'bg-zinc-800 text-zinc-400 border border-zinc-700'
+                        ? 'bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-300 dark:border-zinc-700'
                         : 'bg-orange-500 hover:bg-orange-600 text-zinc-950 shadow-md shadow-orange-500/20'
                     }`}
                   >
