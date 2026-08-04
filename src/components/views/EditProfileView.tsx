@@ -89,7 +89,7 @@ export const EditProfileView: React.FC<EditProfileViewProps> = ({ onBack }) => {
       <div className="flex flex-col items-center space-y-2">
         <div className="relative cursor-pointer group" onClick={handleTriggerUpload}>
           <div className="w-24 h-24 rounded-full border-4 border-orange-500 overflow-hidden bg-white dark:bg-zinc-950 p-0.5 shadow-lg shadow-orange-500/10">
-            <img src={avatarUrl} alt="Athlete Avatar" className="w-full h-full rounded-full object-cover" />
+            <img src={avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'} alt="Athlete Avatar" className="w-full h-full rounded-full object-cover" />
           </div>
           <div className="absolute inset-0 bg-black/60 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
             <Upload className="w-6 h-6 text-orange-400" />

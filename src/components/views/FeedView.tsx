@@ -138,7 +138,7 @@ export const FeedView: React.FC<FeedViewProps> = ({
                 }`}
               >
                 <img
-                  src={item.userAvatar}
+                  src={item.userAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80'}
                   alt={item.userName}
                   className="w-14 h-14 rounded-full object-cover border-2 border-zinc-950"
                 />
@@ -189,7 +189,7 @@ export const FeedView: React.FC<FeedViewProps> = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <img
-                  src={stories[activeStoryIndex].userAvatar}
+                  src={stories[activeStoryIndex].userAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80'}
                   alt={stories[activeStoryIndex].userName}
                   className="w-10 h-10 rounded-full object-cover border-2 border-orange-500"
                 />
@@ -222,11 +222,13 @@ export const FeedView: React.FC<FeedViewProps> = ({
 
           {/* Story Main Image Backdrop */}
           <div className="relative w-full h-full flex items-center justify-center bg-zinc-950">
-            <img
-              src={stories[activeStoryIndex].storyImage}
-              alt="Story Content"
-              className="w-full h-full object-cover"
-            />
+            {stories[activeStoryIndex].storyImage && (
+              <img
+                src={stories[activeStoryIndex].storyImage}
+                alt="Story Content"
+                className="w-full h-full object-cover"
+              />
+            )}
 
             {/* Navigation Left / Right Touch Overlay */}
             <button
@@ -341,7 +343,7 @@ export const FeedView: React.FC<FeedViewProps> = ({
               <div className="p-4 flex items-center justify-between relative">
                 <div className="flex items-center space-x-3">
                   <img
-                    src={act.userAvatar}
+                    src={act.userAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80'}
                     alt={act.userName}
                     onClick={() => onOpenUserProfile?.({ userId: act.userId, userName: act.userName, userAvatar: act.userAvatar })}
                     className="w-10 h-10 rounded-full object-cover border border-orange-500/50 cursor-pointer hover:scale-105 transition-transform"

@@ -223,11 +223,13 @@ export const CreateChallengeView: React.FC<CreateChallengeViewProps> = ({
               : 'border-orange-500/40 hover:border-orange-500'
           }`}
         >
-          <img
-            src={bannerUrl}
-            alt="Banner preview"
-            className="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-60 transition-opacity"
-          />
+          {bannerUrl && (
+            <img
+              src={bannerUrl}
+              alt="Banner preview"
+              className="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-60 transition-opacity"
+            />
+          )}
 
           <div className="relative z-10 flex flex-col items-center gap-2 px-4 py-3 bg-white/90 dark:bg-zinc-950/85 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xl backdrop-blur-sm max-w-[90%] text-center">
             <button

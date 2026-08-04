@@ -138,7 +138,7 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
             className="flex flex-col items-center flex-1 cursor-pointer group"
           >
             <img
-              src={top2.avatarUrl}
+              src={top2.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80'}
               alt={top2.name}
               className="w-14 h-14 rounded-full border-2 border-orange-500 object-cover shadow-lg mb-1 group-hover:scale-105 transition-transform"
             />
@@ -160,7 +160,7 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
           >
             <Crown className="w-6 h-6 text-amber-400 animate-bounce mb-1" />
             <img
-              src={top1.avatarUrl}
+              src={top1.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80'}
               alt={top1.name}
               className="w-16 h-16 rounded-full border-4 border-amber-400 object-cover shadow-xl mb-1 group-hover:scale-105 transition-transform"
             />
@@ -181,7 +181,7 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
             className="flex flex-col items-center flex-1 cursor-pointer group"
           >
             <img
-              src={top3.avatarUrl}
+              src={top3.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80'}
               alt={top3.name}
               className="w-14 h-14 rounded-full border-2 border-orange-500 object-cover shadow-lg mb-1 group-hover:scale-105 transition-transform"
             />
@@ -229,7 +229,7 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
                     {item.rank}
                   </span>
                   <img
-                    src={item.avatarUrl}
+                    src={item.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80'}
                     alt={item.name}
                     className="w-10 h-10 rounded-full object-cover border border-zinc-300 dark:border-zinc-700"
                   />

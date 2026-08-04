@@ -99,7 +99,7 @@ export const Header: React.FC<HeaderProps> = ({
             title={user ? `${user.fullName} (${user.role})` : 'Entrar / Cadastrar'}
           >
             {user ? (
-              <img src={user.avatarUrl} alt={user.fullName} className="w-full h-full object-cover" />
+              <img src={user.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80'} alt={user.fullName} className="w-full h-full object-cover" />
             ) : (
               <UserCheck className="w-4 h-4 text-orange-400" />
             )}

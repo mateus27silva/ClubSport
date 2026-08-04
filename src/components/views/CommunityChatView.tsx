@@ -310,7 +310,7 @@ export const CommunityChatView: React.FC<CommunityChatProps> = ({
 
           <div className="flex items-center space-x-2.5">
             <img
-              src={activeComm.coverUrl}
+              src={activeComm.coverUrl || 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=800&q=80'}
               alt={activeComm.name}
               className="w-10 h-10 rounded-xl object-cover border border-zinc-200 dark:border-zinc-800 shadow-sm"
             />
@@ -394,7 +394,7 @@ export const CommunityChatView: React.FC<CommunityChatProps> = ({
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2.5">
                   <img
-                    src={msg.userAvatar}
+                    src={msg.userAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80'}
                     alt={msg.userName}
                     onClick={() => onOpenUserProfile?.({ userId: msg.userId, userName: msg.userName, userAvatar: msg.userAvatar })}
                     className="w-9 h-9 rounded-full object-cover border border-zinc-200 dark:border-zinc-800 cursor-pointer hover:scale-105 transition-transform"
@@ -628,7 +628,7 @@ export const CommunityChatView: React.FC<CommunityChatProps> = ({
                           className="bg-zinc-50 dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-800 p-3 rounded-2xl flex items-center justify-between"
                         >
                           <div className="flex items-center space-x-3">
-                            <img src={m.avatar} alt={m.name} className="w-9 h-9 rounded-full object-cover border border-zinc-200 dark:border-zinc-800" />
+                            <img src={m.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80'} alt={m.name} className="w-9 h-9 rounded-full object-cover border border-zinc-200 dark:border-zinc-800" />
                             <div>
                               <h4 className="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-1.5">
                                 <span>{m.name}</span>
@@ -711,7 +711,7 @@ export const CommunityChatView: React.FC<CommunityChatProps> = ({
                           className="p-2.5 bg-zinc-50 dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-800 rounded-xl flex items-center justify-between"
                         >
                           <div className="flex items-center space-x-2.5">
-                            <img src={u.avatar} alt={u.name} className="w-8 h-8 rounded-full object-cover border border-zinc-200 dark:border-zinc-800" />
+                            <img src={u.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80'} alt={u.name} className="w-8 h-8 rounded-full object-cover border border-zinc-200 dark:border-zinc-800" />
                             <span className="text-xs font-bold text-zinc-900 dark:text-white">{u.name}</span>
                           </div>
 

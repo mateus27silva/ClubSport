@@ -571,6 +571,10 @@ function MainAppContent() {
             onOpenSettings={() => setCurrentView('settings')}
             onOpenCommunityChat={handleOpenCommunityChat}
             onOpenUserProfile={handleOpenUserProfile}
+            onStartRunForChallenge={(challengeId) => {
+              setSelectedTrackerChallengeId(challengeId);
+              setCurrentView('tracker');
+            }}
           />
         )}
 
@@ -792,6 +796,11 @@ function MainAppContent() {
             setSelectedUserProfile(null);
             if (commId) handleOpenCommunityChat(commId);
             else setCurrentView('community_chat');
+          }}
+          onStartRunForChallenge={(challengeId) => {
+            setSelectedUserProfile(null);
+            setSelectedTrackerChallengeId(challengeId);
+            setCurrentView('tracker');
           }}
         />
       )}

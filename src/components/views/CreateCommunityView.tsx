@@ -111,7 +111,9 @@ export const CreateCommunityView: React.FC<CreateCommunityProps> = ({ onCancel, 
         onClick={() => fileInputRef.current?.click()}
         className="w-full h-36 rounded-2xl border-2 border-dashed border-orange-500/50 hover:border-orange-500 bg-white dark:bg-zinc-900 flex flex-col items-center justify-center space-y-2 cursor-pointer transition-all relative overflow-hidden group shadow-lg"
       >
-        <img src={coverUrl} alt="Cover preview" className="absolute inset-0 w-full h-full object-cover opacity-30 group-hover:scale-105 transition-transform duration-300" />
+        {coverUrl && (
+          <img src={coverUrl} alt="Cover preview" className="absolute inset-0 w-full h-full object-cover opacity-30 group-hover:scale-105 transition-transform duration-300" />
+        )}
         <div className="relative z-10 flex flex-col items-center gap-1.5 bg-white/90 dark:bg-black/60 px-4 py-2 rounded-xl backdrop-blur-sm border border-zinc-200 dark:border-zinc-800 shadow-md">
           <Upload className="w-6 h-6 text-orange-500" />
           <span className="text-xs font-black text-zinc-900 dark:text-white uppercase tracking-wider">Upload Cover Image</span>
@@ -220,7 +222,7 @@ export const CreateCommunityView: React.FC<CreateCommunityProps> = ({ onCancel, 
                 >
                   <div className="flex items-center space-x-3">
                     <img
-                      src={userItem.avatar}
+                      src={userItem.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80'}
                       alt={userItem.name}
                       className="w-9 h-9 rounded-full object-cover"
                     />

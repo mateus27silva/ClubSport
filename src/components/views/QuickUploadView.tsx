@@ -101,11 +101,13 @@ export const QuickUploadView: React.FC<QuickUploadProps> = ({
 
         {/* Big Preview of User's Photo */}
         <div className="relative aspect-square rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-950 shadow-inner group">
-          <img
-            src={selectedPhoto}
-            alt="Foto do usuário"
-            className="w-full h-full object-cover"
-          />
+          {selectedPhoto && (
+            <img
+              src={selectedPhoto}
+              alt="Foto do usuário"
+              className="w-full h-full object-cover"
+            />
+          )}
 
           {addStatsOverlay && (
             <div className="absolute bottom-3 left-3 bg-black/70 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10 text-white text-[11px] font-mono shadow-lg">

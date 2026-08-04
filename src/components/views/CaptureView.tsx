@@ -327,7 +327,7 @@ export const CaptureView: React.FC<CaptureViewProps> = ({ onNextToUpload, onClos
           muted
           className={`w-full h-full object-cover ${isCameraActive ? 'block' : 'hidden'}`}
         />
-        {!isCameraActive && (
+        {!isCameraActive && capturedImage && (
           <img
             src={capturedImage}
             alt="Camera preview"
@@ -418,7 +418,7 @@ export const CaptureView: React.FC<CaptureViewProps> = ({ onNextToUpload, onClos
             <div className="absolute bottom-3 left-3 right-3 z-20 space-y-2 max-h-[160px] overflow-y-auto no-scrollbar pointer-events-auto">
               {comments.map((c) => (
                 <div key={c.id} className="flex items-center gap-2 bg-white/85 dark:bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-zinc-200 dark:border-white/10 w-fit max-w-[90%] shadow-sm">
-                  <img src={c.avatarUrl} alt={c.userName} className="w-5 h-5 rounded-full object-cover border border-orange-500/50 shrink-0" />
+                  <img src={c.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80'} alt={c.userName} className="w-5 h-5 rounded-full object-cover border border-orange-500/50 shrink-0" />
                   <span className="text-[11px] font-bold text-orange-600 dark:text-orange-400 shrink-0">{c.userName}:</span>
                   <span className="text-[11px] font-medium text-zinc-900 dark:text-white truncate">{c.text}</span>
                 </div>

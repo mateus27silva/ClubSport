@@ -670,7 +670,7 @@ export const AdminDashboardView: React.FC<AdminDashboardProps> = ({ onBack }) =>
               >
                 <div className="flex items-center space-x-3">
                   <img
-                    src={u.avatarUrl}
+                    src={u.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80'}
                     alt={u.fullName}
                     className="w-10 h-10 rounded-full object-cover border-2 border-orange-500/40"
                   />

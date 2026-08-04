@@ -91,8 +91,14 @@ export const LiveTrackerView: React.FC<LiveTrackerViewProps> = ({
   const watchGeoRef = useRef<number | null>(null);
 
   // Selected challenge object
-  const selectedChallenge = challenges.find((c) => c.id === selectedChallengeId);
+  const selectedChallenge = challenges.find((c) => c.id === selectedChallengeId) || challenges.find((c) => c.isJoined) || (challenges.length > 0 ? challenges[0] : undefined);
   const currentLocationName = selectedChallenge?.locationName || 'Parque do Ibirapuera, SP';
+
+  // Live challenge progress math
+  const challengeTarget = selectedChallenge?.targetValue || 1;
+  const challengeCurrentBeforeRun = selectedChallenge?.currentValue || 0;
+  const totalAccumulatedKm = challengeCurrentBeforeRun + distanceKm;
+  const progressPercent = Math.min(100, Math.round((totalAccumulatedKm / challengeTarget) * 100));
 
   // Automatically sync title and location with selected challenge
   useEffect(() => {
@@ -126,33 +132,38 @@ export const LiveTrackerView: React.FC<LiveTrackerViewProps> = ({
     };
   }, [status]);
 
-  // Simulation GPS Movement
+  // Smooth realistic runner simulation
   useEffect(() => {
     let simInterval: any = null;
     if (status === 'running' && trackingMode === 'simulation') {
       simInterval = setInterval(() => {
-        const coord = IBIRAPUERA_COORDS[simIndexRef.current % IBIRAPUERA_COORDS.length];
-        
-        // Add tiny random jitter to make track realistic
-        const jitterLat = (Math.random() - 0.5) * 0.00015;
-        const jitterLng = (Math.random() - 0.5) * 0.00015;
+        // Base center coordinates
+        const baseLat = selectedChallenge?.lat || -23.5874;
+        const baseLng = selectedChallenge?.lng || -46.6576;
+
+        // Angle along a smooth loop around the park/location
+        const angle = (simIndexRef.current * 0.08) % (2 * Math.PI);
+        const radiusLat = 0.0025; // ~270 meters
+        const radiusLng = 0.0035; // ~320 meters
+
+        const newLat = baseLat + Math.sin(angle) * radiusLat;
+        const newLng = baseLng + Math.cos(angle) * radiusLng;
+
+        // At a realistic running pace of ~10.8 km/h (~3m/s), in 2 seconds we cover ~0.006 km (6 meters)
+        const stepDistKm = 0.006 + (Math.random() - 0.5) * 0.0008;
 
         const newPoint: GpsPoint = {
-          lat: coord.lat + jitterLat,
-          lng: coord.lng + jitterLng,
-          alt: coord.alt + Math.floor(Math.random() * 3),
+          lat: newLat,
+          lng: newLng,
+          alt: 760 + Math.floor(Math.sin(angle) * 12),
           timestamp: Date.now(),
           heartRate,
-          speedKmH: 11.5 + (Math.random() * 1.2)
+          speedKmH: parseFloat((10.5 + (Math.random() - 0.5) * 0.8).toFixed(1))
         };
 
         setPoints((prev) => {
           const updated = [...prev, newPoint];
-          if (prev.length > 0) {
-            const last = prev[prev.length - 1];
-            const dist = calculateHaversineDistance(last.lat, last.lng, newPoint.lat, newPoint.lng);
-            setDistanceKm((d) => parseFloat((d + dist).toFixed(3)));
-          }
+          setDistanceKm((d) => parseFloat((d + stepDistKm).toFixed(3)));
           return updated;
         });
 
@@ -162,9 +173,9 @@ export const LiveTrackerView: React.FC<LiveTrackerViewProps> = ({
     return () => {
       if (simInterval) clearInterval(simInterval);
     };
-  }, [status, trackingMode, heartRate]);
+  }, [status, trackingMode, heartRate, selectedChallenge]);
 
-  // Real Web Geolocation API
+  // Real Web Geolocation API with anti-jump filtering
   useEffect(() => {
     if (status === 'running' && trackingMode === 'gps') {
       if ('geolocation' in navigator) {
@@ -176,17 +187,26 @@ export const LiveTrackerView: React.FC<LiveTrackerViewProps> = ({
               alt: pos.coords.altitude || 760,
               timestamp: pos.timestamp || Date.now(),
               heartRate,
-              speedKmH: pos.coords.speed ? pos.coords.speed * 3.6 : 11.0
+              speedKmH: pos.coords.speed ? pos.coords.speed * 3.6 : 10.8
             };
 
             setPoints((prev) => {
-              const updated = [...prev, newPoint];
-              if (prev.length > 0) {
-                const last = prev[prev.length - 1];
-                const dist = calculateHaversineDistance(last.lat, last.lng, newPoint.lat, newPoint.lng);
-                setDistanceKm((d) => parseFloat((d + dist).toFixed(3)));
+              if (prev.length === 0) {
+                // First GPS fix - establish starting location without adding distance
+                return [newPoint];
               }
-              return updated;
+
+              const last = prev[prev.length - 1];
+              const dist = calculateHaversineDistance(last.lat, last.lng, newPoint.lat, newPoint.lng);
+
+              // Reject erratic GPS teleports/jumps (> 50 meters in a single 1-2s update)
+              if (dist > 0.05) {
+                console.warn(`GPS jump detected (${dist.toFixed(2)} km). Filtering out erratic delta.`);
+                return [...prev, newPoint];
+              }
+
+              setDistanceKm((d) => parseFloat((d + dist).toFixed(3)));
+              return [...prev, newPoint];
             });
           },
           (err) => {
@@ -209,29 +229,34 @@ export const LiveTrackerView: React.FC<LiveTrackerViewProps> = ({
     };
   }, [status, trackingMode, heartRate]);
 
-  // Calculations
-  const paceSecondsPerKm = distanceKm > 0 ? (durationSeconds / distanceKm) : 0;
+  // Realistic Metrics Calculations
+  const paceSecondsPerKm = distanceKm > 0.01 ? (durationSeconds / distanceKm) : 0;
   const currentPaceStr = formatPace(paceSecondsPerKm);
-  const avgSpeedKmH = durationSeconds > 0 ? ((distanceKm / (durationSeconds / 3600))).toFixed(1) : '0.0';
-  const estimatedCalories = Math.round(distanceKm * 65);
-  const elevationGain = Math.round(distanceKm * 18);
+  const avgSpeedKmH = durationSeconds > 3 && distanceKm > 0.01 
+    ? Math.min(25, (distanceKm / (durationSeconds / 3600))).toFixed(1) 
+    : (status === 'running' ? '10.8' : '0.0');
+  const estimatedCalories = Math.round(distanceKm * 62);
+  const elevationGain = Math.round(distanceKm * 14);
 
   const handleStartRun = () => {
     setStatus('running');
-    if (points.length === 0) {
-      // Seed first point
-      const startCoord = IBIRAPUERA_COORDS[0];
-      setPoints([
-        {
-          lat: startCoord.lat,
-          lng: startCoord.lng,
-          alt: startCoord.alt,
-          timestamp: Date.now(),
-          heartRate: 135,
-          speedKmH: 11.0
-        }
-      ]);
-    }
+    setDurationSeconds(0);
+    setDistanceKm(0);
+    simIndexRef.current = 0;
+
+    const startLat = selectedChallenge?.lat || -23.5874;
+    const startLng = selectedChallenge?.lng || -46.6576;
+
+    setPoints([
+      {
+        lat: startLat,
+        lng: startLng,
+        alt: 760,
+        timestamp: Date.now(),
+        heartRate: 135,
+        speedKmH: 10.8
+      }
+    ]);
   };
 
   const handlePauseRun = () => setStatus('paused');
@@ -347,117 +372,105 @@ export const LiveTrackerView: React.FC<LiveTrackerViewProps> = ({
   const svgPath = generateSvgPathFromPoints(points, 340, 160);
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col pb-24">
+    <div className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 flex flex-col pb-24">
       {/* Top Bar Header */}
-      <div className="sticky top-0 z-30 bg-zinc-900/90 backdrop-blur-md border-b border-zinc-800/80 px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 rounded-xl bg-orange-500/10 border border-orange-500/30 flex items-center justify-center text-orange-500">
-            <Radio className="w-4 h-4 animate-pulse" />
+      <div className="sticky top-0 z-30 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800/80 px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center space-x-2.5 min-w-0">
+          <div className="w-9 h-9 rounded-xl bg-orange-500/10 border border-orange-500/30 flex items-center justify-center text-orange-500 shrink-0">
+            <Trophy className="w-5 h-5 text-orange-500" />
           </div>
-          <div>
-            <h1 className="text-sm font-bold text-white flex items-center gap-1.5">
-              <span>GPS Tracking & Watch</span>
-              <span className="text-[10px] font-mono font-bold text-orange-400 bg-orange-500/10 border border-orange-500/30 px-1.5 py-0.2 rounded-md">
-                LIVE
-              </span>
-            </h1>
-            <span className="text-[10px] text-zinc-400 block">
-              📍 {currentLocationName}
-            </span>
+          <div className="min-w-0">
+            {selectedChallenge ? (
+              <>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[9px] font-black font-mono uppercase bg-orange-500/15 text-orange-600 dark:text-orange-400 border border-orange-500/30 px-1.5 py-0.2 rounded shrink-0">
+                    DESAFIO ATIVO
+                  </span>
+                  <span className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">📍 {currentLocationName}</span>
+                </div>
+                <h1 className="text-sm font-black text-zinc-900 dark:text-white uppercase tracking-tight truncate">
+                  {selectedChallenge.title}
+                </h1>
+              </>
+            ) : (
+              <>
+                <h1 className="text-sm font-bold text-zinc-900 dark:text-white">
+                  Rastreamento de Corrida
+                </h1>
+                <span className="text-[10px] text-zinc-500 dark:text-zinc-400 block truncate">
+                  📍 {currentLocationName}
+                </span>
+              </>
+            )}
           </div>
         </div>
 
-        <div className="flex items-center space-x-2">
-          {/* Smartwatch Quick Indicator */}
-          <button
-            onClick={() => setIsWatchModalVisible(true)}
-            className={`px-2.5 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all ${
-              watchConnected
-                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20'
-                : 'bg-zinc-800 text-zinc-400 border-zinc-700'
-            }`}
-          >
-            <Watch className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Wear OS</span>
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-          </button>
-
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-xl bg-zinc-800/80 text-zinc-400 hover:text-white hover:bg-zinc-700 transition-all"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+        <button
+          onClick={onClose}
+          className="p-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-800/80 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all shrink-0 ml-2"
+        >
+          <X className="w-5 h-5" />
+        </button>
       </div>
 
       {/* Main Tracker Container */}
       <div className="p-4 space-y-4 max-w-lg mx-auto w-full">
-        {/* Active GPS Status Badge */}
-        <div className="bg-zinc-900 border border-emerald-500/30 p-2.5 rounded-2xl flex items-center justify-between text-xs font-bold shadow-md">
-          <div className="flex items-center gap-2 text-emerald-400">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span>Sinal GPS do Dispositivo Ativo</span>
-          </div>
-          <span className="text-[10px] text-zinc-400 font-mono">Alta Precisão</span>
-        </div>
-
         {/* Live Challenge Selector */}
         {challenges.length > 0 && status !== 'finished' && (
-          <div className="bg-zinc-900/90 border border-zinc-800/80 p-3.5 rounded-2xl space-y-2.5">
+          <div className="bg-white dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-800/80 p-3.5 rounded-2xl space-y-3 shadow-sm">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-bold text-zinc-300 flex items-center gap-1.5">
+              <span className="font-bold text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
                 <Trophy className="w-3.5 h-3.5 text-orange-500" />
                 Vincular a um Desafio Ativo
               </span>
               {selectedChallenge && (
-                <span className="text-[10px] text-orange-400 font-mono font-bold bg-orange-500/10 px-2 py-0.5 rounded-md border border-orange-500/20">
-                  {Math.min(100, Math.round((distanceKm / selectedChallenge.targetValue) * 100))}% Concluído
+                <span className="text-[10px] text-orange-600 dark:text-orange-400 font-mono font-bold bg-orange-500/10 px-2 py-0.5 rounded-md border border-orange-500/20">
+                  {progressPercent}% Concluído
                 </span>
               )}
             </div>
 
             {/* Locked Active Challenge Display (Read-Only) */}
             {selectedChallenge ? (
-              <div className="w-full bg-zinc-950 border border-orange-500/30 rounded-xl px-3 py-2.5 text-xs text-orange-400 font-bold flex items-center justify-between shadow-inner">
-                <div className="flex items-center gap-2 truncate">
-                  <Trophy className="w-4 h-4 text-orange-400 shrink-0" />
-                  <span className="truncate uppercase font-black tracking-wide">{selectedChallenge.title}</span>
+              <div className="space-y-2">
+                <div className="w-full bg-orange-50/50 dark:bg-zinc-950 border border-orange-500/30 rounded-xl px-3 py-2.5 text-xs text-orange-600 dark:text-orange-400 font-bold flex items-center justify-between shadow-inner">
+                  <div className="flex items-center gap-2 truncate">
+                    <Trophy className="w-4 h-4 text-orange-500 dark:text-orange-400 shrink-0" />
+                    <span className="truncate uppercase font-black tracking-wide">{selectedChallenge.title}</span>
+                  </div>
+                  <span className="text-[10px] text-zinc-600 dark:text-zinc-400 font-mono shrink-0 ml-2 bg-white dark:bg-zinc-900 px-2 py-0.5 rounded border border-zinc-200 dark:border-zinc-800">
+                    Meta: {selectedChallenge.targetValue} {selectedChallenge.unit}
+                  </span>
                 </div>
-                <span className="text-[10px] text-zinc-400 font-mono shrink-0 ml-2 bg-zinc-900 px-2 py-0.5 rounded border border-zinc-800">
-                  {selectedChallenge.targetValue} {selectedChallenge.unit}
-                </span>
+
+                {/* Progress bar filling up as user runs */}
+                <div className="space-y-1">
+                  <div className="flex justify-between items-center text-[10px] font-mono text-zinc-500 dark:text-zinc-400">
+                    <span>Progresso total: <strong className="text-zinc-900 dark:text-zinc-100">{totalAccumulatedKm.toFixed(2)}</strong> / {challengeTarget} {selectedChallenge.unit}</span>
+                    <span className="font-bold text-orange-600 dark:text-orange-400">{progressPercent}%</span>
+                  </div>
+                  <div className="w-full bg-zinc-100 dark:bg-zinc-800 h-2.5 rounded-full overflow-hidden border border-zinc-200 dark:border-zinc-700/60 p-0.5">
+                    <div
+                      className="bg-gradient-to-r from-amber-500 to-orange-500 h-full rounded-full transition-all duration-300"
+                      style={{ width: `${progressPercent}%` }}
+                    />
+                  </div>
+                </div>
               </div>
             ) : (
-              <div className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2.5 text-xs text-zinc-400 font-bold flex items-center justify-between">
+              <div className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2.5 text-xs text-zinc-500 dark:text-zinc-400 font-bold flex items-center justify-between">
                 <div className="flex items-center gap-2 truncate">
-                  <Trophy className="w-4 h-4 text-zinc-500 shrink-0" />
+                  <Trophy className="w-4 h-4 text-zinc-400 dark:text-zinc-500 shrink-0" />
                   <span>TREINO LIVRE</span>
                 </div>
-                <span className="text-[10px] text-zinc-500 font-mono">Sem desafio</span>
+                <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-mono">Sem desafio</span>
               </div>
             )}
-
-            {/* Auto-Linked Location Indicator */}
-            <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-2.5 text-xs space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold text-zinc-300 flex items-center gap-1.5">
-                  <MapPin className="w-3.5 h-3.5 text-orange-400 shrink-0 animate-pulse" />
-                  Localização Vinculada Ao Desafio:
-                </span>
-                <span className="text-[10px] font-bold text-orange-400 bg-orange-500/20 px-2 py-0.5 rounded-md truncate max-w-[180px]">
-                  {currentLocationName}
-                </span>
-              </div>
-              <p className="text-[10px] text-zinc-400 leading-tight">
-                O aplicativo vincula automaticamente o rastreamento GPS e a rota às coordenadas da localização deste desafio.
-              </p>
-            </div>
           </div>
         )}
 
         {/* Interactive Google Maps Route Percurso */}
-        <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-zinc-800/80">
+        <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-zinc-200 dark:border-zinc-800/80">
           <GoogleRouteMap
             points={points.length > 0 ? points : undefined}
             center={{
@@ -472,99 +485,82 @@ export const LiveTrackerView: React.FC<LiveTrackerViewProps> = ({
 
           {/* Floating Live Overlays */}
           <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none z-10">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-zinc-950/85 backdrop-blur-md border border-zinc-800 text-[11px] font-bold text-orange-400 max-w-[200px] truncate shadow-lg">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/90 dark:bg-zinc-950/85 backdrop-blur-md border border-zinc-200 dark:border-zinc-800 text-[11px] font-bold text-orange-600 dark:text-orange-400 max-w-[200px] truncate shadow-lg">
               <MapPin className="w-3.5 h-3.5 text-orange-500 shrink-0" />
               <span className="truncate">{currentLocationName}</span>
-            </span>
-
-            {/* Smartwatch Live HR Indicator */}
-            <div className="flex items-center gap-1.5 px-3 py-1 bg-zinc-950/85 backdrop-blur-md border border-zinc-800 rounded-xl shadow-lg">
-              <Heart className="w-3.5 h-3.5 text-rose-500 animate-bounce" />
-              <span className="text-xs font-mono font-bold text-white">{heartRate}</span>
-              <span className="text-[9px] text-zinc-400 font-bold uppercase">BPM</span>
-            </div>
-          </div>
-
-          <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-[10px] text-zinc-300 pointer-events-none z-10 bg-zinc-950/80 backdrop-blur-md px-3 py-1.5 rounded-xl border border-zinc-800">
-            <span className="flex items-center gap-1 font-mono">
-              <Compass className="w-3 h-3 text-emerald-400" />
-              Sinal GPS: Excelente ({points.length} pontos)
-            </span>
-            <span className="font-mono text-orange-400 font-bold">
-              Rastreamento GPS Ativo
             </span>
           </div>
         </div>
 
         {/* Primary Metrics HUD Dashboard */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-5 space-y-4 shadow-xl">
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-5 space-y-4 shadow-xl">
           {/* Main Giant Distance Metric */}
           <div className="text-center py-2 space-y-1">
-            <span className="text-xs font-bold uppercase tracking-wider text-zinc-400 block">
+            <span className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 block">
               Distância Percorrida
             </span>
             <div className="flex items-baseline justify-center space-x-2">
-              <span className="text-5xl sm:text-6xl font-black font-sport tracking-tight text-white">
+              <span className="text-5xl sm:text-6xl font-black font-sport tracking-tight text-zinc-900 dark:text-white">
                 {distanceKm.toFixed(2)}
               </span>
               <span className="text-xl font-bold font-sport text-orange-500">KM</span>
             </div>
           </div>
 
-          <div className="h-px bg-zinc-800/80 w-full" />
+          <div className="h-px bg-zinc-200 dark:bg-zinc-800/80 w-full" />
 
           {/* Grid Metrics */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {/* Time */}
-            <div className="bg-zinc-950 p-3 rounded-2xl border border-zinc-800/80 text-center">
-              <span className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">
+            <div className="bg-zinc-50 dark:bg-zinc-950 p-3 rounded-2xl border border-zinc-200 dark:border-zinc-800/80 text-center">
+              <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase block mb-1">
                 Tempo
               </span>
-              <span className="text-xl font-black font-mono text-white block">
+              <span className="text-xl font-black font-mono text-zinc-900 dark:text-white block">
                 {formatDuration(durationSeconds)}
               </span>
             </div>
 
             {/* Pace */}
-            <div className="bg-zinc-950 p-3 rounded-2xl border border-zinc-800/80 text-center">
-              <span className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">
+            <div className="bg-zinc-50 dark:bg-zinc-950 p-3 rounded-2xl border border-zinc-200 dark:border-zinc-800/80 text-center">
+              <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase block mb-1">
                 Ritmo
               </span>
-              <span className="text-xl font-black font-sport text-orange-400 block">
+              <span className="text-xl font-black font-sport text-orange-600 dark:text-orange-400 block">
                 {currentPaceStr.replace('/km', '')}
               </span>
             </div>
 
             {/* Speed */}
-            <div className="bg-zinc-950 p-3 rounded-2xl border border-zinc-800/80 text-center">
-              <span className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">
+            <div className="bg-zinc-50 dark:bg-zinc-950 p-3 rounded-2xl border border-zinc-200 dark:border-zinc-800/80 text-center">
+              <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase block mb-1">
                 Velocidade
               </span>
-              <span className="text-xl font-black font-mono text-emerald-400 block">
+              <span className="text-xl font-black font-mono text-emerald-600 dark:text-emerald-400 block">
                 {avgSpeedKmH} <span className="text-[10px] text-zinc-500">km/h</span>
               </span>
             </div>
 
             {/* Calories */}
-            <div className="bg-zinc-950 p-3 rounded-2xl border border-zinc-800/80 text-center">
-              <span className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">
+            <div className="bg-zinc-50 dark:bg-zinc-950 p-3 rounded-2xl border border-zinc-200 dark:border-zinc-800/80 text-center">
+              <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase block mb-1">
                 Calorias
               </span>
-              <span className="text-xl font-black font-mono text-rose-400 block">
+              <span className="text-xl font-black font-mono text-rose-600 dark:text-rose-400 block">
                 {estimatedCalories} <span className="text-[10px] text-zinc-500">kcal</span>
               </span>
             </div>
           </div>
 
           {/* Secondary Stats Strip */}
-          <div className="flex items-center justify-around pt-1 text-xs text-zinc-400">
+          <div className="flex items-center justify-around pt-1 text-xs text-zinc-600 dark:text-zinc-400">
             <span className="flex items-center gap-1 font-semibold">
               <Heart className="w-3.5 h-3.5 text-rose-500" />
-              Média BPM: <strong className="text-white font-mono">{heartRate}</strong>
+              Média BPM: <strong className="text-zinc-900 dark:text-white font-mono">{heartRate}</strong>
             </span>
             <span className="flex items-center gap-1 font-semibold">
-              <Zap className="w-3.5 h-3.5 text-amber-400" />
-              Elevação: <strong className="text-white font-mono">+{elevationGain}m</strong>
+              <Zap className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
+              Elevação: <strong className="text-zinc-900 dark:text-white font-mono">+{elevationGain}m</strong>
             </span>
           </div>
         </div>
@@ -624,35 +620,35 @@ export const LiveTrackerView: React.FC<LiveTrackerViewProps> = ({
 
         {/* Finished Run Modal / Summary */}
         {status === 'finished' && (
-          <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-5 space-y-4 shadow-2xl">
-            <div className="flex items-center space-x-2 text-emerald-400">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-5 space-y-4 shadow-2xl">
+            <div className="flex items-center space-x-2 text-emerald-600 dark:text-emerald-400">
               <Check className="w-5 h-5" />
-              <h2 className="text-base font-extrabold text-white">Corrida Concluída com Sucesso!</h2>
+              <h2 className="text-base font-extrabold text-zinc-900 dark:text-white">Corrida Concluída com Sucesso!</h2>
             </div>
 
-            <p className="text-xs text-zinc-400">
+            <p className="text-xs text-zinc-600 dark:text-zinc-400">
               Sua atividade foi salva no **Firebase Firestore** e o arquivo `.gpx` foi gerado para exportação.
             </p>
 
             {/* Run Title Input */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-zinc-300">Título do Treino</label>
+              <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300">Título do Treino</label>
               <input
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-orange-500"
+                className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-zinc-900 dark:text-white focus:outline-none focus:border-orange-500"
               />
             </div>
 
             {/* Caption Input */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-zinc-300">Legenda para o Feed Social</label>
+              <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300">Legenda para o Feed Social</label>
               <textarea
                 value={caption}
                 onChange={(e) => setCaption(e.target.value)}
                 rows={2}
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-orange-500 resize-none"
+                className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-zinc-900 dark:text-white focus:outline-none focus:border-orange-500 resize-none"
               />
             </div>
 
@@ -660,7 +656,7 @@ export const LiveTrackerView: React.FC<LiveTrackerViewProps> = ({
             <div className="space-y-2 pt-2">
               <button
                 onClick={() => downloadGpxFile(title || 'Corrida', points)}
-                className="w-full py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs rounded-2xl border border-zinc-700 flex items-center justify-center gap-2 transition-all"
+                className="w-full py-3 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-800 dark:text-white font-bold text-xs rounded-2xl border border-zinc-300 dark:border-zinc-700 flex items-center justify-center gap-2 transition-all"
               >
                 <Download className="w-4 h-4 text-orange-500" />
                 <span>Exportar Arquivo .GPX (Garmin / Strava)</span>
@@ -679,11 +675,11 @@ export const LiveTrackerView: React.FC<LiveTrackerViewProps> = ({
 
       {/* Smartwatch Simulator Modal */}
       {isWatchModalVisible && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-zinc-900 border border-zinc-800 w-full max-w-sm rounded-3xl p-5 text-white space-y-4 shadow-2xl relative">
+        <div className="fixed inset-0 z-50 bg-black/60 dark:bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 w-full max-w-sm rounded-3xl p-5 text-zinc-900 dark:text-white space-y-4 shadow-2xl relative">
             <button
               onClick={() => setIsWatchModalVisible(false)}
-              className="absolute top-4 right-4 text-zinc-400 hover:text-white p-1"
+              className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-900 dark:hover:text-white p-1"
             >
               <X className="w-5 h-5" />
             </button>
@@ -694,7 +690,7 @@ export const LiveTrackerView: React.FC<LiveTrackerViewProps> = ({
             </div>
 
             {/* Round Watch Face Graphic */}
-            <div className="w-44 h-44 mx-auto rounded-full bg-black border-4 border-zinc-800 p-4 flex flex-col items-center justify-center text-center space-y-1 shadow-inner relative">
+            <div className="w-44 h-44 mx-auto rounded-full bg-zinc-900 dark:bg-black border-4 border-zinc-300 dark:border-zinc-800 p-4 flex flex-col items-center justify-center text-center space-y-1 shadow-inner relative">
               <span className="text-[10px] font-mono font-bold text-orange-400">GALAXY WATCH</span>
               <span className="text-2xl font-black font-sport text-white">{distanceKm.toFixed(2)} km</span>
               <span className="text-xs font-mono text-zinc-400">{formatDuration(durationSeconds)}</span>
@@ -704,24 +700,24 @@ export const LiveTrackerView: React.FC<LiveTrackerViewProps> = ({
               </div>
             </div>
 
-            <div className="space-y-2 text-xs text-zinc-400 pt-1">
-              <div className="flex justify-between border-b border-zinc-800 pb-1.5">
+            <div className="space-y-2 text-xs text-zinc-600 dark:text-zinc-400 pt-1">
+              <div className="flex justify-between border-b border-zinc-200 dark:border-zinc-800 pb-1.5">
                 <span>Status da Conexão:</span>
-                <span className="text-emerald-400 font-bold">Ativo via Firebase Realtime</span>
+                <span className="text-emerald-600 dark:text-emerald-400 font-bold">Ativo via Firebase Realtime</span>
               </div>
-              <div className="flex justify-between border-b border-zinc-800 pb-1.5">
+              <div className="flex justify-between border-b border-zinc-200 dark:border-zinc-800 pb-1.5">
                 <span>Bateria do Relógio:</span>
-                <span className="text-white font-mono font-bold">{watchBattery}%</span>
+                <span className="text-zinc-900 dark:text-white font-mono font-bold">{watchBattery}%</span>
               </div>
               <div className="flex justify-between pb-1">
                 <span>Protocolo de Sensores:</span>
-                <span className="text-orange-400 font-mono font-bold">Wearable.DataLayer</span>
+                <span className="text-orange-600 dark:text-orange-400 font-mono font-bold">Wearable.DataLayer</span>
               </div>
             </div>
 
             <button
               onClick={() => setIsWatchModalVisible(false)}
-              className="w-full py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs rounded-xl"
+              className="w-full py-2.5 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-800 dark:text-white font-bold text-xs rounded-xl"
             >
               Fechar Painel Smartwatch
             </button>

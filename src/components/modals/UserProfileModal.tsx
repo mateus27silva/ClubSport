@@ -41,6 +41,7 @@ interface UserProfileModalProps {
   communities?: Community[];
   challenges?: Challenge[];
   onOpenCommunityChat?: (communityId?: string) => void;
+  onStartRunForChallenge?: (challengeId: string) => void;
 }
 
 interface HighlightItem {
@@ -65,7 +66,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   activities = [],
   communities = [],
   challenges = [],
-  onOpenCommunityChat
+  onOpenCommunityChat,
+  onStartRunForChallenge
 }) => {
   const { user } = useAuth();
   const [isFollowing, setIsFollowing] = useState(false);
@@ -397,11 +399,13 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     className="bg-zinc-900 border border-zinc-800 hover:border-orange-500/50 rounded-xl overflow-hidden relative group cursor-pointer transition-all hover:scale-[1.02] shadow-md hover:shadow-orange-500/10"
                   >
                     <div className="relative h-32 overflow-hidden bg-zinc-950">
-                      <img
-                        src={item.imageUrl}
-                        alt={item.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
+                      {item.imageUrl && (
+                        <img
+                          src={item.imageUrl}
+                          alt={item.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      )}
                       <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent opacity-80" />
                       <span className="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-zinc-950/80 backdrop-blur-md text-[9px] font-bold text-orange-400 border border-zinc-800 uppercase">
                         {item.sport}
@@ -526,11 +530,13 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             <div className="overflow-y-auto space-y-4 p-4 flex-1 no-scrollbar">
               {/* Publication Image Banner */}
               <div className="relative rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 max-h-64 bg-zinc-100 dark:bg-zinc-900">
-                <img
-                  src={selectedHighlight.imageUrl}
-                  alt={selectedHighlight.title}
-                  className="w-full h-full object-cover"
-                />
+                {selectedHighlight.imageUrl && (
+                  <img
+                    src={selectedHighlight.imageUrl}
+                    alt={selectedHighlight.title}
+                    className="w-full h-full object-cover"
+                  />
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/80 via-transparent to-transparent" />
                 
                 {/* Metrics Overlay */}
@@ -614,7 +620,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                         className="p-3 bg-zinc-50 dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-800/80 rounded-2xl flex items-start space-x-3"
                       >
                         <img
-                          src={comm.avatar}
+                          src={comm.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80'}
                           alt={comm.author}
                           className="w-8 h-8 rounded-full object-cover border border-zinc-300 dark:border-zinc-700 flex-shrink-0"
                         />
@@ -843,14 +849,22 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     return (
                       <div
                         key={item.id}
-                        className="bg-orange-50/60 dark:bg-zinc-900/90 border border-orange-500/30 rounded-2xl p-3.5 space-y-3 relative overflow-hidden shadow-sm"
+                        onClick={() => {
+                          setIsCompletedChallengesModalOpen(false);
+                          onClose();
+                          if (onStartRunForChallenge) {
+                            onStartRunForChallenge(item.id);
+                          }
+                        }}
+                        className="bg-orange-50/60 dark:bg-zinc-900/90 border border-orange-500/30 hover:border-orange-500 rounded-2xl p-3.5 space-y-3 relative overflow-hidden shadow-sm cursor-pointer hover:scale-[1.01] active:scale-[0.99] transition-all group"
+                        title="Clique para voltar ao desafio e continuar concluindo"
                       >
                         <div className="flex items-start justify-between relative z-10">
                           <div className="space-y-1">
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-orange-500/10 border border-orange-500/30 text-orange-600 dark:text-orange-400 text-[10px] font-bold">
                               ⚡ INSCRITO • EM ANDAMENTO
                             </span>
-                            <h4 className="text-sm font-black text-zinc-900 dark:text-white uppercase tracking-tight">
+                            <h4 className="text-sm font-black text-zinc-900 dark:text-white uppercase tracking-tight group-hover:text-orange-500 transition-colors">
                               {item.title}
                             </h4>
                             <p className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
@@ -858,8 +872,13 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                             </p>
                           </div>
 
-                          <div className="w-10 h-10 rounded-full bg-orange-500/20 border border-orange-500/40 flex items-center justify-center text-orange-600 dark:text-orange-400 font-mono text-xs font-bold flex-shrink-0">
-                            {percent}%
+                          <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                            <div className="w-10 h-10 rounded-full bg-orange-500/20 border border-orange-500/40 flex items-center justify-center text-orange-600 dark:text-orange-400 font-mono text-xs font-bold">
+                              {percent}%
+                            </div>
+                            <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400 group-hover:underline">
+                              Continuar ➔
+                            </span>
                           </div>
                         </div>
 
@@ -872,7 +891,9 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                           </div>
                           <div className="flex items-center justify-between text-[10px] text-zinc-500 dark:text-zinc-400 font-mono">
                             <span>{item.currentValue} / {item.targetValue} {item.unit}</span>
-                            <span className="text-orange-600 dark:text-orange-400 font-bold">Inscrição Ativa</span>
+                            <span className="text-orange-600 dark:text-orange-400 font-bold group-hover:underline flex items-center gap-1">
+                              Voltar ao desafio ⚡
+                            </span>
                           </div>
                         </div>
                       </div>
