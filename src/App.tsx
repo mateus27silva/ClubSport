@@ -81,7 +81,38 @@ function MainAppContent() {
     return initialActivities;
   });
 
-  const [challenges, setChallenges] = useState<Challenge[]>(initialChallenges);
+  // Joined Challenge IDs state with localStorage persistence
+  const [joinedChallengeIds, setJoinedChallengeIds] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('clubsport_joined_challenges');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {
+      console.warn('Error reading stored joined challenges from localStorage', e);
+    }
+    return ['ch_1', 'ch_2', 'ch_3'];
+  });
+
+  const [challenges, setChallenges] = useState<Challenge[]>(() => {
+    try {
+      const saved = localStorage.getItem('clubsport_challenges');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const joinedSet = new Set(['ch_1', 'ch_2', 'ch_3']);
+          return parsed.map((ch: Challenge) => ({
+            ...ch,
+            isJoined: joinedSet.has(ch.id) || Boolean(ch.isJoined)
+          }));
+        }
+      }
+    } catch (e) {
+      console.warn('Error reading stored challenges from localStorage', e);
+    }
+    return initialChallenges;
+  });
   const [communities, setCommunities] = useState<Community[]>(initialCommunities);
   const [selectedCommunityId, setSelectedCommunityId] = useState<string>('comm_1');
   const [notifications, setNotifications] = useState<NotificationItem[]>(initialNotifications);
@@ -159,7 +190,15 @@ function MainAppContent() {
       }
     });
     fetchChallenges().then((fetched) => {
-      if (fetched.length > 0) setChallenges(fetched);
+      if (fetched.length > 0) {
+        setChallenges((prev) => {
+          const joinedSet = new Set(prev.filter((c) => c.isJoined).map((c) => c.id));
+          return fetched.map((ch) => ({
+            ...ch,
+            isJoined: joinedSet.has(ch.id) || Boolean(ch.isJoined),
+          }));
+        });
+      }
     });
     fetchCommunities().then((fetched) => {
       if (fetched.length > 0) setCommunities(fetched);
@@ -179,7 +218,15 @@ function MainAppContent() {
       }
     });
     const unsubChallenges = subscribeChallenges((updated) => {
-      if (updated.length > 0) setChallenges(updated);
+      if (updated.length > 0) {
+        setChallenges((prev) => {
+          const joinedSet = new Set(prev.filter((c) => c.isJoined).map((c) => c.id));
+          return updated.map((ch) => ({
+            ...ch,
+            isJoined: joinedSet.has(ch.id) || Boolean(ch.isJoined),
+          }));
+        });
+      }
     });
     const unsubCommunities = subscribeCommunities((updated) => {
       if (updated.length > 0) setCommunities(updated);
@@ -740,6 +787,7 @@ function MainAppContent() {
           onClose={() => setSelectedUserProfile(null)}
           activities={activities}
           communities={communities}
+          challenges={challenges}
           onOpenCommunityChat={(commId) => {
             setSelectedUserProfile(null);
             if (commId) handleOpenCommunityChat(commId);

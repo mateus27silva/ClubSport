@@ -18,7 +18,7 @@ import {
   Shield,
   Clock
 } from 'lucide-react';
-import { ActivityPost, Community } from '../../types';
+import { ActivityPost, Community, Challenge } from '../../types';
 import { useAuth } from '../../context/AuthContext';
 
 export interface TargetUserProfileInfo {
@@ -39,6 +39,7 @@ interface UserProfileModalProps {
   onClose: () => void;
   activities?: ActivityPost[];
   communities?: Community[];
+  challenges?: Challenge[];
   onOpenCommunityChat?: (communityId?: string) => void;
 }
 
@@ -63,6 +64,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   onClose,
   activities = [],
   communities = [],
+  challenges = [],
   onOpenCommunityChat
 }) => {
   const { user } = useAuth();
@@ -134,8 +136,18 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
       });
     }
   });
-  const completedChallenges: any[] = [];
-  const joinedChallenges: any[] = [];
+
+  const targetUserChallengeIds = new Set(
+    userPosts.map((act) => act.challengeId).filter(Boolean)
+  );
+
+  const joinedChallenges = (challenges || []).filter(
+    (c) => c.isJoined || targetUserChallengeIds.has(c.id)
+  );
+
+  const completedChallenges = joinedChallenges.filter(
+    (c) => c.status === 'completed' || (c.currentValue || 0) >= (c.targetValue || 0)
+  );
 
   const calculatedTotalKm = userPosts.reduce((sum, act) => sum + (act.distanceKm || 0), 0) + (targetUser?.totalKm || 0);
   const userXp = Math.round(calculatedTotalKm * 10) + (targetUser?.points || 0);
@@ -351,7 +363,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 DESAFIOS
               </span>
               <div className="text-xl font-black text-orange-500 font-mono tracking-tight flex items-baseline gap-1">
-                <span>{completedChallenges.length}/{completedChallenges.length + joinedChallenges.length}</span>
+                <span>{completedChallenges.length}/{joinedChallenges.length}</span>
               </div>
               <span className="text-[9px] text-zinc-500 dark:text-zinc-400 block truncate group-hover/challenges:text-orange-500 dark:group-hover/challenges:text-orange-300 underline decoration-zinc-400 dark:decoration-zinc-600">
                 CONCLUÍDOS / ENTROU →
@@ -729,7 +741,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     Desafios do Atleta
                   </h3>
                   <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
-                    {completedChallenges.length} concluídos de {completedChallenges.length + joinedChallenges.length} desafios inscritos
+                    {completedChallenges.length} concluídos de {joinedChallenges.length} desafios inscritos
                   </p>
                 </div>
               </div>

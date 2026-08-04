@@ -143,13 +143,20 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   // Total accumulated distance in KM
   const totalCalculatedKm = user.totalKm + accumulatedChallengesKm;
 
+  // User challenge IDs linked via user activities
+  const userChallengeIdsFromActivities = new Set(
+    userActivities.map((act) => act.challengeId).filter(Boolean)
+  );
+
   // Joined & Completed Challenges calculations
-  const joinedChallengesList = challenges.filter((c) => c.isJoined);
+  const joinedChallengesList = challenges.filter(
+    (c) => Boolean(c.isJoined) || userChallengeIdsFromActivities.has(c.id)
+  );
   const completedChallengesList = challenges.filter(
-    (c) => c.status === 'completed' || (c.isJoined && c.currentValue >= c.targetValue)
+    (c) => c.status === 'completed' || (joinedChallengesList.some((jc) => jc.id === c.id) && (c.currentValue || 0) >= (c.targetValue || 0))
   );
   const inProgressChallengesList = joinedChallengesList.filter(
-    (c) => c.status !== 'completed' && c.currentValue < c.targetValue
+    (c) => c.status !== 'completed' && (c.currentValue || 0) < (c.targetValue || 0)
   );
 
   const joinedCount = joinedChallengesList.length;
